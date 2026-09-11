@@ -217,7 +217,10 @@ const youtubeHandleRegex = /youtube\.com\/@(\w+)/
  * }
  */
 async function getYoutubeIdFromUrl(youtubeUrl: string): Promise<string | undefined> {
-  const googleApiKey = requireEnv("GOOGLE_API_KEY")
+  const googleApiKey = process.env.GOOGLE_API_KEY
+  if (!googleApiKey) {
+    return undefined
+  }
 
   if (canParseUrl(youtubeUrl)) {
     const maybeCapturedUser = youtubeUserRegex.exec(youtubeUrl)
