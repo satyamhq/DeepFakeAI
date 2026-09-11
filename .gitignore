@@ -12,15 +12,19 @@ node_modules
 /build
 
 # env files — .env.example is the ONLY env file that should be committed
-/.env
-/.env.local
-/.env.test
-/.env.production
-/.env*.local
-/.env.development.local
-/.env.test.local
-/.env.production.local
-# Never ignore .env.example — it is the committed template
+.env
+.env.*
+.env*.local
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+# Whitelist example template files
+!.env.example
+!*.env.example
 
 # misc
 .DS_Store
