@@ -25,35 +25,42 @@ module.exports = {
   },
 }
 
-// Injected content via Sentry wizard below
+// Sentry build plugin — only enabled when all required env vars are present.
+// Runtime error monitoring (DSN in sentry.*.config.ts) works independently.
 
-const { withSentryConfig } = require("@sentry/nextjs")
+const sentryOrg = process.env.SENTRY_ORG
+const sentryProject = process.env.SENTRY_PROJECT
+const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN
 
-module.exports = withSentryConfig(module.exports, {
-  // For all available options, see:
-  // https://github.com/getsentry/sentry-webpack-plugin#options
+if (sentryOrg && sentryProject && sentryAuthToken) {
+  const { withSentryConfig } = require("@sentry/nextjs")
 
-  org: "PLACEHOLDER",
-  project: "PLACEHOLDER",
+  module.exports = withSentryConfig(module.exports, {
+    // For all available options, see:
+    // https://github.com/getsentry/sentry-webpack-plugin#options
 
-  // Only print logs for uploading source maps in CI
-  silent: !process.env.CI,
+    org: sentryOrg,
+    project: sentryProject,
 
-  // Disable source map upload during build to prevent heap OOM on Render/CI.
-  // Source maps can be uploaded separately via `sentry-cli` if needed.
-  sourcemaps: {
-    disable: true,
-  },
+    // Only print logs for uploading source maps in CI
+    silent: !process.env.CI,
 
-  // Hides source maps from generated client bundles
-  hideSourceMaps: true,
+    // Disable source map upload during build to prevent heap OOM on Render/CI.
+    // Source maps can be uploaded separately via `sentry-cli` if needed.
+    sourcemaps: {
+      disable: true,
+    },
 
-  // Automatically tree-shake Sentry logger statements to reduce bundle size
-  disableLogger: true,
+    // Hides source maps from generated client bundles
+    hideSourceMaps: true,
 
-  // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
-  // See the following for more information:
-  // https://docs.sentry.io/product/crons/
-  // https://vercel.com/docs/cron-jobs
-  automaticVercelMonitors: true,
-})
+    // Automatically tree-shake Sentry logger statements to reduce bundle size
+    disableLogger: true,
+
+    // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
+    // See the following for more information:
+    // https://docs.sentry.io/product/crons/
+    // https://vercel.com/docs/cron-jobs
+    automaticVercelMonitors: true,
+  })
+}
