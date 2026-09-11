@@ -1,4 +1,4 @@
-﻿> âš ï¸ **WARNING:**
+> âš ï¸ **WARNING:**
 > This code is published as-is for reference and educational purposes in the field of deepfake detection. It represents a historical implementation by DeepFakeAI and is not actively maintained. The repository does not accept pull requests, issues, modifications, or support requests. The original DeepFakeAI organization has ceased operations.
 
 # DeepFakeAI
@@ -78,60 +78,63 @@ npm run dev
 
 The local website will be available at `http://localhost:3000/`.
 
-### Database setup
+### Database setup (Supabase)
 
-You will likely want to run a local Postgres installation, though it is also possible to run a
-Postgres instance in the cloud somewhere and point your local website at that.
+This project uses [Supabase](https://supabase.com) as its PostgreSQL database provider, with [Prisma](https://www.prisma.io/) as the ORM.
 
-Install postgres and create a local database named `mydatabase` owned by a local user named
-`mylocaluser`, e.g.
+**Supabase project ref:** `acqqbhrwmxstfyatvrkw`
 
-```
-brew install postgres@15
-brew services start postgresql@15
-createuser mylocaluser
-createdb -O mylocaluser mydatabase
-psql -U mylocaluser
-```
+#### 1. Get your connection strings
 
-If you do set up a local database, you can use the following `sync-db.sh` script (chmod 0700) to copy the contents of the production database to your local database:
+In the [Supabase Dashboard](https://supabase.com/dashboard/project/acqqbhrwmxstfyatvrkw/settings/database), go to **Project Settings → Database → Connection string** and copy the following:
 
-```
-#!/bin/sh
+| Variable | Where to find it | Notes |
+|---|---|---|
+| `POSTGRES_PRISMA_URL` | **Transaction** pooler URI (port **6543**) | Append `?pgbouncer=true&connection_limit=10` |
+| `POSTGRES_URL_NON_POOLING` | **Direct** connection URI (port **5432**) | Used by Prisma migrations |
+| `POSTGRES_SHADOW_URL` | Same direct URI as above | Used by `prisma migrate dev` |
 
-REMOTE_USER=default
-REMOTE_DB=verceldb
-REMOTE_HOST=PLACEHOLDER-HOSTNAME.postgres.vercel-storage.com
+#### 2. Add them to your `.env`
 
-LOCAL_USER=mylocaluser
-LOCAL_DB=mydatabase
+Copy `.env.example` to `.env` and fill in your database password:
 
-echo "Downloading snapshot of prod database..."
-pg_dump -U $REMOTE_USER -h $REMOTE_HOST -Fc --clean --if-exists $REMOTE_DB > prod.dump
-
-echo "Replacing local database with prod data..."
-pg_restore -U $LOCAL_USER -d $LOCAL_DB --no-owner --role=$LOCAL_USER -c prod.dump
-
-rm prod.dump
+```bash
+cp .env.example .env
 ```
 
-This assumes your local database is named `mydatabase` and is owned by a local user named
-`mylocaluser`.
+Edit `.env` and replace `[YOUR-PASSWORD]` in the three `POSTGRES_*` variables with your Supabase database password.
 
-You must also have a `~/.pgpass` file which contains the credentials for the production database
-(and if your local user requires a password, credentials for it as well, though often local
-Postgres installs do not require passwords). The `.pgpass` file should look like this (and should
-be `chmod 0600`):
+The final URLs will look like:
 
 ```
-PLACEHOLDER-HOSTNAME.postgres.vercel-storage.com:0000:verceldb:default:PLACEHOLDER-PASSWORD
+POSTGRES_PRISMA_URL=postgresql://postgres.acqqbhrwmxstfyatvrkw:YOUR_PASSWORD@aws-0-ap-south-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=10
+POSTGRES_URL_NON_POOLING=postgresql://postgres.acqqbhrwmxstfyatvrkw:YOUR_PASSWORD@aws-0-ap-south-1.pooler.supabase.com:5432/postgres
+POSTGRES_SHADOW_URL=postgresql://postgres.acqqbhrwmxstfyatvrkw:YOUR_PASSWORD@aws-0-ap-south-1.pooler.supabase.com:5432/postgres
 ```
 
-If you choose not to start with a synced copy of the production database, you can use Prisma to
-start your database with a pristine set of tables based on the Prisma schema with:
+#### 3. Generate the Prisma client
+
+```bash
+npx prisma generate
+```
+
+#### 4. Push the schema to Supabase
+
+For a fresh Supabase project, push the full schema with:
 
 ```bash
 npx prisma db push
+```
+
+This creates all tables, indexes, and enums in Supabase without creating a migration file. For subsequent schema changes, use `npx prisma migrate dev` instead.
+
+#### Syncing data from a running Supabase instance
+
+To dump and restore the Supabase database locally (e.g. for debugging), use `pg_dump` with the direct connection URL:
+
+```bash
+pg_dump "postgresql://postgres.acqqbhrwmxstfyatvrkw:YOUR_PASSWORD@aws-0-ap-south-1.pooler.supabase.com:5432/postgres" -Fc --clean --if-exists > supabase.dump
+pg_restore -d "postgresql://localhost/mydatabase" --no-owner -c supabase.dump
 ```
 
 ### Database for Integration Tests

@@ -9,6 +9,8 @@
       "env": [
         "NEXT_PUBLIC_*",
         "POSTGRES_PRISMA_URL",
+        "POSTGRES_URL_NON_POOLING",
+        "POSTGRES_SHADOW_URL",
         "POSTMARK_TOKEN",
         "AION_API_KEY",
         "REALITY_API_KEY",
