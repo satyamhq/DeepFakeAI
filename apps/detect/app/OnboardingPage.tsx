@@ -8,7 +8,7 @@ import { Button, Card, Checkbox, Label, TextInput } from "flowbite-react"
 import { termsUrl, privacyUrl } from "./site"
 import { onboardNewUser } from "./internal/users/manage/actions"
 import { useUser } from "@clerk/nextjs"
-import TrueMediaLogo from "./components/TrueMediaLogo"
+import DeepFakeAILogo from "./components/DeepFakeAILogo"
 
 /** This only works with Clerk */
 export default function OnboardingPage() {
@@ -40,7 +40,7 @@ export default function OnboardingPage() {
   return (
     <main className="flex flex-col grow justify-center items-center">
       <div className="">
-        <TrueMediaLogo />
+        <DeepFakeAILogo />
         <div className="text-lg pt-2">Non-profit, non-partisan, free.</div>
       </div>
       <Card className="m-5 md:mx-auto md:w-96">
@@ -59,7 +59,7 @@ export default function OnboardingPage() {
               onChange={(e) => setAgreedTerms(e.target.checked)}
             />
             <Label htmlFor="accept" className="text-slate-400">
-              By signing up, you agree to TrueMedia.org’s &thinsp;
+              By signing up, you agree to DeepFakeAI's &thinsp;
               <Link className="text-lime-500" href={termsUrl}>
                 Terms of Services
               </Link>

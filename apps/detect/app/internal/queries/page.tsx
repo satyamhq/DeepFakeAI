@@ -10,7 +10,7 @@ export default async function Page({ searchParams }: { searchParams: { offset: s
   const offset = parseInt(searchParams.offset || "0"),
     count = 15
   const mode = searchParams.mode ?? "all"
-  const where = mode == "all" ? {} : { user: { email: { not: { endsWith: "@truemedia.org" } } } }
+  const where = mode == "all" ? {} : { user: { email: { not: { endsWith: "@deepfakeai.org" } } } }
   const total = await db.query.count({ where: where })
   const queries = await db.query.findMany({
     skip: offset,

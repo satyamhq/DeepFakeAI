@@ -182,7 +182,7 @@ export async function addVerdictOverlay(
     },
   ]
 
-  const watermark = await fs.readFile(path.resolve("./public/trueMediaWatermark.png"))
+  const watermark = await fs.readFile(path.resolve("./public/deepfakeaiWatermark.png"))
   const watermarkOverlayOption: OverlayOptions = {
     input: watermark,
     blend: "overlay",

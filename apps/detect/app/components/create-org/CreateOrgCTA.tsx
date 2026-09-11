@@ -41,7 +41,7 @@ export default function CreateOrgCTA({ loading, hasOrg, className = "" }: Create
       <div className="flex flex-col items-center">
         <div className="flex gap-4 flex-row">
           <CreateOrgButton />
-          <Button href="https://www.truemedia.org/for-teams" outline>
+          <Button href="#" outline>
             Learn More
           </Button>
         </div>

@@ -146,7 +146,7 @@ export async function GET(req: NextRequest): Promise<Response> {
   }
 
   const csvString = await getCsv(media, mediaIdToPostMedia)
-  const fileName = `truemedia-${searchParams.type}-${new Date().toISOString()}.csv`
+  const fileName = `deepfakeai-${searchParams.type}-${new Date().toISOString()}.csv`
 
   return new Response(csvString, {
     status: 200,

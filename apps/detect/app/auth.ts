@@ -4,10 +4,10 @@ import { UserResource } from "@clerk/types"
 const friends: string[] = []
 
 // internal pages are only accessible by certain user email domains
-const internalDomains = ["@truemedia.org"]
+const internalDomains = ["@deepfakeai.org"]
 
 // certain trusted domains are allowed to download our cached media
-const downloadDomains = ["@truemedia.org"]
+const downloadDomains = ["@deepfakeai.org"]
 
 export const domainMatches = (email: string | undefined, domains: string[]) =>
   !!email && domains.find((dd) => email.endsWith(dd)) !== undefined

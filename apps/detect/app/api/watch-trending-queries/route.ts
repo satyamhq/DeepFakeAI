@@ -19,7 +19,7 @@ export async function GET() {
   const queryCounts: QueryResult[] = await db.$queryRaw`
     SELECT post_url AS url, COUNT(DISTINCT(user_id)) AS hits, MAX(time) AS maxtime 
     FROM queries q JOIN users u ON q.user_id = u.id
-    WHERE time > NOW() - INTERVAL '7 days' AND u.email NOT LIKE '%@truemedia.org'
+    WHERE time > NOW() - INTERVAL '7 days' AND u.email NOT LIKE '%@deepfakeai.org'
     GROUP BY post_url
     HAVING COUNT(DISTINCT(user_id)) >= ${MIN_QUERIES_TO_ALERT} AND MAX(time) > NOW() - INTERVAL '1 hour';
   `

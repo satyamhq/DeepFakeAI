@@ -1,6 +1,6 @@
-# Internal Tools
+﻿# Internal Tools
 
-TrueMedia.org has developed a suite of internal tools that the internal team uses to evaluate and finetune [our model ensemble,](/apps/detect#classification-framework) label data, and administrate the application. These tools are available as pages in the app that are only accessible to users with internal or admin privileges.
+DeepFakeAI has developed a suite of internal tools that the internal team uses to evaluate and finetune [our model ensemble,](/apps/detect#classification-framework) label data, and administrate the application. These tools are available as pages in the app that are only accessible to users with internal or admin privileges.
 
 - [Product Usage](#product-usage)
   - [Queries by Time](#queries-by-time)
@@ -69,7 +69,7 @@ You can also delete a piece of media from this page.
 
 /internal/datasets
 
-TrueMedia.org uses a number of data sets for evaluation, training, and other purposes such as segmenting data by customer. A data set is a collection of media that contain specific keywords. You can view and create datasets on the Data Catalog page.
+DeepFakeAI uses a number of data sets for evaluation, training, and other purposes such as segmenting data by customer. A data set is a collection of media that contain specific keywords. You can view and create datasets on the Data Catalog page.
 
 The `eval` data set is the largest one, containing most of our data obtained from "in the wild," and it is used by default on the [Eval page](#eval) for evaluating our models. Any other data set can be swapped into the Eval page to evaluate instead.
 
@@ -85,9 +85,9 @@ Here you can see the most frequently used keywords and sources stored in the int
 
 /internal/eval
 
-This is our most important internal tool. It's the page used by TrueMedia.org's Machine Learning and Engineering teams to constantly analyze and tune the performance of our model ensemble.
+This is our most important internal tool. It's the page used by DeepFakeAI's Machine Learning and Engineering teams to constantly analyze and tune the performance of our model ensemble.
 
-Here you can find statistics about the performance of the overall TrueMedia.org ensemble on specific media data sets, along with statistics about how the individual models are performing. Statistics include F1, Precision, Accuracy, and Recall scores, along with the rates of False Positives (FN), False Negatives (FN). To learn the details of these statistics, hover over the column titles to see tooltip info. Or refer to /apps/detect/app/internal/metrics.ts
+Here you can find statistics about the performance of the overall DeepFakeAI ensemble on specific media data sets, along with statistics about how the individual models are performing. Statistics include F1, Precision, Accuracy, and Recall scores, along with the rates of False Positives (FN), False Negatives (FN). To learn the details of these statistics, hover over the column titles to see tooltip info. Or refer to /apps/detect/app/internal/metrics.ts
 
 Model performance is evaluated based on the Ground Truth [labels assigned by human verifiers](/apps/detect#human-verification). **Therefore, the numbers you see on this page only includes media where we know the ground truth.** Unlabeled items do not impact the evaluation of our models. This is why we attempt to label all incoming items.
 
@@ -95,7 +95,7 @@ Model performance is evaluated based on the Ground Truth [labels assigned by hum
 
 At the top of the page, you'll find filters for choosing the data set that you want to evaluate. The default Data Catalog assigned is called `eval`. You can choose a different data catalog, or you can filter the current catalog further.
 
-Filters include date, social media source, and keywords. The filter syntax for keywords is powerful—click on the `?` icon to learn the syntax.
+Filters include date, social media source, and keywords. The filter syntax for keywords is powerfulâ€”click on the `?` icon to learn the syntax.
 
 #### Models
 
@@ -175,7 +175,7 @@ You can see a list of items where the endpoint returned errors, which help with 
 
 While a model is in development, it may change the way it scores media. Therefore, you might find need to re-run that model to assign new scores to a media set. Or, you can use this page to run a disabled model, which isn't run by default on user queries.
 
-Choose the model and the filter criteria you'd like to apply. A good choice is often to filter to the same set of data used on the Eval page—just match the keywords and date range.
+Choose the model and the filter criteria you'd like to apply. A good choice is often to filter to the same set of data used on the Eval pageâ€”just match the keywords and date range.
 
 Note that this is a very performance intensive page (CPU and memory), so it's not a good idea to run this on all data. Choose a reasonable subset. Media with Unknown Ground Truth is excluded by default because these items don't affect the Eval statistics.
 
@@ -205,7 +205,7 @@ You can also view the model ensemble performance specifically for this organizat
 
 https://dashboard.clerk.com/
 
-Both of the above TrueMedia.org pages provide an entry point to [the Clerk dashboard](https://dashboard.clerk.com/), where most user and organization administration tasks are performed.
+Both of the above DeepFakeAI pages provide an entry point to [the Clerk dashboard](https://dashboard.clerk.com/), where most user and organization administration tasks are performed.
 
 The Clerk dashboard provides usage analytics, including active users, sign-ins, and sign-ups over time.
 
@@ -213,7 +213,7 @@ Tools for administering users include creating and deleting users, banning and l
 
 Tools for administering organizations include permissions, and updating metadata about the organization.
 
-Note, organization domains cannot be managed from the Clerk dashboard. You must be a member of the organization and use Organization Settings inside the application to administer domains. It’s recommended that their admin user perform this action themself to verify their own domain.
+Note, organization domains cannot be managed from the Clerk dashboard. You must be a member of the organization and use Organization Settings inside the application to administer domains. Itâ€™s recommended that their admin user perform this action themself to verify their own domain.
 
 Clerk also has tools for configuring the Clerk application and default roles and permissions for users and organizations. Included are tools for blocking accounts and domains automatically, and bot protection for sign-ups.
 
@@ -221,7 +221,7 @@ Clerk also has tools for configuring the Clerk application and default roles and
 
 /internal/api-keys
 
-This page is used to issue and revoke API keys for anyone using the TrueMedia.org API. For now, users cannot do this themselves, and an internal employee needs to issue an API key. Once a key has been issued, the customer will obtain access to API documentation and their API key at `/docs/api` when they log into the app.
+This page is used to issue and revoke API keys for anyone using the DeepFakeAI API. For now, users cannot do this themselves, and an internal employee needs to issue an API key. Once a key has been issued, the customer will obtain access to API documentation and their API key at `/docs/api` when they log into the app.
 
 ### Verified Sources
 
@@ -266,3 +266,4 @@ You can also configure specific users to not be subject to throttling. This is o
 /internal/trigger-org-member-created
 
 This page can be used by Engineers to trigger the `/api/org-member-created` webhook from a local dev environment.
+

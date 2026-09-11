@@ -4,13 +4,13 @@ const externalA = { fullName: "eA", email: "eA@external.com", id: "", externalId
 const externalB = { fullName: "eB", email: "eB@external.com", id: "", externalId: "" }
 const externalC = { fullName: "eC", email: "eC@external.com", id: "", externalId: "" }
 const externalNoName = { fullName: "", email: "eNoName@external.com", id: "", externalId: "" }
-const internalA = { fullName: "iA", email: "iA@truemedia.org", id: "", externalId: "" }
-const internalB = { fullName: "iB", email: "iB@truemedia.org", id: "", externalId: "" }
-const internalNoName = { fullName: "", email: "iNoName@truemedia.org", id: "", externalId: "" }
+const internalA = { fullName: "iA", email: "iA@deepfakeai.org", id: "", externalId: "" }
+const internalB = { fullName: "iB", email: "iB@deepfakeai.org", id: "", externalId: "" }
+const internalNoName = { fullName: "", email: "iNoName@deepfakeai.org", id: "", externalId: "" }
 
 const rows: ApiKeyTableRowData[] = [
   {
-    organization: { name: "TrueMedia", id: "" },
+    organization: { name: "DeepFakeAI", id: "" },
     clerkUser: internalB,
     apiKey: null,
     orgMemberActive: false,
@@ -40,7 +40,7 @@ const rows: ApiKeyTableRowData[] = [
     orgMemberActive: false,
   },
   {
-    organization: { name: "TrueMedia", id: "" },
+    organization: { name: "DeepFakeAI", id: "" },
     clerkUser: internalNoName,
     apiKey: null,
     orgMemberActive: false,
@@ -52,7 +52,7 @@ const rows: ApiKeyTableRowData[] = [
     orgMemberActive: false,
   },
   {
-    organization: { name: "TrueMedia", id: "" },
+    organization: { name: "DeepFakeAI", id: "" },
     clerkUser: internalA,
     apiKey: null,
     orgMemberActive: false,
@@ -81,9 +81,9 @@ describe("API key rows sorting", () => {
       { oName: "External", uName: externalNoName.fullName },
       { oName: "External", uName: undefined },
       { oName: "External 2", uName: externalC.fullName },
-      { oName: "TrueMedia", uName: internalA.fullName },
-      { oName: "TrueMedia", uName: internalB.fullName },
-      { oName: "TrueMedia", uName: internalNoName.fullName },
+      { oName: "DeepFakeAI", uName: internalA.fullName },
+      { oName: "DeepFakeAI", uName: internalB.fullName },
+      { oName: "DeepFakeAI", uName: internalNoName.fullName },
       { oName: undefined, uName: externalA.fullName },
       { oName: undefined, uName: undefined },
     ])

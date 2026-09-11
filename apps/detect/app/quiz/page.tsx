@@ -8,11 +8,11 @@ import { db } from "../server"
 import { currentSiteBaseUrl, signUpUrl } from "../site"
 import { metadata } from "../layout"
 import Quiz from "./Quiz"
-import TrueMediaLogo from "../components/TrueMediaLogo"
+import DeepFakeAILogo from "../components/DeepFakeAILogo"
 import Link from "next/link"
 
-const title = "TrueMedia.org - Political Deepfake Quiz"
-const description = "Can you detect a deepfake? Take the TrueMedia.org political deepfake quiz now and find out."
+const title = "DeepFakeAI - Political Deepfake Quiz"
+const description = "Can you detect a deepfake? Take the DeepFakeAI political deepfake quiz now and find out."
 export async function generateMetadata(): Promise<Metadata> {
   return {
     ...metadata,
@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
       url: `${currentSiteBaseUrl}/quiz`,
       title,
       description,
-      images: `/truemedia-quiz-open-graph.jpg`,
+      images: `/deepfakeai-quiz-open-graph.jpg`,
     },
   }
 }
@@ -72,8 +72,8 @@ const quizMedia = [
 
 const QuizNavigationBar = () => (
   <div className="flex items-center justify-between">
-    <ExternalLink className="m-[20px]" href="https://www.truemedia.org/">
-      <TrueMediaLogo />
+    <ExternalLink className="m-[20px]" href="#">
+      <DeepFakeAILogo />
     </ExternalLink>
     <div className="flex items-center space-x-5 ml-auto mr-6">
       <ExternalLink href="https://givebutter.com/yPpxLZ">

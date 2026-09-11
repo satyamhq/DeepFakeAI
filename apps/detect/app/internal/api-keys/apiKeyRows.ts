@@ -53,9 +53,9 @@ export function compareApiKeyRows(a: ApiKeyTableRowData, b: ApiKeyTableRowData) 
   if (a.organization && !b.organization) return -1
 
   if (a.organization && b.organization) {
-    // Sort internal "TrueMedia" org after other orgs
-    const aIsInternal = a.organization.name === "TrueMedia"
-    const bIsInternal = b.organization.name === "TrueMedia"
+    // Sort internal "DeepFakeAI" org after other orgs
+    const aIsInternal = a.organization.name === "DeepFakeAI"
+    const bIsInternal = b.organization.name === "DeepFakeAI"
     if (!aIsInternal && bIsInternal) return -1
     if (aIsInternal && !bIsInternal) return 1
 

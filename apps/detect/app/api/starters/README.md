@@ -1,6 +1,6 @@
-# Detection Models
+﻿# Detection Models
 
-TrueMedia.org employs an ensemble of in-house and 3rd party detection models, for the analysis processing system described in [/apps/detect README](/apps/detect#analysis-processing-system)
+DeepFakeAI employs an ensemble of in-house and 3rd party detection models, for the analysis processing system described in [/apps/detect README](/apps/detect#analysis-processing-system)
 
 ## In-house Models
 
@@ -24,7 +24,7 @@ We built several in-house models, which are open sourced and documented in separ
 
 ## 3rd Party Models
 
-We employ the following 3rd party models in our ensemble. We also experimented with a number of additional 3rd party models not mentioned here—there are many models under development and research.
+We employ the following 3rd party models in our ensemble. We also experimented with a number of additional 3rd party models not mentioned hereâ€”there are many models under development and research.
 
 These models require paid subscriptions, so you'll need to obtain an API key from each company to use them.
 
@@ -68,3 +68,4 @@ Implement the required adapter methods on the `Processor` to interpret the API r
 A single processor yields one or more "model" results. These are typically a 1-to-1 relationship, where there's one model for every processor. But some processors produce results for more than one model. For example, calling one Reality Defender endpoint gives results for several models.
 
 Configure the `ModelInfo` including thresholds and policies, in directory `/model-processors`. Refer to [our docs](/apps/detect) for info about these properties.
+

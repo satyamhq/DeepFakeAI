@@ -24,7 +24,7 @@ export abstract class Filter {
     const terms = keywords.toLowerCase().split(" ")
     if (language) terms.push(...language.split(" "))
     if (source) terms.push(...source.split(" "))
-    // a pseudo-keyword which matches media analyzed or viewed by non-TrueMedia.org users
+    // a pseudo-keyword which matches media analyzed or viewed by non-DeepFakeAI users
     if (external) terms.push("external-user")
     // a pseudo-keyword which matches media identified as "experimental"
     if (experimental) terms.push("experimental")

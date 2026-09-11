@@ -17,4 +17,4 @@ export const signUpUrl = "/signup"
 export const contactUrl = "mailto:OPEN-TODO-PLACEHOLDER"
 
 export const disclaimerText =
-  "Disclaimer: TrueMedia.org uses both leading vendors and state-of-the-art academic AI methods. However, errors can occur."
+  "Disclaimer: DeepFakeAI uses both leading vendors and state-of-the-art academic AI methods. However, errors can occur."

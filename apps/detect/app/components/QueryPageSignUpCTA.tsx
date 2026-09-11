@@ -27,7 +27,7 @@ export default function QueryPageSignUpCTA() {
           Create an Account
           <ArrowRightIcon />
         </Button>
-        <Button className="w-48" href="https://www.truemedia.org/how-it-works" target="_blank" outline>
+        <Button className="w-48" href="#" target="_blank" outline>
           How it Works <FlowbiteArrowUpRightFromSquare />
         </Button>
       </div>

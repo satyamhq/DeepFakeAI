@@ -45,7 +45,7 @@ export default function TopLinks() {
           <NavItem icon={<FaCloudUploadAlt className="inline w-6 h-6" />}>Batch Upload</NavItem>
         </Link>
       )}
-      <Link prefetch={false} href={"https://truemedia.org"}>
+      <Link prefetch={false} href={"#"}>
         <NavItem icon={<FlowbiteArrowUpRightFromSquare />}>About</NavItem>
       </Link>
     </ul>

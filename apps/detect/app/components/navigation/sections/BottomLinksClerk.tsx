@@ -59,8 +59,8 @@ export default function BottomLinksClerk() {
       </div>
       <div className="p-2 text-gray-400">
         <span>©2024</span>{" "}
-        <Link prefetch={false} href={"https://truemedia.org"} className="underline">
-          TrueMedia.org
+        <Link prefetch={false} href={"#"} className="underline">
+          DeepFakeAI
         </Link>
       </div>
     </>

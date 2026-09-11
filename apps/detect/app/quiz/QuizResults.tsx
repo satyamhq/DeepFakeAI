@@ -8,7 +8,7 @@ import { signInUrl, siteUrl } from "../site"
 const ShareResultsButton = ({ score }: { score: number }) => {
   const [showCopied, setShowCopied] = useState(false)
 
-  const textToCopy = `Try the political deepfake challenge! I scored ${score}%. TrueMedia.org is non-profit, non-partisan, and free. ${siteUrl}/quiz`
+  const textToCopy = `Try the political deepfake challenge! I scored ${score}%. DeepFakeAI is non-profit, non-partisan, and free. ${siteUrl}/quiz`
   const handleCopyResults = async () => {
     try {
       await navigator.clipboard.writeText(textToCopy)
@@ -58,7 +58,7 @@ export default function QuizResults({ questions, answers }: { questions: Questio
         <ShareResultsButton score={score} />
       </div>
       <p className="mt-3 md:mt-5">
-        Sign up to get access to TrueMedia.org’s free deepfake detector. TrueMedia.org is non-profit, non-partisan, and
+        Sign up to get access to DeepFakeAI's free deepfake detector. DeepFakeAI is non-profit, non-partisan, and
         free.
       </p>
       <div className="flex flex-row justify-center items-center mt-6">

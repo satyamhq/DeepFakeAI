@@ -27,7 +27,7 @@ export default async function Page({ searchParams }: { searchParams: { url: stri
 
   if (role.isNotLoggedIn && !isPostUrlInAllowList(postUrl)) {
     const reason =
-      "The URL you submitted is not part of our currently supported sites. Create an account to upload files to TrueMedia.org directly."
+      "The URL you submitted is not part of our currently supported sites. Create an account to upload files to DeepFakeAI directly."
     return <FailureUI postUrl={postUrl} reason={reason} isQueryLimitReached={false} />
   }
 

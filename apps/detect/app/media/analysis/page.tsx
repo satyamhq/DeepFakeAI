@@ -18,7 +18,7 @@ export async function generateMetadata({
   const notable = searchParams.id
     ? await db.notableMedia.findUnique({ where: { mediaId: searchParams.id } })
     : undefined
-  const title = notable?.title ?? `TrueMedia.org - Deepfake Analysis`
+  const title = notable?.title ?? `DeepFakeAI - Deepfake Analysis`
   const thumbnailUrl = notable?.imagePreviewUrl ?? `/api/thumbnail-overlay?mediaId=${searchParams.id}`
   const description = notable?.description ?? metadata.openGraph?.description ?? ""
 

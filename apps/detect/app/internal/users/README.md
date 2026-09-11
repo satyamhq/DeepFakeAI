@@ -1,4 +1,4 @@
-# Users and Organizations
+﻿# Users and Organizations
 
 - [About Clerk](#about-clerk)
 - [App DB User Table](#app-db-users-table)
@@ -14,7 +14,7 @@
 
 Clerk is a third-party authentication and user management service that provides
 secure user authentication, organization management, and session handling. We
-use Clerk in TrueMedia to:
+use Clerk in DeepFakeAI to:
 
 1. Handle user authentication flows (login, signup, password reset, etc.).
 1. Manage user accounts and profile data.
@@ -28,7 +28,7 @@ implement features like password reset flows or SSO integrations. Clerk provides
 both backend APIs for programmatic access to user data as well as pre-built
 React components that handle common authentication UI patterns.
 
-The TrueMedia app supports anonymous users and authenticated users.
+The DeepFakeAI app supports anonymous users and authenticated users.
 Authenticated users can optionally be a member of one or more organizations.
 Clerk is the source of truth of user accounts, organizations, and organization
 memberships.
@@ -43,7 +43,7 @@ Think of Clerk users having two IDs:
 1. `id` this ID identifies the user inside Clerk
 1. `externalId` allows Clerk to store the ID of the user in an external DB
 
-Again, the TrueMedia app DB is outside of Clerk. Clerk only saves user and
+Again, the DeepFakeAI app DB is outside of Clerk. Clerk only saves user and
 organization information. The external app DB saves things like user queries,
 user history, and all other app information. We use `externalId` on Clerk users
 to join to other app info.
@@ -271,3 +271,4 @@ const perUserRateLimits: Record<UserType, { requests: number; durationSeconds: n
   [UserType.REGISTERED]: null,
 }
 ```
+

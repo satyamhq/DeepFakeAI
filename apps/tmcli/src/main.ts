@@ -9,7 +9,7 @@ import mediares from "./cmds/mediares"
 new Command()
   .name("tmcli")
   .version("0.0.1")
-  .description("CLI for working with TrueMedia services")
+  .description("CLI for working with DeepFakeAI services")
   .addCommand(scheduler)
   .addCommand(detect)
   .addCommand(serveDirectory)

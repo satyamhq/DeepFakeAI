@@ -8,19 +8,19 @@ import { trueTheme } from "./theme"
 import { ClerkProvider, SignedIn } from "@clerk/nextjs"
 import { auth as clerkAuth } from "@clerk/nextjs/server"
 
-const title = "TrueMedia.org - Identifying Political Deepfakes in Social Media Using AI."
-const description = "TrueMedia.org detects political deepfakes in social media. Non-profit, non-partisan, and free."
+const title = "DeepFakeAI - Identifying Political Deepfakes in Social Media Using AI."
+const description = "DeepFakeAI detects political deepfakes in social media. Non-profit, non-partisan, and free."
 export const metadata: Metadata = {
   title,
   description,
   icons: "/icon.png",
   openGraph: {
     type: "website",
-    siteName: "TrueMedia.org",
+    siteName: "DeepFakeAI",
     url: currentSiteBaseUrl,
     title,
     description,
-    images: `/truemedia-open-graph.png`,
+    images: `/deepfakeai-open-graph.png`,
   },
   metadataBase: new URL(currentSiteBaseUrl),
 }
@@ -111,7 +111,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               page_path: window.location.pathname,
               user_id: '${clerkSession.userId || ""}',
               is_logged_in: ${clerkSession.userId ? "true" : "false"},
-              is_internal: ${clerkSession.sessionClaims?.email?.includes("@truemedia.org") ? "true" : "false"},
+              is_internal: ${clerkSession.sessionClaims?.email?.includes("@deepfakeai.org") ? "true" : "false"},
             })
           `}
         </Script>

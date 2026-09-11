@@ -21,7 +21,7 @@ export default function InviteUser() {
   async function onSubmit(data: FormData) {
     const email = normalizeEmail(((data.get("email") as string) ?? "").trim())
 
-    if (process.env.NODE_ENV !== "production" && !email?.includes("@truemedia.org")) {
+    if (process.env.NODE_ENV !== "production" && !email?.includes("@deepfakeai.org")) {
       // This is to prevent unintended invites to our Clerk Development environment
       setMessage("Unable to send invites to external users from non-production builds")
       return

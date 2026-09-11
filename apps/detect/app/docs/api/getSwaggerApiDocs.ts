@@ -9,7 +9,7 @@ export const getSwaggerApiDocs = () => {
     servers: [
       {
         url: currentSiteBaseUrl,
-        description: "TrueMedia.org API server",
+        description: "DeepFakeAI API server",
       },
     ],
   }

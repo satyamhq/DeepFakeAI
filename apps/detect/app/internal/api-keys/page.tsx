@@ -21,7 +21,7 @@ export default async function Page({ searchParams }: { searchParams: { email: st
             type="email"
             name="email"
             defaultValue={email}
-            placeholder="user@truemedia.org"
+            placeholder="user@deepfakeai.org"
             helperText="Search for a user by email if you want to create an api key for them"
             tabIndex={1}
           />

@@ -81,7 +81,7 @@ model Media {
   audioId        String?        @map("audio_id")
   // The mime_type of associated audio media (optional).
   audioMimeType  String?        @map("audio_mime_type")
-  // Whether this media has been viewed by an external (non-truemedia.org) user.
+  // Whether this media has been viewed by an external (non-deepfakeai.org) user.
   external       Boolean        @default(false)
   // Cached results from all applicable models, computed from the raw AnalysisResults.
   results        Json           @default("{}")

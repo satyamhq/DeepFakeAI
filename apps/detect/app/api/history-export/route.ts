@@ -53,7 +53,7 @@ const HEADERS: Header[] = [
   { id: "other", title: manipulationCategoryInfo.other.label },
   { id: "queriedAt", title: "Analyzed Date" },
   { id: "analysisTime", title: "Analysis Time(sec)" },
-  { id: "analysisUrl", title: "TrueMedia URL" },
+  { id: "analysisUrl", title: "DeepFakeAI URL" },
   { id: "userEmail", title: "Submitted by Email" },
 ]
 
@@ -159,7 +159,7 @@ export async function GET(req: NextRequest): Promise<Response> {
     isImpersonating,
   })
   const csvString = getCsv(history)
-  const fileName = `truemedia-history-${new Date().toISOString()}.csv`
+  const fileName = `deepfakeai-history-${new Date().toISOString()}.csv`
 
   return new Response(csvString, {
     status: 200,

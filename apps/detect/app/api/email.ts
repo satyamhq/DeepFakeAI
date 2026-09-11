@@ -1,6 +1,6 @@
 import { requireEnv } from "./util"
 
-export const emailFrom = "noreply@truemedia.org"
+export const emailFrom = "noreply@deepfakeai.org"
 const postmarkToken = requireEnv("POSTMARK_TOKEN")
 
 export async function sendEmail(recip: string, subject: string, html: string, text: string) {

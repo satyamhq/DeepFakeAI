@@ -15,7 +15,7 @@ export async function GET(request: NextRequest): Promise<Response> {
   const since = dateSince(days)
   const { byUser } = await getUserQueries(since)
 
-  const rows: string[] = [["Analyzed Date", "User Email", "TrueMedia URL", "Media Source URL"].join(",")]
+  const rows: string[] = [["Analyzed Date", "User Email", "DeepFakeAI URL", "Media Source URL"].join(",")]
   Array.from(byUser.entries()).forEach(([email, posts]) => {
     posts.forEach((post) => {
       const time = formatDateToTimestamp(post.time)

@@ -93,8 +93,8 @@ export default function PostToXButton({ media, isReady }: { media: JoinedMedia; 
           <Modal.Body>
             <div className="mb-3">
               You are about to share a breaking news post on X.com to all our followers at{" "}
-              <a className="underline" href="https://x.com/truemediadotorg" rel="noopener noreferrer" target="_blank">
-                @truemediadotorg
+              <a className="underline" href="https://x.com/deepfakeai" rel="noopener noreferrer" target="_blank">
+                @deepfakeai
               </a>
               . You can customize the text before posting.
             </div>

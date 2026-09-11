@@ -30,12 +30,12 @@ const ExperimentalDescription = ({ verdictResult }: { verdictResult: VerdictResu
 
   return experimentalDescription ? (
     <div>
-      TrueMedia.org labels this <b>uncertain</b> because {experimentalDescription}, which{" "}
+      DeepFakeAI labels this <b>uncertain</b> because {experimentalDescription}, which{" "}
       {experimentalReasons.length > 1 ? "are" : "is"} outside our focus.
     </div>
   ) : (
     <div>
-      TrueMedia.org labels this <b>uncertain</b> because it is outside our focus on political deepfakes.
+      DeepFakeAI labels this <b>uncertain</b> because it is outside our focus on political deepfakes.
     </div>
   )
 }
@@ -48,7 +48,7 @@ export default function VerdictDescription({ verdictResult }: { verdictResult: V
 
   return (
     <div>
-      TrueMedia.org verdict: <b>{verdicts[verdict].adjective} evidence</b> of manipulation.
+      DeepFakeAI verdict: <b>{verdicts[verdict].adjective} evidence</b> of manipulation.
     </div>
   )
 }

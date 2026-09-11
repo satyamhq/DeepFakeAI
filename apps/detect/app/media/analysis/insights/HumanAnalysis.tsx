@@ -2,7 +2,7 @@ import linkifyit from "linkify-it"
 
 import { JoinedMedia } from "../../../data/media"
 import { VerificationLabel } from "../VerificationBadge"
-import TrueMediaLogo from "../../../components/TrueMediaLogo"
+import DeepFakeAILogo from "../../../components/DeepFakeAILogo"
 import { determineFake, meansHumanVerified } from "../../../data/groundTruth"
 import { Card } from "flowbite-react"
 
@@ -46,11 +46,11 @@ export function HumanAnalysis({ media }: { media: JoinedMedia }) {
 
           <div className="flex flex-row">
             <div className="flex items-center justify-center bg-purple-200 rounded-full h-9 w-9">
-              <TrueMediaLogo className="brightness-0" size="xs" hasText={false} />
+              <DeepFakeAILogo className="brightness-0" size="xs" hasText={false} />
             </div>
             <div className="flex flex-col ml-2">
               <div>Human Analyst</div>
-              <div className="text-gray-400">TrueMedia.org Notes</div>
+              <div className="text-gray-400">DeepFakeAI Notes</div>
             </div>
           </div>
 

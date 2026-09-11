@@ -9,7 +9,7 @@ import { response } from "../util"
 import { addVerdictOverlay } from "./overlay"
 
 async function buildDefaultResponse() {
-  const filePath = path.resolve("./public/truemedia-open-graph.png")
+  const filePath = path.resolve("./public/deepfakeai-open-graph.png")
   const file = await fs.readFile(filePath)
   return new Response(file, {
     status: 200,

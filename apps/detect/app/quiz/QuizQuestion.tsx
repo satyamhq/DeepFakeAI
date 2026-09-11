@@ -115,7 +115,7 @@ export default function QuizQuestion({
                   This is a {question.isFake ? "fake" : "real"} {type} of {description}.
                 </p>
                 <p className="mt-2">
-                  TrueMedia.org detected {question.isFake ? "substantial" : "little"} evidence of manipulation.{" "}
+                  DeepFakeAI detected {question.isFake ? "substantial" : "little"} evidence of manipulation.{" "}
                   <Link
                     className="underline"
                     href={"/media/analysis?id=" + question.media.id}

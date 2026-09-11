@@ -28,7 +28,7 @@ export default function FailureUI({
 
         <SignedIn>
           <div className="text-lg mt-5">
-            Consider downloading the image or video and uploading it to TrueMedia.org directly.
+            Consider downloading the image or video and uploading it to DeepFakeAI directly.
           </div>
         </SignedIn>
 

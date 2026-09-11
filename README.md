@@ -1,28 +1,28 @@
-> ⚠️ **WARNING:**
-> This code is published as-is for reference and educational purposes in the field of deepfake detection. It represents a historical implementation by TrueMedia.org and is not actively maintained. The repository does not accept pull requests, issues, modifications, or support requests. The original TrueMedia.org organization has ceased operations.
+﻿> âš ï¸ **WARNING:**
+> This code is published as-is for reference and educational purposes in the field of deepfake detection. It represents a historical implementation by DeepFakeAI and is not actively maintained. The repository does not accept pull requests, issues, modifications, or support requests. The original DeepFakeAI organization has ceased operations.
 
-# TrueMedia.org
+# DeepFakeAI
 
-TrueMedia.org is a service that detects deepfakes in social media. The product allows critical election audiences from around the world to quickly and effectively detect deepfakes.
+DeepFakeAI is a service that detects deepfakes in social media. The product allows critical election audiences from around the world to quickly and effectively detect deepfakes.
 
-TrueMedia.org uses [a suite of deepfake detection tools](/apps/detect/app/api/starters#detection-models) for industry-leading accuracy. The TrueMedia.org machine learning team developed multiple in-house deepfake detection models for analyzing images, video, and audio. We combine the power of our in-house models with industry and academia to ensure more accurate results. By continuously tuning the ensemble, we achieved over 90% accuracy.
+DeepFakeAI uses [a suite of deepfake detection tools](/apps/detect/app/api/starters#detection-models) for industry-leading accuracy. The DeepFakeAI machine learning team developed multiple in-house deepfake detection models for analyzing images, video, and audio. We combine the power of our in-house models with industry and academia to ensure more accurate results. By continuously tuning the ensemble, we achieved over 90% accuracy.
 
-[![TrueMedia.org video](https://raw.githubusercontent.com/truemediaorg/.github/main/profile/video-splash.png)](https://www.youtube.com/watch?v=-6l7Jg02C8E)
+[![DeepFakeAI video](https://raw.githubusercontent.com/DeepFakeAIorg/.github/main/profile/video-splash.png)](https://www.youtube.com/watch?v=-6l7Jg02C8E)
 
 ## Website application
 
 This repository contains the code for the website, a Next.js app deployed on Vercel. With the website, a user can add a social media post with an embedded video, audio, image. Or they can upload a file. Then they quickly receive aggregated results from the ensemble of AI detectors.
 
-Learn more about how the analysis processing works at the deep-dive in this README: [TrueMedia.org Social Media Analysis](/apps/detect).
+Learn more about how the analysis processing works at the deep-dive in this README: [DeepFakeAI Social Media Analysis](/apps/detect).
 
-![Website example](/readme-assets/detect-truemedia-org.png)
+![Website example](/readme-assets/detect-DeepFakeAI-org.png)
 
 The website is dependent on two services. The Scheduler service is contained inside this same repository as the web app, while the Media Resolution service is in a separate repository. Navigate to the documentation below to learn more on how to set up these required services.
 
 - [Scheduler service](/apps/scheduler)
-- [Media Resolution service](https://github.com/truemediaorg/media-resolver)
+- [Media Resolution service](https://github.com/DeepFakeAIorg/media-resolver)
 
-![TrueMedia.org data flow](/readme-assets/TrueMediaDataflow.jpg)
+![DeepFakeAI data flow](/readme-assets/DeepFakeAIDataflow.jpg)
 
 ### Clerk
 
@@ -36,7 +36,7 @@ Read more about Clerk, users, and organizations in our [users and organizations 
 
 ### Internal tools
 
-TrueMedia.org offers a suite of internal tools for evaluating and finetuning [the model ensemble,](/apps/detect#classification-framework) label data, and administrate the application. These tools are available as pages in the web app that are only accessible to users with internal or admin privileges. Read more about the [internal tools here.](/apps/detect/app/internal)
+DeepFakeAI offers a suite of internal tools for evaluating and finetuning [the model ensemble,](/apps/detect#classification-framework) label data, and administrate the application. These tools are available as pages in the web app that are only accessible to users with internal or admin privileges. Read more about the [internal tools here.](/apps/detect/app/internal)
 
 ## Developer setup for the web app
 
@@ -47,7 +47,7 @@ Prerequisites for successfully running the app:
 - Search for string `OPEN-TODO` in the code, and you'll find a couple locations you need to update to link to your own s3 buckets and services. This requires to you establish the detection services you'll use, along with a storage location for thumbnail images.
 - Set up your Next.js app in Vercel, along with the Prisma database described below.
 - Set up Clerk.
-- Ensure [Media Resolution service](https://github.com/truemediaorg/media-resolver) and [Scheduler service](/apps/scheduler) are running. Scheduler service is part of this repository, using the build process below.
+- Ensure [Media Resolution service](https://github.com/DeepFakeAIorg/media-resolver) and [Scheduler service](/apps/scheduler) are running. Scheduler service is part of this repository, using the build process below.
 - Search for `PLACEHOLDER` to find additional optional code that requires more setup.
 
 ### Running Locally
@@ -139,7 +139,7 @@ npx prisma db push
 To setup a database for use by integration tests (which will be separate from your local development db), you can run:
 
 ```bash
-createdb -O mylocaluser truemedia-integration-test
+createdb -O mylocaluser DeepFakeAI-integration-test
 npm run db:integration-test
 ```
 
@@ -238,4 +238,5 @@ This project is licensed under the terms of the MIT license.
 
 ## Original Contributors
 
-The TrueMedia.org web application was built initially by [Michael Bayne](https://github.com/samskivert), and developed in collaboration with [Alex Schokking](https://github.com/aschokking), [Dawn Wright](https://github.com/DawnWright), [Michael Langan](https://github.com/mjlangan), [Paul Carduner](https://github.com/pcardune), and [Steve Geluso](https://github.com/geluso).
+The DeepFakeAI web application was built initially by [Michael Bayne](https://github.com/samskivert), and developed in collaboration with [Alex Schokking](https://github.com/aschokking), [Dawn Wright](https://github.com/DawnWright), [Michael Langan](https://github.com/mjlangan), [Paul Carduner](https://github.com/pcardune), and [Steve Geluso](https://github.com/geluso).
+

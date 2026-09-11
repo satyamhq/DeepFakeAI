@@ -91,7 +91,7 @@ u+.emailify .gs{background:#000;mix-blend-mode:screen;display:inline-block;paddi
 <!--[if mso | IE]>
 <table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td style="vertical-align:middle;width:536px;">
 <![endif]--><div class="h y" style="font-size:0;text-align:left;direction:ltr;display:inline-block;vertical-align:middle;width:100%;">
-<table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border:none;vertical-align:middle;" width="100%"><tbody><tr><td align="center" class="x" style="font-size:0;word-break:break-word;"><div style="text-align:center;"><p style="Margin:0;text-align:center;mso-line-height-alt:24px;mso-ansi-font-size:16px;"><span style="font-size:16px;font-family:'Inter','Arial',sans-serif;font-weight:400;color:#ffffff;line-height:150%;mso-line-height-alt:24px;mso-ansi-font-size:16px;">TrueMedia.org&rsquo;s human fact checkers reviewed your query. </span></p></div>
+<table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border:none;vertical-align:middle;" width="100%"><tbody><tr><td align="center" class="x" style="font-size:0;word-break:break-word;"><div style="text-align:center;"><p style="Margin:0;text-align:center;mso-line-height-alt:24px;mso-ansi-font-size:16px;"><span style="font-size:16px;font-family:'Inter','Arial',sans-serif;font-weight:400;color:#ffffff;line-height:150%;mso-line-height-alt:24px;mso-ansi-font-size:16px;">DeepFakeAI&rsquo;s human fact checkers reviewed your query. </span></p></div>
 </td></tr></tbody></table></div>
 <!--[if mso | IE]>
 </td></tr></table>
@@ -135,7 +135,7 @@ u+.emailify .gs{background:#000;mix-blend-mode:screen;display:inline-block;paddi
 <table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td style="vertical-align:middle;width:568px;">
 <![endif]--><div class="m y" style="font-size:0;text-align:left;direction:ltr;display:inline-block;vertical-align:middle;width:100%;">
 <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border:none;vertical-align:middle;" width="100%"><tbody><tr><td align="center" class="x" style="font-size:0;padding-bottom:7px;word-break:break-word;"><div style="text-align:center;"><p style="Margin:0;text-align:center;mso-line-height-alt:16px;mso-ansi-font-size:14px;"><span style="font-size:13px;font-family:'Inter','Arial',sans-serif;font-weight:400;color:#111928;line-height:123%;mso-line-height-alt:16px;mso-ansi-font-size:14px;">Questions or feedback? </span></p></div>
-</td></tr><tr><td align="center" class="x" style="font-size:0;padding-bottom:0;word-break:break-word;"><div style="text-align:center;"><p style="Margin:0;text-align:center;mso-line-height-alt:16px;mso-ansi-font-size:14px;"><span style="font-size:13px;font-family:'Inter','Arial',sans-serif;font-weight:400;color:#111928;line-height:123%;mso-line-height-alt:16px;mso-ansi-font-size:14px;">Contact@truemedia.org</span></p></div>
+</td></tr><tr><td align="center" class="x" style="font-size:0;padding-bottom:0;word-break:break-word;"><div style="text-align:center;"><p style="Margin:0;text-align:center;mso-line-height-alt:16px;mso-ansi-font-size:14px;"><span style="font-size:13px;font-family:'Inter','Arial',sans-serif;font-weight:400;color:#111928;line-height:123%;mso-line-height-alt:16px;mso-ansi-font-size:14px;">Contact@deepfakeai.org</span></p></div>
 </td></tr></tbody></table></div>
 <!--[if mso | IE]>
 </td></tr></table>
@@ -154,7 +154,7 @@ Human fact checkers have updated the detectors and changed the verdict
 
 Human fact checkers changed the verdict
 
-TrueMedia.org’s human fact checkers reviewed your query and determined that the detectors got it wrong.
+DeepFakeAI's human fact checkers reviewed your query and determined that the detectors got it wrong.
 
 Updated verdict
 ${newSummary}
@@ -164,4 +164,4 @@ Reason: ${comments}
 See the analysis ${landingPage}
 
 Questions or feedback?
-Contact@truemedia.org`
+Contact@deepfakeai.org`
