@@ -32,7 +32,12 @@ import { dark } from "@clerk/themes"
 import { SyncActiveOrganization } from "./components/SyncActiveOrganization"
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const clerkSession = clerkAuth()
+  let clerkSession: any = { userId: null, sessionClaims: null }
+  try {
+    clerkSession = clerkAuth()
+  } catch {
+    // Falls back to unauthenticated when in local development with mock keys
+  }
   return (
     <html lang="en" style={{ colorScheme: "dark" }}>
       <body className="dark bg-gray-900 flex flex-col min-h-svh">

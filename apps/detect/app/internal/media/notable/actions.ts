@@ -4,14 +4,19 @@ import { db } from "../../../server"
 import { TAKE_DEFAULT } from "../../ui"
 
 export async function getNotableMedia(skip = 0, take = TAKE_DEFAULT) {
-  const total = await db.notableMedia.count({ take })
-  const media = await db.notableMedia.findMany({
-    skip,
-    take,
-    orderBy: { created: "desc" },
-    include: { media: { include: { meta: true } } },
-  })
-  return { total, media }
+  try {
+    const total = await db.notableMedia.count({ take })
+    const media = await db.notableMedia.findMany({
+      skip,
+      take,
+      orderBy: { created: "desc" },
+      include: { media: { include: { meta: true } } },
+    })
+    return { total, media }
+  } catch (error) {
+    console.warn("Could not fetch notable media (database not connected):", error)
+    return { total: 0, media: [] }
+  }
 }
 
 export async function createNotableMedia(mediaId: string) {

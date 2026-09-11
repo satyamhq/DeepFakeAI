@@ -17,7 +17,12 @@ export default async function Page() {
 
   let isLoggedIn = false
 
-  const session = auth()
+  let session: any = { userId: null, sessionClaims: null }
+  try {
+    session = auth()
+  } catch {
+    // Falls back to unauthenticated when in local development with mock keys
+  }
   isLoggedIn = !!session.userId
   if (!isLoggedIn && doRedirect) {
     console.log(`redirecting to ${signInUrl}`)
