@@ -54,7 +54,7 @@ const VideoClickThrough = ({
     />
   ) : (
     <div className={`${mediaContainerStyles(backgroundColor)} ${cursor}`} onClick={() => setVideo(true)}>
-      <img className={mediaStyles(maxHeight)} src={thumbnailUrl(id)} />
+      <img className={mediaStyles(maxHeight)} src={url || thumbnailUrl(id)} />
       <FaPlay className="absolute drop-shadow-[0_4px_6px_rgba(0,0,0,0.5)]" size={40} />
     </div>
   )
@@ -115,7 +115,7 @@ const ShowMedia = forwardRef<MediaHandle, ShowMediaProps>(
       />
     ) : (
       <div className={mediaContainerStyles(backgroundColor)}>
-        <img className={mediaStyles(maxHeight)} src={thumbnailUrl(id)} ref={imageRef} onLoad={handleLoad} />
+        <img className={mediaStyles(maxHeight)} src={url || thumbnailUrl(id)} ref={imageRef} onLoad={handleLoad} />
         {analyses && dimensions && <ImageFaceMask dimensions={dimensions} analyses={analyses} />}
       </div>
     )

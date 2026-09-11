@@ -112,7 +112,7 @@ WHERE
       total: counts._all,
       queued: counts.resolveUrlJobId,
       resolved: counts.mediaId,
-      completed: Number(result.completed_items),
+      completed: Number(result?.completed_items ?? 0),
     },
     batchUpload: {
       createdAt: batchUpload?.createdAt.toISOString(),

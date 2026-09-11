@@ -6,6 +6,7 @@ import {
   Processor,
   RelevanceModelInfo,
   missingManipulationInfo,
+  mkResult,
 } from "../data/model"
 import { processors as aionProcessors, models as aionModels } from "./aion"
 import { processors as dftotalProcessors, models as dftotalModels } from "./dftotal"
@@ -33,6 +34,28 @@ import {
 } from "./openai"
 import { StarterId } from "../api/starters/types"
 
+const geminiProcessor: Processor<any> = {
+  id: "gemini-vision",
+  name: "Google Gemini Vision AI",
+  mediaType: "image",
+  maxPending: 0,
+  check: (res) => res?.error,
+  adapt: (res) => [mkResult("gemini-vision", res?.rank || "unknown", res?.score || 0)],
+  availability: "enabled",
+}
+
+const geminiModels: Record<string, ManipulationModelInfo> = {
+  "gemini-vision": {
+    type: "manipulation",
+    mediaType: "image",
+    manipulationCategory: "imagen",
+    processor: geminiProcessor,
+    name: "Gemini Generative Analysis",
+    descrip: "Analyzes image for AI synthesis artifacts, anatomical anomalies, and synthetic rendering indicators.",
+    policy: "trust",
+  },
+}
+
 export const processors: Record<string, Processor<any>> = {
   ...aionProcessors,
   ...dftotalProcessors,
@@ -42,6 +65,7 @@ export const processors: Record<string, Processor<any>> = {
   ...sensityProcessors,
   ...trueProcessors,
   ...openAiProcessors,
+  "gemini-vision": geminiProcessor,
 }
 
 export const getApplicableProcessors = (type: MediaType) =>
@@ -56,6 +80,7 @@ export const manipulationModels = {
   ...sensityManipulationModels,
   ...trueManipulationModels,
   ...openAiManipulationModels,
+  ...geminiModels,
 } as Record<string, ManipulationModelInfo>
 
 export const relevanceModels = {
@@ -101,6 +126,7 @@ export const externalManipulationModelIds: Record<ManipulationModelId, string> =
   ufd: "image19",
   "hive-image-facemap-v2": "image20",
   "hive-image-genai-v2": "image21",
+  "gemini-vision": "image22",
 
   // audio models
   "hive-audio": "audio1",

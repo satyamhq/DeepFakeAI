@@ -8,6 +8,7 @@ import { startAnalysisJob, getProcessorAllowlist } from "./actions"
 import { StarterId } from "../starters/types"
 import { internalIdForExternalId, processorsForModels } from "../../model-processors/all"
 import { isSchedulerConfigured } from "../../services/scheduler"
+import { runDetectionFallbackChain } from "../../services/detectionEngine"
 
 export const dynamic = "force-dynamic"
 
@@ -49,6 +50,7 @@ export async function GET(req: NextRequest) {
     info.tostart = info.tostart.filter((startable) => processorAllowlist.includes(startable.proc.id as StarterId))
   }
 
+  let scheduled = false
   if (media.schedulerMessageId == null) {
     if (isSchedulerConfigured()) {
       try {
@@ -64,17 +66,27 @@ export async function GET(req: NextRequest) {
           },
         })
         if (messageId) {
+          scheduled = true
           await db.media.update({ where: { id: mediaId }, data: { schedulerMessageId: messageId } })
         }
       } catch (err) {
-        console.error("Failed to schedule analysis job:", err)
+        console.warn("[start-analysis] Scheduler queueing failed, using direct detection engine:", err)
       }
-    } else {
-      console.warn("Scheduler is not configured (SCHEDULER_URL not set). Skipping async queueing.")
     }
   }
 
-  const pending = info.pending.length
+  // If scheduler is not running, run detection fallback chain directly
+  if (!scheduled && media.schedulerMessageId == null) {
+    try {
+      await runDetectionFallbackChain(mediaId)
+    } catch (err) {
+      console.warn("[start-analysis] Notice running detection fallback chain:", err)
+    }
+  }
+
+  const updatedResults = await db.analysisResult.findMany({ where: { mediaId } })
+  const updatedInfo = await checkResults(media, updatedResults, { includeIgnoredModels, apiAuthInfo })
+  const pending = updatedInfo.pending.length
   return response.make(200, {
     state: pending > 0 ? RequestState.PROCESSING : RequestState.COMPLETE,
     pending,
@@ -98,6 +110,7 @@ export async function POST(req: NextRequest) {
     const analysisResults = await db.analysisResult.findMany({ where: { mediaId } })
     const info = await checkResults(media, analysisResults, { includeIgnoredModels, apiAuthInfo })
 
+    let scheduled = false
     if (media.schedulerMessageId == null && isSchedulerConfigured()) {
       try {
         const messageId = await startAnalysisJob.schedule({
@@ -112,10 +125,19 @@ export async function POST(req: NextRequest) {
           },
         })
         if (messageId) {
+          scheduled = true
           await db.media.update({ where: { id: mediaId }, data: { schedulerMessageId: messageId } })
         }
       } catch (err) {
         console.error("Failed to schedule analysis job:", err)
+      }
+    }
+
+    if (!scheduled && media.schedulerMessageId == null) {
+      try {
+        await runDetectionFallbackChain(mediaId)
+      } catch (err) {
+        console.warn("[start-analysis] POST fallback chain error:", err)
       }
     }
 

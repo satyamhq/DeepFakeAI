@@ -130,6 +130,10 @@ function useUploadFileState() {
     setState({ type: "uploading", percentDone: 0 })
     try {
       const { id: mediaId, postUrl } = await uploadFileForAnalysis(targetFile, undefined, onPercentDoneChange)
+      // Kick off analysis immediately so processing begins right away
+      fetch(`/api/start-analysis?id=${encodeURIComponent(mediaId)}`).catch((err) => {
+        console.warn("[Upload] Non-blocking start-analysis trigger:", err)
+      })
       // redirect to analysis page for this id
       router.replace(analyzeUrl(mediaId, postUrl))
     } catch (e: any) {

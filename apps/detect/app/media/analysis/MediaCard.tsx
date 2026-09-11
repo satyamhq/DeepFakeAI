@@ -39,13 +39,17 @@ import SoftDeleteButton from "./SoftDeleteButton"
 import { gatherAnalysisCategories, shouldShowMisleadingLabel } from "./utils"
 import { Misleading } from "../../components/EvidenceLabels"
 
-const formatDate = (date: Date) =>
-  date.toLocaleDateString(undefined, {
+const formatDate = (date: Date | string | number | null | undefined) => {
+  if (!date) return "-"
+  const d = date instanceof Date ? date : new Date(date)
+  if (isNaN(d.getTime())) return "-"
+  return d.toLocaleDateString(undefined, {
     weekday: "short",
     month: "short",
     day: "numeric",
     year: "numeric",
   })
+}
 
 const downloadIcon = (Icon: IconType, filename: string, url: string) => (
   <Link target="_blank" rel="noopener noreferrer" locale={false} download={filename} href={url}>
@@ -167,7 +171,7 @@ export function MediaCard({
   const { debug } = useContext(DebugContext)
   const verdictResult = determineVerdict(media, ready, pending)
   const { showResults, experimentalVerdict, experimentalReasons } = verdictResult
-  const vinfo = verdicts[experimentalVerdict]
+  const vinfo = verdicts[experimentalVerdict] ?? verdicts.unknown
   const shouldShowVerifiedLabel = experimentalVerdict === "high" && isVerifiedLabelEnabled
 
   const unreadyProcessors = pending
@@ -196,7 +200,9 @@ export function MediaCard({
     </div>
   ) : undefined
   const mediaView = <MediaPreview media={media} progress={progress} header={header} />
-  const mediaReady = progress.result == "progress" && progress.total > 0 && progress.transferred == progress.total
+  const mediaReady =
+    (progress.result == "progress" && progress.total > 0 && progress.transferred == progress.total) ||
+    Boolean(media.mediaUrl && (media.mediaUrl.includes("supabase.co") || media.mediaUrl.startsWith("http")))
   const waiting = (msg: string) => <div className="text-slate-400">{msg}</div>
   const summary = showResults ? (
     <>

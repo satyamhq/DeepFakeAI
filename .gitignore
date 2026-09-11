@@ -26,6 +26,14 @@ node_modules
 !.env.example
 !*.env.example
 
+# secrets and credentials
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+
 # misc
 .DS_Store
 

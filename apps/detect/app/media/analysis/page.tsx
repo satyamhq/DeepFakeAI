@@ -40,8 +40,8 @@ export default async function Page({
 }: {
   searchParams: { id: string; post: string; recompute: string }
 }) {
-  const mediaId = searchParams.id
-  const postHash = searchParams.post
+  const mediaId = searchParams?.id || (searchParams as any)?.m
+  const postHash = searchParams?.post
   if (!mediaId) return <ErrorBox title="Unknown Media" message="Missing required media id parameter." />
 
   const media = await db.media.findUnique({
@@ -49,6 +49,22 @@ export default async function Page({
     include: { posts: true, meta: true },
   })
   if (!media) return <ErrorBox title="Unknown Media" message="Unable to find information for that media item." />
+
+  if (!media.posts || media.posts.length === 0) {
+    try {
+      const postRecord = await db.postMedia.findFirst({ where: { mediaId } })
+      media.posts = postRecord ? [postRecord] : []
+    } catch {
+      media.posts = []
+    }
+  }
+  if (!media.meta) {
+    try {
+      media.meta = await db.mediaMetadata.findUnique({ where: { mediaId } })
+    } catch {
+      media.meta = null
+    }
+  }
 
   // if this media has unknown size, fire off a request to find out how big it is
   if (media.size == 0) {

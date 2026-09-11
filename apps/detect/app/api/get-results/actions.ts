@@ -148,7 +148,7 @@ export async function startAnalyses(
   let processing = tostart.length
 
   let mediaUrl = progress.result == "progress" ? progress.url : undefined
-  let audioUrl = progress.result == "progress" ? progress.audioUrl : undefined
+  const audioUrl = progress.result == "progress" ? progress.audioUrl : undefined
 
   // Fallback for direct uploads or when external resolver is offline
   if (!mediaUrl && media.mediaUrl) {

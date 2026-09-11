@@ -4,30 +4,20 @@
  */
 
 import { createClient, SupabaseClient } from "@supabase/supabase-js"
+import { getServerSupabaseConfig } from "./config/env"
 
-const supabaseUrl =
-  process.env.SUPABASE_URL ||
-  process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  "https://acqqbhrwmxstfyatvrkw.supabase.co"
+const { url: supabaseUrl, key: supabaseKey } = getServerSupabaseConfig()
 
-const secretKey = process.env.SUPABASE_SECRET_KEY
-const publishableKey =
-  process.env.SUPABASE_PUBLISHABLE_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  "sb_publishable_4SvSuCnKmITNONcfub5d0w_SBuWewpG"
-
-// Use service role secret key if valid JWT, otherwise fallback to publishable key
-const supabaseKey =
-  secretKey && secretKey.startsWith("eyJ")
-    ? secretKey
-    : publishableKey
-
-export const supabaseAdmin: SupabaseClient = createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false,
-  },
-})
+export const supabaseAdmin: SupabaseClient = createClient(
+  supabaseUrl || "https://placeholder-project.supabase.co",
+  supabaseKey || "sb_placeholder_key",
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  }
+)
 
 /**
  * Uploads a file buffer directly to Supabase Storage with bucket fallback.
@@ -368,7 +358,17 @@ export const db: any = new Proxy(
         }
       }
       if (prop === "$queryRaw" || prop === "$executeRaw") {
-        return async () => []
+        return async (queryArg: any) => {
+          const qStr = typeof queryArg === "string" ? queryArg : Array.isArray(queryArg) ? queryArg.join("") : ""
+          if (
+            qStr.toLowerCase().includes("count") ||
+            qStr.toLowerCase().includes("completed_items") ||
+            qStr.toLowerCase().includes("waitseconds")
+          ) {
+            return [{ count: BigInt(0), completed_items: BigInt(0), waitSeconds: BigInt(0) }]
+          }
+          return []
+        }
       }
       if (prop === "$disconnect" || prop === "$connect") {
         return async () => {}

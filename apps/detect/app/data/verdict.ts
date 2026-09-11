@@ -58,6 +58,7 @@ export function stringToVerdict(ss: string): Verdict {
 /** Resolves cached results from a media record (`Media.results`) into an array of `ModelResult`.
  * @param skipIgnored if true (the default) ignored models will be omitted from the results. */
 export function resolveResults(type: MediaType, cached: CachedResults, skipIgnored = true): ModelResult[] {
+  if (!cached || typeof cached !== "object") return []
   const results: ModelResult[] = []
   for (const modelId of Object.keys(cached)) {
     const model = models[modelId as ModelId]
@@ -295,8 +296,8 @@ export function computeVerdict(
  * lacks cached results, `unknown` is returned. */
 export function mediaVerdict(media: Media & { meta: MediaMetadata | null }): VerdictResult {
   const type = mediaType(media.mimeType)
-  const cached = media.results as CachedResults
-  if (Object.keys(cached).length === 0) return unknownResult
+  const cached = (media.results as CachedResults) ?? {}
+  if (!cached || Object.keys(cached).length === 0) return unknownResult
   return computeVerdict(type, determineFake(media), media.verifiedSource, resolveResults(type, cached), [])
 }
 

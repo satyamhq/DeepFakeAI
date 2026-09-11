@@ -3,7 +3,7 @@ import { promises as fs } from "fs"
 import { NextRequest } from "next/server"
 
 import { db } from "../../server"
-import { JoinedMedia, mediaType, thumbnailUrl } from "../../data/media"
+import { JoinedMedia, mediaType } from "../../data/media"
 import { mediaVerdict } from "../../data/verdict"
 import { response } from "../util"
 import { addVerdictOverlay } from "./overlay"
@@ -51,14 +51,21 @@ export async function GET(req: NextRequest) {
     inputBuffer = file.buffer
   } else {
     // fetch the video/image thumbnail (if there is one)
-    try {
-      const imageResponse = await fetch(thumbnailUrl(mediaId))
-      if (imageResponse.ok) {
-        inputBuffer = await imageResponse.arrayBuffer()
+    const targetUrl =
+      (media as any)?.meta?.comments?.startsWith("storageUrl:")
+        ? (media as any).meta.comments.replace("storageUrl:", "")
+        : media.mediaUrl
+
+    if (targetUrl && (targetUrl.startsWith("http://") || targetUrl.startsWith("https://"))) {
+      try {
+        const imageResponse = await fetch(targetUrl)
+        if (imageResponse.ok) {
+          inputBuffer = await imageResponse.arrayBuffer()
+        }
+      } catch (error) {
+        console.error(`Error fetching thumbnail for mediaId=[${mediaId}], targetUrl=[${targetUrl}].`, error)
+        inputBuffer = null
       }
-    } catch (error) {
-      console.error(`Error fetching thumbnail: mediaId=[${mediaId}], thumbnail_url=[${thumbnailUrl(mediaId)}].`, error)
-      inputBuffer = null
     }
   }
 

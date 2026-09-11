@@ -45,6 +45,7 @@ function editRationale(rationale: string): string | undefined {
 
 /* Pick the best explanation that aligns with our verdict */
 export function determineExplanation(cached: CachedResults, verdict: Verdict): Explanation {
+  if (!cached || typeof cached !== "object") return { matchesVerdict: false, description: undefined, sourceUrl: undefined }
   const rationaleReverse = cached["reverse-search"] // images
   const rationaleTranscript = cached["transcript"] // audio
 

@@ -191,6 +191,8 @@ export type CachedResult = {
   frames?: Frame[]
   rationale?: string
   sourceUrl?: string
+  duration?: number
+  raw?: any
 }
 
 // use some TypeScript type magic to extract the optional properties from CachedResult
@@ -330,14 +332,14 @@ export function mkDuration(created: Date, completed: Date | null) {
 export type CachedResults = Record<string, CachedResult>
 
 export type GetResultsResponse =
-  | { state: typeof RequestState.PROCESSING; results: CachedResults; analysisTime: number; pending: string[] }
-  | { state: typeof RequestState.COMPLETE; results: CachedResults; rank: Rank; analysisTime: number }
+  | { state: typeof RequestState.PROCESSING; results: CachedResults; analysisTime: number; pending: string[]; errors?: string[] }
+  | { state: typeof RequestState.COMPLETE; results: CachedResults; rank?: Rank; verdict?: string; analysisTime: number; errors?: string[] }
   | { state: typeof RequestState.ERROR; errors: string[] }
 
 export const fetchResults = (mediaId: string, isAnon?: boolean): Promise<GetResultsResponse> => {
   const headers = isAnon ? { "anonymous-query": Math.floor(Math.random() * 100000).toString() } : undefined
   return fetchJson<GetResultsResponse>(
-    `/api/get-results?id=${mediaId}&source=truemedia`,
+    `/api/get-results?id=${encodeURIComponent(mediaId)}&source=truemedia`,
     { method: "GET", headers },
     (errmsg) => {
       // if our own backend returned a non-JSON error then some infrastructural component must be (hopefully temporarily)

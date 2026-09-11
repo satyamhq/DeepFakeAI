@@ -49,10 +49,6 @@ export function createPipedriveContactEnabled(): boolean {
   return process.env.CREATE_PIPEDRIVE_CONTACT === "true"
 }
 
-export function clerkOrgCreatedWebhookSecret(): string {
-  return process.env.CLERK_ORG_CREATED_WEBHOOK_SECRET ?? ""
-}
-
 export function isGroundTruthUpdateEmailsEnabled(): boolean {
   return process.env.GROUND_TRUTH_UPDATE_EMAILS_ENABLED === "true"
 }

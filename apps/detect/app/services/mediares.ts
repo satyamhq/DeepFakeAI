@@ -46,7 +46,18 @@ const noAudioError = "Video has no audio track"
 // TODO: remove this once mediares is updated
 const oldNoAudioError = "Unknown media file"
 
-export async function fetchMediaProgress(media: Pick<Media, "id" | "audioId" | "size">): Promise<FetchProgress> {
+export async function fetchMediaProgress(media: Pick<Media, "id" | "audioId" | "size"> & { mediaUrl?: string }): Promise<FetchProgress> {
+  const currentUrl = (media as any).mediaUrl
+  if (currentUrl && (currentUrl.includes("supabase.co") || currentUrl.includes("uploads") || currentUrl.startsWith("http://") || currentUrl.startsWith("https://"))) {
+    return {
+      result: "progress",
+      url: currentUrl,
+      size: media.size > 0 ? media.size : 1,
+      total: media.size > 0 ? media.size : 1,
+      transferred: media.size > 0 ? media.size : 1,
+    }
+  }
+
   try {
     console.log(`Fetching download status: ${media.id} (audio: ${media.audioId})`)
     const ids = [media.id]
@@ -90,6 +101,15 @@ export async function fetchMediaProgress(media: Pick<Media, "id" | "audioId" | "
     return res
   } catch (err: any) {
     console.warn(`[mediares] fetchMediaProgress notice for ${media.id}:`, err?.message || err)
+    if ((media as any).mediaUrl) {
+      return {
+        result: "progress",
+        url: (media as any).mediaUrl,
+        size: media.size > 0 ? media.size : 1,
+        total: media.size > 0 ? media.size : 1,
+        transferred: media.size > 0 ? media.size : 1,
+      }
+    }
     return { result: "failure", reason: err?.message || "Media resolver service unavailable" }
   }
 }

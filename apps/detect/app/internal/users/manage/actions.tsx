@@ -1,7 +1,6 @@
 "use server"
 
 import { createPipedriveContactEnabled, db } from "../../../server"
-import { Prisma } from "../../../types/db"
 import { clerkClient, currentUser } from "../../../mockClerkServer"
 
 type ErrorCase = {

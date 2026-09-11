@@ -10,6 +10,7 @@ import { ANONYMOUS_USER_ID } from "../../../instrumentation"
 import { QueuePriority } from "@truemedia/scheduler/schemas"
 import { startAnalysisJob } from "../start-analysis/actions"
 import { StarterId } from "../starters/types"
+import { runDetectionFallbackChain } from "../../services/detectionEngine"
 
 export const dynamic = "force-dynamic"
 
@@ -74,22 +75,45 @@ export async function GET(req: NextRequest) {
 
   // Check whether we can start analyses (are not throttled) before proceeding to start them
   if (canStartNewAnalyses && (await canStartAnalysis(userType, userId)) && media.schedulerMessageId == null) {
-    const messageId = await startAnalysisJob.schedule({
-      priority,
-      json: {
-        userId,
-        mediaId: media.id,
+    let scheduled = false
+    try {
+      const messageId = await startAnalysisJob.schedule({
         priority,
-        includeIgnoredModels,
-        processorAllowlist: procs.length == 0 ? undefined : (procs as StarterId[]),
-        apiAuthInfo,
-      },
-    })
-    media = await db.media.update({
-      where: { id: mediaId },
-      data: { schedulerMessageId: messageId },
-      include: { meta: true },
-    })
+        json: {
+          userId,
+          mediaId: media.id,
+          priority,
+          includeIgnoredModels,
+          processorAllowlist: procs.length == 0 ? undefined : (procs as StarterId[]),
+          apiAuthInfo,
+        },
+      })
+      if (messageId) {
+        scheduled = true
+        media = await db.media.update({
+          where: { id: mediaId },
+          data: { schedulerMessageId: messageId },
+          include: { meta: true },
+        })
+      }
+    } catch (schedErr) {
+      console.warn("[get-results] Scheduler offline, falling back to direct detection engine:", schedErr)
+    }
+
+    // Direct in-process fallback chain when scheduler is offline or not running
+    if (!scheduled && Object.keys(info.cached || {}).length === 0) {
+      try {
+        const fallbackRes = await runDetectionFallbackChain(mediaId)
+        if (fallbackRes.success) {
+          info.cached = fallbackRes.cachedResults
+        } else if (fallbackRes.error) {
+          info.errors.push(fallbackRes.error)
+        }
+      } catch (err: any) {
+        console.warn("[get-results] Detection fallback chain notice:", err?.message || err)
+        info.errors.push("AI detection is temporarily unavailable. Please try again later.")
+      }
+    }
   }
 
   if (
@@ -114,8 +138,14 @@ export async function GET(req: NextRequest) {
       pending: anonymize ? undefined : pending,
     })
   else if (Object.keys(cached).length == 0 && media.schedulerMessageId == null) {
-    console.warn("Unexpected empty cache. Errors: ", errors)
-    return makeError(500, errors)
+    console.warn("No detection results available. Errors:", errors)
+    return response.make(200, {
+      state: RequestState.COMPLETE,
+      results: {},
+      verdict: "unknown",
+      analysisTime: 0,
+      errors: errors.length > 0 ? errors : ["AI detection is temporarily unavailable. Please try again later."],
+    })
   } else {
     const verdict = determineVerdict(media, results, pending).experimentalVerdict
     return response.make(200, { state: RequestState.COMPLETE, results: cached, verdict, analysisTime })

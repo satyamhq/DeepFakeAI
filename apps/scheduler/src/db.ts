@@ -10,7 +10,7 @@ import { QueueMessage, QueueMessageStatus } from "./dbTypes"
 const supabaseUrl =
   process.env.SUPABASE_URL ||
   process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  "https://acqqbhrwmxstfyatvrkw.supabase.co"
+  "https://placeholder-project.supabase.co"
 
 const supabaseKey =
   process.env.SUPABASE_SECRET_KEY ||
@@ -18,7 +18,7 @@ const supabaseKey =
   process.env.SUPABASE_SERVICE_KEY ||
   process.env.SUPABASE_PUBLISHABLE_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  "sb_publishable_4SvSuCnKmITNONcfub5d0w_SBuWewpG"
+  "sb_placeholder_key"
 
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey, {
   auth: {

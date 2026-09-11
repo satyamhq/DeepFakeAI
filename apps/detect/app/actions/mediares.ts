@@ -2,7 +2,7 @@
 import { Media } from "../types/db"
 import * as mediares from "../services/mediares"
 
-export async function fetchMediaProgress(media: Pick<Media, "id" | "audioId" | "size">) {
+export async function fetchMediaProgress(media: Pick<Media, "id" | "audioId" | "size"> & { mediaUrl?: string }) {
   try {
     return await mediares.fetchMediaProgress(media)
   } catch (err: any) {

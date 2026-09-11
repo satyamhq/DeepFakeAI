@@ -61,7 +61,7 @@ export function determineSource(media: Media): MediaSource {
   if (mediaUrl.includes("tiktokcdn.com")) return "tiktok"
   if (mediaUrl.includes("twimg.com")) return "twitter"
   if (mediaUrl.includes("googlevideo.com")) return "youtube"
-  if (mediaUrl.startsWith(FILE_UPLOAD_PSEUDO_URL_BASE)) return "upload"
+  if (mediaUrl.startsWith(FILE_UPLOAD_PSEUDO_URL_BASE) || mediaUrl.includes("/storage/v1/object/") || mediaUrl.includes("supabase.co")) return "upload"
   return "other"
 }
 
@@ -121,12 +121,8 @@ export function mkTrack(mimeType: string, id: string, file: string, url: string)
   return { type: mediaType(mimeType), mimeType, id, file, url }
 }
 
-const THUMBNAIL_BUCKET_BASE = "<OPEN-TODO-PLACEHOLDER>.amazonaws.com/"
-
 export function thumbnailUrl(mediaId: string) {
-  const didx = mediaId.lastIndexOf(".")
-  const baseMediaId = didx >= 0 ? mediaId.substring(0, didx) : mediaId
-  return `${THUMBNAIL_BUCKET_BASE}${baseMediaId}`
+  return `/api/thumbnail-overlay?mediaId=${encodeURIComponent(mediaId)}`
 }
 
 export function sizeLabel(size: number): string {
@@ -144,10 +140,16 @@ export function durationLabel(seconds: number) {
 }
 
 export function fileExt(media: { mediaUrl: string; mimeType: string }): string {
-  const url = new URL(media.mediaUrl)
-  const path = url.pathname
-  const ldidx = path.lastIndexOf(".")
-  if (ldidx >= 0) return path.substring(ldidx)
+  try {
+    const url = new URL(media.mediaUrl)
+    const path = url.pathname
+    const ldidx = path.lastIndexOf(".")
+    if (ldidx >= 0) return path.substring(ldidx)
+  } catch {
+    // If not a full URL, fallback to path parsing
+    const ldidx = media.mediaUrl.lastIndexOf(".")
+    if (ldidx >= 0) return media.mediaUrl.substring(ldidx)
+  }
   const parts = media.mimeType.split(";")[0].split("/")
   return `.${parts.length > 1 ? parts[1] : "unknown"}`
 }
@@ -157,5 +159,5 @@ export function hashUrl(url: string): string {
 }
 
 export function analyzeUrl(mediaId: string, postUrl: string): string {
-  return `/media/analysis?id=${mediaId}&post=${hashUrl(postUrl)}`
+  return `/media/analysis?id=${encodeURIComponent(mediaId)}&post=${encodeURIComponent(hashUrl(postUrl))}`
 }

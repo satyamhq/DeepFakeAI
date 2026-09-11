@@ -28,6 +28,7 @@ import { getRoleByUser } from "../../auth"
 import { compareCategories, gatherAnalysisCategories } from "./utils"
 import { fetchMediaProgress } from "../../actions/mediares"
 import Insights from "./insights/Insights"
+import ErrorBoundary from "../../components/ErrorBoundary"
 
 export type FeedbackWithUser = Prisma.UserFeedbackGetPayload<{ include: { user: true } }>
 
@@ -108,28 +109,31 @@ export default function ResultsPage({
   const pending: string[] = []
   const errmsgs: string[] = []
 
-  let cached = media.results as CachedResults
-  let longest = media.analysisTime
+  let cached: CachedResults = (media.results as CachedResults) || {}
+  let longest = media.analysisTime || 0
   let loading = false
   const query = useQuery({
     queryKey: ["fetch-results", media.id],
     queryFn: () => fetchResults(media.id, role.id === ""),
     refetchInterval: (query) => (isDone(query.state.data?.state) ? false : POLLING_INTERVAL),
-    enabled: ignoreCache || Object.keys(cached).length == 0,
+    enabled: ignoreCache || (cached ? Object.keys(cached).length === 0 : true),
   })
   if (query.isLoading) loading = true
   else if (query.isError) errmsgs.push(query.error.message)
-  else if (query.isSuccess) {
+  else if (query.isSuccess && query.data) {
     switch (query.data.state) {
       case RequestState.ERROR:
-        errmsgs.push(...query.data.errors)
+        if (query.data.errors) errmsgs.push(...query.data.errors)
         break
       case RequestState.PROCESSING:
-        pending.push(...query.data.pending)
+        if (query.data.pending) pending.push(...query.data.pending)
       // fall through and add results
       case RequestState.COMPLETE:
-        cached = query.data.results
-        longest = query.data.analysisTime
+        if (query.data.results) cached = query.data.results
+        longest = query.data.analysisTime ?? longest
+        if (query.data.errors && Object.keys(cached || {}).length === 0) {
+          errmsgs.push(...query.data.errors)
+        }
         break
     }
   }
@@ -176,53 +180,59 @@ export default function ResultsPage({
     ) : loading ? (
       <div className="pt-5 text-slate-500 text-center">Loading results...</div>
     ) : analysisSections.length == 0 ? (
-      <div className="pt-5 text-slate-500 text-center">No AI analysis detected evidence of manipulation.</div>
+      <div className="pt-5 text-slate-500 text-center">
+        {ready.length === 0
+          ? "AI detection is temporarily unavailable. Please try again later."
+          : "No AI analysis detected evidence of manipulation."}
+      </div>
     ) : undefined
 
   const progress = useResolveMedia(media)
   return (
-    <div className="w-full flex flex-col gap-y-14 divide-y divide-slate-600">
-      <MediaCard
-        media={media}
-        progress={progress}
-        postUrl={postUrl}
-        ready={ready}
-        pending={pending}
-        currentUserFeedback={currentUserFeedback}
-        isVerifiedLabelEnabled={isVerifiedLabelEnabled}
-      />
-      {debug && role.canEditMetadata && <MetadataEditorOpener media={media} />}
-      {debug && role.internal && feedback.length > 0 && (
+    <ErrorBoundary title="Analysis Results Unavailable">
+      <div className="w-full flex flex-col gap-y-14 divide-y divide-slate-600">
+        <MediaCard
+          media={media}
+          progress={progress}
+          postUrl={postUrl}
+          ready={ready}
+          pending={pending}
+          currentUserFeedback={currentUserFeedback}
+          isVerifiedLabelEnabled={isVerifiedLabelEnabled}
+        />
+        {debug && role.canEditMetadata && <MetadataEditorOpener media={media} />}
+        {debug && role.internal && feedback.length > 0 && (
+          <div>
+            <div className="flex flex-row gap-2 items-center text-3xl mt-5 mb-5">
+              <VscFeedback />
+              User Feedback
+            </div>
+            <FeedbackTable feedback={feedback} />
+          </div>
+        )}
+
+        <Insights media={media} cached={cached} ready={ready} pending={pending} />
+
+        {analysisSections}
+        {details}
         <div>
           <div className="flex flex-row gap-2 items-center text-3xl mt-5 mb-5">
-            <VscFeedback />
-            User Feedback
+            <FiInfo />
+            Details
           </div>
-          <FeedbackTable feedback={feedback} />
-        </div>
-      )}
-
-      <Insights media={media} cached={cached} ready={ready} pending={pending} />
-
-      {analysisSections}
-      {details}
-      <div>
-        <div className="flex flex-row gap-2 items-center text-3xl mt-5 mb-5">
-          <FiInfo />
-          Details
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-y-5 md:gap-x-5">
-          <MediaDetailsCard
-            media={media}
-            ready={ready}
-            pending={pending}
-            longest={longest}
-            verifiedSource={verifiedSource}
-            postUrl={postUrl}
-            hasUserQueried={hasUserQueried}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-y-5 md:gap-x-5">
+            <MediaDetailsCard
+              media={media}
+              ready={ready}
+              pending={pending}
+              longest={longest}
+              verifiedSource={verifiedSource}
+              postUrl={postUrl}
+              hasUserQueried={hasUserQueried}
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </ErrorBoundary>
   )
 }

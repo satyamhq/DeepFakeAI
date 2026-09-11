@@ -163,12 +163,15 @@ export async function saveUploadedFile({
     const audioId = isVideo ? resuffix(id, ".mp3") : null
     const audioMimeType = isVideo ? "audio/mp3" : null
 
+    // Use real Supabase Storage public URL if available, otherwise pseudoUrl
+    const finalMediaUrl = storageUrl || pseudoUrl
+
     // Create or update media record in Supabase
     try {
       await db.media.create({
         data: {
           id,
-          mediaUrl: pseudoUrl,
+          mediaUrl: finalMediaUrl,
           mimeType,
           size: size > 0 ? size : 1,
           audioId,
@@ -192,7 +195,7 @@ export async function saveUploadedFile({
     let postMedia: any = null
     try {
       postMedia = await db.postMedia.create({
-        data: { postUrl: pseudoUrl, mediaId: id },
+        data: { postUrl: finalMediaUrl, mediaId: id },
         include: { media: { include: { meta: true } } },
       })
     } catch (e: any) {

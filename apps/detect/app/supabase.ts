@@ -1,17 +1,24 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "https://acqqbhrwmxstfyatvrkw.supabase.co";
-const supabaseKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_4SvSuCnKmITNONcfub5d0w_SBuWewpG";
+const supabaseUrl =
+  process.env.SUPABASE_URL ||
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  "https://placeholder-project.supabase.co"
+const supabaseKey =
+  process.env.SUPABASE_SECRET_KEY ||
+  process.env.SUPABASE_PUBLISHABLE_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  "sb_placeholder_key"
 
 /**
- * Standard Supabase client for server and client data operations.
+ * Standard Supabase client for data operations.
  */
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: false,
     autoRefreshToken: false,
   },
-});
+})
 
 /**
  * Helper to fetch notable media from Supabase table or return empty array if unpopulated.

@@ -18,11 +18,11 @@
         "NEXT_PUBLIC_SUPABASE_ANON_KEY",
         "RENDER_EXTERNAL_URL",
         "POSTMARK_TOKEN",
+        "AIORNOT_API_KEY",
         "AION_API_KEY",
         "REALITY_API_KEY",
         "SENSITY_API_TOKEN",
         "SUPABASE_STORAGE_BUCKET",
-        "GITHUB_REPO_CLONE_TOKEN",
         "GEMINI_API_KEY",
         "HIVE_ACCESS_KEY_ID",
         "HIVE_SECRET_KEY",
@@ -32,6 +32,9 @@
         "VETRIC_API_KEY",
         "MICROSOFT_API_KEY",
         "SENTRY_AUTH_TOKEN",
+        "SENTRY_ORG",
+        "SENTRY_PROJECT",
+        "ENABLE_SENTRY_BUILD_UPLOAD",
         "LOCCUS_API_KEY",
         "SLACK_TOKEN",
         "TWITTER_CONSUMER_KEY",
@@ -42,7 +45,9 @@
         "GROUND_TRUTH_UPDATE_EMAILS_ENABLED",
         "SCHEDULER_SHARED_AUTH_SECRET",
         "SCHEDULER_URL",
-        "VERIFIED_LABEL_ENABLED"
+        "MEDIA_RESOLVER_URL",
+        "VERIFIED_LABEL_ENABLED",
+        "CREATE_PIPEDRIVE_CONTACT"
       ]
     },
     "dev": {

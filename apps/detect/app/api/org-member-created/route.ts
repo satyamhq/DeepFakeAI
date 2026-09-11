@@ -1,7 +1,6 @@
 import { NextRequest } from "next/server"
 import { Webhook } from "svix"
 
-import { clerkOrgCreatedWebhookSecret } from "../../server"
 import { response } from "../util"
 import attributeUserQueriesToOrg from "./actions"
 
@@ -22,12 +21,17 @@ type OrgMemberCreatedMessage = {
 export const dynamic = "force-dynamic"
 
 export async function POST(req: NextRequest) {
+  const secret = process.env.CLERK_ORG_CREATED_WEBHOOK_SECRET
+  if (!secret) {
+    return response.make(200, "Webhook secret not configured, skipped")
+  }
+
   const svix_id = req.headers.get("svix-id") ?? ""
   const svix_timestamp = req.headers.get("svix-timestamp") ?? ""
   const svix_signature = req.headers.get("svix-signature") ?? ""
 
   const body = await req.text()
-  const sivx = new Webhook(clerkOrgCreatedWebhookSecret())
+  const sivx = new Webhook(secret)
 
   let msg: OrgMemberCreatedMessage
   try {

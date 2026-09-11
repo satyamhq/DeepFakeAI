@@ -60,10 +60,10 @@ export default async function ThrottlePage() {
 
         {table(
           recentBuckets,
-          (entry) => entry.windowStart.toISOString(),
+          (entry) => new Date(entry.windowStart).toISOString(),
           ["Window start", "User Type", "Media count", "Was throttled"],
           [
-            (entry) => <div>{entry.windowStart.toLocaleString()}</div>,
+            (entry) => <div>{new Date(entry.windowStart).toLocaleString()}</div>,
             (entry) => <div>{entry.userType}</div>,
             (entry) => <div>{entry.count}</div>,
             (entry) => {
