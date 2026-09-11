@@ -1,12 +1,15 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
   reactStrictMode: true,
+  experimental: {
+    serverComponentsExternalPackages: ["@opentelemetry/instrumentation", "swagger-jsdoc"],
+  },
   images: {
     domains: ["lh3.googleusercontent.com"],
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "OPEN-TODO-PLACEHOLDER.public.blob.vercel-storage.com",
+        hostname: "*.supabase.co",
         port: "",
       },
     ],
@@ -20,6 +23,7 @@ module.exports = {
     const path = require("path")
     const mockClerkPath = path.resolve(__dirname, "app/mockClerk.tsx")
     const mockClerkServerPath = path.resolve(__dirname, "app/mockClerkServer.ts")
+    const dbTypesPath = path.resolve(__dirname, "app/types/db.ts")
     config.resolve.alias = {
       ...config.resolve.alias,
       "@clerk/nextjs/server$": mockClerkServerPath,
@@ -28,6 +32,8 @@ module.exports = {
       "@clerk/nextjs": mockClerkPath,
       "@clerk/clerk-react$": mockClerkPath,
       "@clerk/clerk-react": mockClerkPath,
+      "@prisma/client$": dbTypesPath,
+      "@prisma/client": dbTypesPath,
     }
 
     config.module.rules.push({

@@ -1,4 +1,4 @@
-import { Media, MediaMetadata, Trulean, YesNoReview } from "@prisma/client"
+import { Media, MediaMetadata, Trulean, YesNoReview } from "../types/db"
 import { MediaSource, MediaType, mediaType, determineSource } from "../data/media"
 import { determineFake } from "../data/groundTruth"
 import { ModelResult, CachedResults, toRank, mkResult } from "../data/model"
@@ -131,7 +131,7 @@ export function summarizeMedia(media: MediaAndMeta): MediaSummary | undefined {
   const experimental = determineRelevance(type, mresults, []).experimentalReasons
   const res: MediaSummary = {
     id: media.id,
-    audioId: media.audioId,
+    audioId: media.audioId ?? null,
     type,
     source: determineSource(media),
     mediaUrl: media.mediaUrl,

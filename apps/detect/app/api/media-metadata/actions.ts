@@ -1,4 +1,4 @@
-import { Media, MediaMetadata } from "@prisma/client"
+import { Media, MediaMetadata } from "../../types/db"
 import { db, isGroundTruthUpdateEmailsEnabled } from "../../server"
 import { UpdateMetadataRequest } from "./route"
 import { sendEmail } from "../email"
@@ -18,14 +18,14 @@ export async function notifyUsersGroundTruthUpdate(mediaId: string, newSummary: 
 
   const emails = (
     await db.query.findMany({ where: { postUrl: postMedia?.postUrl, isDeleted: false }, select: { user: true } })
-  ).map((query) => query.user.email)
+  ).map((query: { user: { email?: string | null } }) => query.user?.email)
 
   const comments =
     media?.meta?.comments && media.meta.comments.length > 0
       ? media.meta.comments
       : "Our team of analysts researched this media item."
 
-  emails.forEach((email) => {
+  emails.forEach((email: string | null | undefined) => {
     if (!email) return
     const landingPage = `${siteUrl}/media/analysis?id=${mediaId}`
     const imagePreviewUrl = `${siteUrl}/api/thumbnail-overlay?mediaId=${mediaId}`

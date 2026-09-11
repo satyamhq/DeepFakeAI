@@ -1,5 +1,3 @@
-import { UserResource } from "@clerk/types"
-
 // friends can view internal pages, but can't change anything
 const friends: string[] = []
 

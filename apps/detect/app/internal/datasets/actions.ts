@@ -1,6 +1,6 @@
 "use server"
 
-import { Dataset, DatasetGroup } from "@prisma/client"
+import { Dataset, DatasetGroup } from "../../types/db"
 import { db, getServerRole } from "../../server"
 
 type ErrorCase = { type: "error"; message: string }

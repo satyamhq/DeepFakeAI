@@ -18,7 +18,7 @@ export default async function Page({ searchParams }: { searchParams: { offset: s
       <h1 className="text-4xl font-bold">Notable Deepfakes</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-        {media.map((mediaItem) => (
+        {media.map((mediaItem: any) => (
           <NotableMediaCard key={mediaItem.media.id} media={mediaItem} />
         ))}
       </div>

@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Media, PostMedia } from "@prisma/client"
+import { Media, PostMedia } from "../../types/db"
 
 import { EvidenceLabel } from "../../components/EvidenceLabels"
 import { DayMonthLabel } from "../../components/DateLabel"

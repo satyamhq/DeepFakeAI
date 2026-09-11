@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Badge, Button, Card } from "flowbite-react"
 import { FiInfo } from "react-icons/fi"
 import { VscFeedback } from "react-icons/vsc"
-import { RequestState, Prisma, VerifiedSource } from "@prisma/client"
+import { RequestState, Prisma, VerifiedSource } from "../../types/db"
 import { JoinedMedia, mediaType } from "../../data/media"
 import {
   ManipulationCategory,

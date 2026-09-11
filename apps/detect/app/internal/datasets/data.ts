@@ -1,4 +1,4 @@
-import { Dataset } from "@prisma/client"
+import { Dataset } from "../../types/db"
 import { db } from "../../server"
 
 export const internalUserId = "internal-user"

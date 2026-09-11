@@ -4,7 +4,7 @@ import Link from "next/link"
 import { ArrowRightIcon } from "../../components/icons"
 import UserHistoryList from "./UserHistoryList"
 import { getUserHistory, UserQuery } from "./actions"
-import { useOrganization, useUser } from "@clerk/nextjs"
+import { useOrganization, useUser } from "../../mockClerk"
 import { Spinner } from "flowbite-react"
 import { useEffect, useState } from "react"
 

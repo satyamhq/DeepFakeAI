@@ -1,4 +1,4 @@
-import { NotableMedia } from "@prisma/client"
+import { NotableMedia } from "../../types/db"
 import { Button, Card } from "flowbite-react"
 import { ArrowRightIcon, ImageIcon, MicrophoneIcon, QuestionMarkIcon, VideoCameraIcon } from "../../components/icons"
 import {
@@ -42,17 +42,17 @@ export default function NotableMediaCard({ media }: { media: NotableMedia }) {
         <div className="flex">
           <div className="flex-1 text-lg font-semibold">{media.title}</div>
           <div className="flex-initial justify-end ml-2">
-            <span className="text-gray-400">{mediaTypeIcon[media.mediaType]}</span>
+            <span className="text-gray-400">{media.mediaType ? (mediaTypeIcon as any)[media.mediaType] : null}</span>
           </div>
         </div>
 
         <div className="relative">
-          <img src={media.imagePreviewUrl} />
+          <img src={media.imagePreviewUrl || media.previewUrl || ""} />
         </div>
 
         <p className="text-gray-300 mb-8">{media.description}</p>
 
-        {media.appearedIn === "UNKNOWN" ? (
+        {media.appearedIn === "UNKNOWN" || !media.appearedIn ? (
           <div className="flex justify-end">
             <Link prefetch={false} href={"/media/analysis?id=" + media.mediaId}>
               <Button color="gray" className="">
@@ -67,7 +67,7 @@ export default function NotableMediaCard({ media }: { media: NotableMedia }) {
           <div className="grid grid-cols-2">
             <div className="text-gray-400">
               Appeared in
-              <span className="text-gray-400">{mediaSourceIcons[media.appearedIn]}</span>
+              <span className="text-gray-400">{(mediaSourceIcons as any)[media.appearedIn]}</span>
             </div>
             <div className="ml-1 justify-end">
               <Link prefetch={false} href={"/media/analysis?id=" + media.mediaId}>

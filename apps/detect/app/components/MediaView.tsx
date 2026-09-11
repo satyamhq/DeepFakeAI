@@ -1,6 +1,6 @@
 "use client"
 
-import { Media, AnalysisResult } from "@prisma/client"
+import { Media, AnalysisResult } from "../types/db"
 import { useQuery } from "@tanstack/react-query"
 import { type SingleProgress } from "../services/mediares"
 import MediaPreview from "./MediaPreview"

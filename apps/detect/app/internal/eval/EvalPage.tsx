@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Card, Tabs } from "flowbite-react"
-import { Dataset } from "@prisma/client"
+import { Dataset } from "../../types/db"
 import { MediaType, MediaSource } from "../../data/media"
 import { Filter } from "../filter"
 import { MediaSummary, DateRange, rangeMatches } from "../summarize"

@@ -1,5 +1,5 @@
 import { clerkClient } from "../../mockClerk"
-import { Trulean } from "@prisma/client"
+import { Trulean } from "../../types/db"
 import { db, getServerRole } from "../../server"
 import { PostMediaWithMeta, QueriesWithUser, UserQuery } from "./actions"
 import { mediaVerdict, resolveResults, Verdict, VerdictResult } from "../../data/verdict"
@@ -171,7 +171,7 @@ export async function buildLookupTables(orgId: string | undefined | null, allOrg
   })
 
   // Create a lookup table to lookup a list of all Media associated with each post url
-  const postUrlToPostMedia = postMedias.reduce((all: Record<string, PostMediaWithMeta[]>, postMedia) => {
+  const postUrlToPostMedia = postMedias.reduce((all: Record<string, PostMediaWithMeta[]>, postMedia: any) => {
     if (!all[postMedia.postUrl]) {
       all[postMedia.postUrl] = []
     }

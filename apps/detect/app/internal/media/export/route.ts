@@ -9,7 +9,7 @@ import { MediaJoinResult, searchMedia, urlSearchParamsToSearchParams } from "../
 import { mediaVerdict } from "../../../data/verdict"
 import { MediaSummary, summarize } from "../../summarize"
 import { determineFake, fakeLabels } from "../../../data/groundTruth"
-import { Trulean } from "@prisma/client"
+import { Trulean } from "../../../types/db"
 import { sortScoresColumnHeaders } from "./util"
 
 export const dynamic = "force-dynamic"

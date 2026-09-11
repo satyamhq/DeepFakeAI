@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server"
-import { Prisma } from "@prisma/client"
+import { Prisma } from "../../types/db"
 import { db, getRoleByUserId } from "../../server"
 import { FaceApiResponse } from "../../model-processors/sensity"
 import { HiveApiResponse } from "../../model-processors/hive"
@@ -25,7 +25,7 @@ async function backfillMediaSource() {
     json: string
   }
 
-  const rowsToUpdate = await db.$queryRaw<MediaIdAndJson[]>(
+  const rowsToUpdate: MediaIdAndJson[] = await (db as any).$queryRaw(
     Prisma.sql`select m.id, pmd.post_url, pmd.json
         from media m
         left join post_media pm on m.id = pm.media_id

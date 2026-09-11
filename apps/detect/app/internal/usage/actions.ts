@@ -1,5 +1,5 @@
-import { clerkClient, User } from "@clerk/nextjs/server"
-import { Media } from "@prisma/client"
+import { clerkClient, User } from "../../mockClerkServer"
+import { Media } from "../../types/db"
 import { db } from "../../server"
 import { hasBeenReviewed } from "../../data/groundTruth"
 

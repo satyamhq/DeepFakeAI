@@ -1,5 +1,5 @@
-import type { ApiKey } from "@prisma/client"
-import type { User as ClerkUser } from "@clerk/nextjs/server"
+import type { ApiKey } from "../../types/db"
+import type { User as ClerkUser } from "../../mockClerkServer"
 
 export type ApiKeyWithCounts = ApiKey & { _count: { media: number; queries: number; analysisResults: number } }
 

@@ -3,7 +3,7 @@ import { IconType } from "react-icons"
 import { AiOutlineAudio } from "react-icons/ai"
 import { FaRegCheckCircle, FaRegImage } from "react-icons/fa"
 import { FiVideo } from "react-icons/fi"
-import { Media, MediaMetadata } from "@prisma/client"
+import { Media, MediaMetadata } from "../types/db"
 import { FILE_UPLOAD_PSEUDO_URL_BASE } from "../media/upload/util"
 
 export type MediaType = "video" | "audio" | "image" | "unknown"

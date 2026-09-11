@@ -1,9 +1,12 @@
 "use client"
 
 import { FileInput } from "flowbite-react"
-import type { PutBlobResult } from "@vercel/blob"
 import { Dispatch, SetStateAction, useRef } from "react"
 import { FORM_ERROR, FORM_IMAGE_UPLOADED, FORM_UPLOADING, FormState } from "./NotableMediaEditor"
+
+type PutBlobResult = {
+  url: string
+}
 
 type Props = {
   onPreviewImageUploaded: (url: string) => void

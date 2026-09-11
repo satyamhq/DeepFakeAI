@@ -1,7 +1,7 @@
 "use client"
 
 import { RefObject } from "react"
-import { AnalysisResult } from "@prisma/client"
+import { AnalysisResult } from "../types/db"
 import VideoFaceMask from "./face-bounding-boxes/VideoFaceMask"
 import { thumbnailUrl } from "../data/media"
 import { mediaContainerStyles, mediaStyles } from "./ShowMedia"

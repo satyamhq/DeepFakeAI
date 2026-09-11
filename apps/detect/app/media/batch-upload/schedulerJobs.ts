@@ -2,7 +2,7 @@ import { db } from "../../server"
 import { makeSchedulerJob } from "../../services/scheduler"
 import { z } from "zod"
 import { checkSavedMedia, resolveMedia } from "../../api/resolve-media/resolve"
-import { UserType } from "@prisma/client"
+import { UserType } from "../../types/db"
 import { getProcessorAllowlist, startAnalysisJob } from "../../api/start-analysis/actions"
 import { ApiAuthInfo } from "../../api/apiKey"
 

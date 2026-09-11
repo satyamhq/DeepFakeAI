@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import SwaggerUI from "swagger-ui-react"
-import { auth, clerkClient } from "@clerk/nextjs/server"
+import { auth, clerkClient } from "../../mockClerkServer"
 import "swagger-ui-react/swagger-ui.css"
 import { getSwaggerApiDocs } from "./getSwaggerApiDocs"
 import ApiKeyTable from "../../internal/api-keys/ApiKeyTable"

@@ -3,9 +3,6 @@
 import { useEffect, useState } from "react"
 import { getLocalStorageHistory, LocalHistoryItem } from "./local-history"
 import AnonymousUserHistoryList from "./AnonymousRecentSearchList"
-import Link from "next/link"
-import { ArrowRightIcon } from "../../components/icons"
-import { signUpUrl } from "../../site"
 
 export default function AnonymousRecentSearches() {
   const [localHistory, setLocalHistory] = useState<LocalHistoryItem[]>([])

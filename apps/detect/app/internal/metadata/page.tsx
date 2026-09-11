@@ -1,4 +1,4 @@
-import { MediaMetadata } from "@prisma/client"
+import { MediaMetadata } from "../../types/db"
 import { db } from "../../server"
 import { pageNav } from "../ui"
 import WordList from "./WordList"

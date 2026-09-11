@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth } from "@clerk/nextjs"
+import { useAuth } from "../mockClerk"
 import { useEffect, useState } from "react"
 import attributeUserQueriesToOrg from "../api/org-member-created/actions"
 

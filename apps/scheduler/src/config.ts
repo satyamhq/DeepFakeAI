@@ -1,16 +1,17 @@
 import mitt, { Emitter } from "mitt"
 import deepEqual from "fast-deep-equal"
-import { PrismaClient } from "@prisma/client"
 import { z } from "zod"
 import { Poller } from "./util"
 import { rootLogger } from "./logging"
 import { Logger } from "pino"
 import { ProcessorConfig, SchedulerConfigData, defaultProcessorConfig, schedulerConfigSchema } from "./schemas"
+import type { SchedulerDbClient } from "./db"
 
 const envConfigSchema = z.object({
   SCHEDULER_SHARED_AUTH_SECRET: z.string(),
   WEBAPP_TRPC_URL: z.string().default("http://localhost:3000/api/trpc"),
-  POSTGRES_PRISMA_URL: z.string(),
+  SUPABASE_URL: z.string().optional(),
+  SUPABASE_SECRET_KEY: z.string().optional(),
 })
 
 let envConfigCache: z.infer<typeof envConfigSchema> | null = null
@@ -34,21 +35,15 @@ export function loadEnvironmentConfig() {
     }
   }
 
-  // Support Render's native DATABASE_URL as fallback for POSTGRES_PRISMA_URL
-  const configSource: Record<string, any> =
+  const configSource: Record<string, unknown> =
     typeof secretsJson === "object" && secretsJson !== null ? { ...secretsJson } : {}
-
-  if (!configSource.POSTGRES_PRISMA_URL && configSource.DATABASE_URL) {
-    configSource.POSTGRES_PRISMA_URL = configSource.DATABASE_URL
-  }
 
   const parsed = envConfigSchema.safeParse(configSource)
   if (!parsed.success) {
     const missingKeys = parsed.error.issues.map((i) => i.path.join(".")).join(", ")
     rootLogger.error(
       `[Scheduler Config] Missing required environment variables: ${missingKeys}.\n` +
-        `Note: The scheduler is an independent background worker service requiring SCHEDULER_SHARED_AUTH_SECRET and POSTGRES_PRISMA_URL (or DATABASE_URL).\n` +
-        `If deploying on Render, run the scheduler as a separate Background Worker service with these environment variables, NOT inside the main Web Service.`,
+        `Note: The scheduler requires SCHEDULER_SHARED_AUTH_SECRET and Supabase configuration.`,
     )
     process.exit(1)
   }
@@ -67,7 +62,7 @@ export class SchedulerConfig {
   readonly events: Emitter<ConfigEvents>
 
   private constructor(
-    private prisma: PrismaClient,
+    private prisma: SchedulerDbClient,
     pollingIntervalMillis: () => number,
   ) {
     this.logger = rootLogger.child({ service: "SchedulerConfig" })
@@ -82,7 +77,7 @@ export class SchedulerConfig {
   }
 
   static async createAndStartPolling(
-    prisma: PrismaClient,
+    prisma: SchedulerDbClient,
     { pollingIntervalMillis }: { pollingIntervalMillis: () => number },
   ) {
     const config = new SchedulerConfig(prisma, pollingIntervalMillis)

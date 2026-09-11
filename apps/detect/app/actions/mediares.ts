@@ -1,5 +1,5 @@
 "use server"
-import { Media } from "@prisma/client"
+import { Media } from "../types/db"
 import * as mediares from "../services/mediares"
 
 export async function fetchMediaProgress(media: Pick<Media, "id" | "audioId" | "size">) {

@@ -5,7 +5,7 @@ import { useFormStatus } from "react-dom"
 import { Button, TextInput } from "flowbite-react"
 import { normalizeEmail, validateEmail } from "./manage/util"
 import { inviteUser } from "./manage/actions"
-import { useUser } from "@clerk/nextjs"
+import { useUser } from "../../mockClerk"
 import { getRoleByUser } from "../../auth"
 import { MdExpandLess, MdExpandMore } from "react-icons/md"
 

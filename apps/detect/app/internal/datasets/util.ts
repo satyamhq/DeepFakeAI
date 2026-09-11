@@ -1,4 +1,4 @@
-import { DatasetGroup } from "@prisma/client"
+import { DatasetGroup } from "../../types/db"
 import { DateRange, toYMD } from "../summarize"
 
 export function datasetGroupDateRange(dg: DatasetGroup): DateRange {

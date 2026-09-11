@@ -1,4 +1,4 @@
-import { MediaPublisher } from "@prisma/client"
+import { MediaPublisher } from "../types/db"
 import { assembleMastodonUserName, extractMediaSourceData, isMastodon } from "./source"
 
 describe("isMastodon", () => {

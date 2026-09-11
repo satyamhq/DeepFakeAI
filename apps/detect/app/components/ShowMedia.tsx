@@ -1,6 +1,6 @@
 "use client"
 
-import { AnalysisResult } from "@prisma/client"
+import { AnalysisResult } from "../types/db"
 import { useState, forwardRef, useRef, useImperativeHandle, RefObject } from "react"
 import { FaPlay } from "react-icons/fa"
 import { thumbnailUrl } from "../data/media"

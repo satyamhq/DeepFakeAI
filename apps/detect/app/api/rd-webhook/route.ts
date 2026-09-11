@@ -1,8 +1,8 @@
-import { RequestState } from "@prisma/client"
+import { RequestState } from "../../types/db"
 import { db } from "../../server"
 import { fetchJson } from "../../fetch"
 import { RDMediaInfo } from "../../model-processors/reality"
-import { response, requireEnv } from "../util"
+import { response } from "../util"
 import { REALITY_BASE_URL } from "../starters/reality"
 
 export const dynamic = "force-dynamic"

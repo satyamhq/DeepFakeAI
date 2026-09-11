@@ -1,4 +1,4 @@
-import { AnalysisResult } from "@prisma/client"
+import { AnalysisResult } from "../../types/db"
 import { RefObject, useEffect, useRef, useState } from "react"
 
 type Vertice = { x: number; y: number }

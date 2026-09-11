@@ -1,7 +1,6 @@
 import nodeFetch from "node-fetch"
 import OpenAI, { toFile } from "openai"
 import { MediaTrack } from "../../../data/media"
-import { requireEnv } from "../../util"
 import { YesNo, YesNoResponse } from "../../../model-processors/openai"
 import { chatOpenAI } from "./chatOpenAI"
 import { transcriptPrompt } from "./transcriptPrompt"

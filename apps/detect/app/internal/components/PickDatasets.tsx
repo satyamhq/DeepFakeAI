@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation"
 import { FaRegSquare, FaRegCheckSquare } from "react-icons/fa"
-import { Dataset } from "@prisma/client"
+import { Dataset } from "../../types/db"
 import { Dropdown } from "flowbite-react"
 import useUpdateSearchParams from "./useUpdateSearchParams"
 

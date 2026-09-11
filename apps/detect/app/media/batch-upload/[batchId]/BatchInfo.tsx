@@ -74,7 +74,7 @@ function DownloadedUrlDetails({ batchId }: { batchId: string }) {
         <Table.HeadCell>Reason</Table.HeadCell>
       </Table.Head>
       <Table.Body>
-        {details.unresolvedItems.map((item) => (
+        {details.unresolvedItems.map((item: any) => (
           <Table.Row key={item.id} className="border-b border-b-slate-600">
             <Table.Cell>{item.id}</Table.Cell>
             <Table.Cell className={item.debugInfo.resolveStatus.status === "failed" ? "text-red-600" : ""}>

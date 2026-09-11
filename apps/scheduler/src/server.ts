@@ -1,6 +1,12 @@
-import "dotenv/config"
+import dotenv from "dotenv"
+import path from "path"
+dotenv.config()
+dotenv.config({ path: path.resolve(__dirname, "../../../.env") })
+dotenv.config({ path: path.resolve(__dirname, "../../.env") })
+dotenv.config({ path: path.resolve(process.cwd(), "../../.env") })
+dotenv.config({ path: path.resolve(process.cwd(), ".env") })
 import * as trpcExpress from "@trpc/server/adapters/express"
-import { PrismaClient } from "@prisma/client"
+import { schedulerDb } from "./db"
 import { schedulerTRPCRouter } from "./appRouter"
 import { QueueService } from "./queue"
 import { loadEnvironmentConfig, SchedulerConfig } from "./config"
@@ -29,9 +35,7 @@ async function checkAuthHeader(headers: IncomingHttpHeaders): Promise<JWTPayload
 }
 
 async function main() {
-  const prisma = new PrismaClient({
-    datasourceUrl: envConfig.POSTGRES_PRISMA_URL,
-  })
+  const prisma = schedulerDb
   const queue = new QueueService(prisma)
   const schedulerConfig = await SchedulerConfig.createAndStartPolling(prisma, { pollingIntervalMillis: () => 30000 })
   const consumers = await new ConsumerPool(queue, schedulerConfig).startAll()

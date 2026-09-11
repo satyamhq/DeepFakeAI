@@ -22,7 +22,16 @@
     ],
     "incremental": true,
     "declaration": false,
-    "declarationMap": false
+    "declarationMap": false,
+    "baseUrl": ".",
+    "paths": {
+      "@prisma/client": ["./app/types/db.ts"],
+      "@clerk/nextjs": ["./app/mockClerk.tsx"],
+      "@clerk/nextjs/server": ["./app/mockClerkServer.ts"],
+      "@clerk/clerk-react": ["./app/mockClerk.tsx"],
+      "@clerk/types": ["./app/mockClerk.tsx"],
+      "@clerk/shared": ["./app/mockClerk.tsx"]
+    }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]

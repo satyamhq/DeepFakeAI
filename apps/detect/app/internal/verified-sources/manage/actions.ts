@@ -1,6 +1,6 @@
 "use server"
 
-import { MediaPublisher, VerifiedSource } from "@prisma/client"
+import { MediaPublisher, VerifiedSource } from "../../../types/db"
 import { db, getServerRole } from "../../../server"
 import { revalidatePath } from "next/cache"
 import { updateVerifiedMediaAfterDelete, updateVerifiedMediaAfterInsert } from "../../../api/verified-source/actions"

@@ -1,6 +1,6 @@
 import { Button, TextInput } from "flowbite-react"
 import { Suspense } from "react"
-import { clerkClient } from "@clerk/nextjs/server"
+import { clerkClient } from "../../mockClerkServer"
 import { pageNav } from "../ui"
 import { getApiKeyRows } from "./apiKeyRows"
 import ApiKeyTable from "./ApiKeyTable"
@@ -60,9 +60,9 @@ async function ApiKeyTableForEmail({ email }: { email: string }) {
   const rows = await getApiKeyRows(apiKeys)
   const organizations = (
     await clerkClient().users.getOrganizationMembershipList({ userId: clerkUser.id })
-  ).data.flatMap((o) => o.organization)
+  ).data.flatMap((o: any) => o.organization)
   for (const organization of organizations) {
-    if (!apiKeys.find((apiKey) => apiKey.orgId === organization.id)) {
+    if (!apiKeys.find((apiKey: any) => apiKey.orgId === organization.id)) {
       rows.push({
         clerkUser: { id: clerkUser.id, externalId: clerkUser.externalId, fullName: clerkUser.fullName },
         apiKey: null,

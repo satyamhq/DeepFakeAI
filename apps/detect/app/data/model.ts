@@ -6,7 +6,7 @@ import { FiMinusCircle, FiVideo } from "react-icons/fi"
 import { LuFileAudio } from "react-icons/lu"
 import { MdRecordVoiceOver, MdOutlineBrokenImage, MdOutlineFaceRetouchingNatural } from "react-icons/md"
 import { WandIcon } from "../components/icons"
-import { AnalysisResult, Media, RequestState } from "@prisma/client"
+import { AnalysisResult, Media, RequestState } from "../types/db"
 import { fetchJson } from "../fetch"
 import { MediaType, mediaType } from "./media"
 import { Generator } from "../generators"
@@ -266,7 +266,7 @@ export const response = {
 
   /** Makes a `COMPLETE` response for one of our analysis backends. */
   cached: (result: AnalysisResult): AnalysisResponse<any> =>
-    response.complete(JSON.parse(result.json), result.created, result.completed),
+    response.complete(JSON.parse(result.json), result.created, result.completed ?? null),
 }
 
 export type ProcessorAvailability = "enabled" | "disabled" | "archived"

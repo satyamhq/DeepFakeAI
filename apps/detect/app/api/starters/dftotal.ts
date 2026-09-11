@@ -1,6 +1,6 @@
 import nodeFetch from "node-fetch"
 import NodeFormData from "form-data"
-import { RequestState } from "@prisma/client"
+import { RequestState } from "../../types/db"
 import { ApiResponse, processors } from "../../model-processors/dftotal"
 import { response } from "../../data/model"
 import { getJson } from "../../fetch"

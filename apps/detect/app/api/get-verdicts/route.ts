@@ -1,4 +1,4 @@
-import { RequestState } from "@prisma/client"
+import { RequestState } from "../../types/db"
 import { NextRequest } from "next/server"
 import { response } from "../util"
 import { getMediaVerdicts } from "./actions"

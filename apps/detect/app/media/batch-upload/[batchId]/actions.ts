@@ -20,7 +20,7 @@ export async function getUnresolvedUrlInfo(batchId: string) {
 
   return {
     result: "success" as const,
-    unresolvedItems: unresolvedItems.map((item) => {
+    unresolvedItems: unresolvedItems.map((item: any) => {
       const parsedDebugInfo = debugInfoSchema.safeParse(item.debugInfo)
       let sanitizedDebugInfo: {
         resolveStatus: Pick<DebugInfo["resolveStatus"], "status" | "attempts"> & {

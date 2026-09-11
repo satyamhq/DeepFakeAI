@@ -1,0 +1,80 @@
+services:
+  # ==============================================================================
+  # DeepFakeAI Web Application (Next.js)
+  # ==============================================================================
+  - type: web
+    name: deepfakeai-web
+    runtime: node
+    plan: starter
+    region: oregon
+    branch: main
+    buildCommand: npm run build:render
+    startCommand: npm run start:render
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: 20.18.0
+      - key: NODE_ENV
+        value: production
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+      - key: ANON_QUERY
+        value: "true"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: REALITY_API_KEY
+        sync: false
+      - key: HIVE_ACCESS_KEY_ID
+        sync: false
+      - key: HIVE_SECRET_KEY
+        sync: false
+      - key: HIVE_API_KEY
+        sync: false
+      - key: AIORNOT_API_KEY
+        sync: false
+      - key: SCHEDULER_URL
+        value: http://localhost:3005
+      - key: MEDIA_RESOLVER_URL
+        value: http://localhost:4000
+      - key: SCHEDULER_SHARED_AUTH_SECRET
+        generateValue: true
+
+  # ==============================================================================
+  # DeepFakeAI Background Scheduler Worker
+  # ==============================================================================
+  - type: worker
+    name: deepfakeai-scheduler
+    runtime: node
+    plan: starter
+    region: oregon
+    branch: main
+    buildCommand: npm run build:scheduler
+    startCommand: npm run start:scheduler
+    envVars:
+      - key: NODE_VERSION
+        value: 20.18.0
+      - key: NODE_ENV
+        value: production
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: WEBAPP_TRPC_URL
+        fromService:
+          type: web
+          name: deepfakeai-web
+          property: host
+          path: /api/trpc
+      - key: SCHEDULER_SHARED_AUTH_SECRET
+        fromService:
+          type: web
+          name: deepfakeai-web
+          envVarKey: SCHEDULER_SHARED_AUTH_SECRET

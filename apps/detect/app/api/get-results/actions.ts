@@ -1,4 +1,4 @@
-import { AnalysisResult, Media, RequestState, UserType } from "@prisma/client"
+import { AnalysisResult, Media, RequestState, UserType } from "../../types/db"
 import { db } from "../../server"
 import {
   CachedResult,
@@ -78,7 +78,7 @@ export async function checkResults(
         switch (res.requestState) {
           case RequestState.ERROR:
           case RequestState.COMPLETE:
-            addResults(info, proc, data, mkDuration(res.created, res.completed))
+            addResults(info, proc, data, mkDuration(res.created, res.completed ?? null))
             break
 
           case RequestState.PROCESSING:
@@ -327,5 +327,5 @@ function getAnalysisTime({
   const procId = model.processor.id
   const result = analysisResults.find((rr) => rr.source == procId)
   if (!result) return undefined
-  return mkDuration(result.created, result.completed)
+  return mkDuration(result.created, result.completed ?? null)
 }

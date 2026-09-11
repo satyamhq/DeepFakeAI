@@ -27,14 +27,14 @@ export default async function Page({ searchParams }: { searchParams: MediaSearch
   const showMedia = (media: MediaJoinResult) => {
     const url = `/media/analysis?id=${media.id}`
     const Icon = iconForMimeType(media.mimeType)
-    const posts = media.posts.map((mp) => mp.postUrl)
+    const posts = (media.posts as any[]).map((mp: any) => mp.postUrl)
     return (
       <div>
         <div className="text-nowrap">
           <Icon className="inline mr-1" title={media.mimeType} />
           {mkLink(url, media.meta?.handle || media.id)}
         </div>
-        {posts.map((url, ii) => (
+        {posts.map((url: string, ii: number) => (
           <div key={ii}>
             <PostLink postUrl={url} className="max-w-96 break-all text-xs" />
             <br />

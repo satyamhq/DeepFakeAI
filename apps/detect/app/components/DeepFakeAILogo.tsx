@@ -10,7 +10,7 @@ const sizeClasses: Record<TailwindSize, { text: string; badge: string }> = {
 
 export default function DeepFakeAILogo({
   size = "base",
-  hasText = true,
+  hasText: _hasText = true,
   className = "",
 }: {
   size?: TailwindSize

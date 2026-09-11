@@ -1,7 +1,7 @@
 import { Suspense } from "react"
 import { subPageNav } from "../../ui"
 import { db } from "../../../db"
-import { QueueMessageStatus } from "@prisma/client"
+import { QueueMessageStatus } from "../../../types/db"
 import { DeleteFailedMessagesButton, RetryFailedMessagesButton } from "../RetryFailedMessagesButton"
 
 const validStatuses = [
@@ -68,12 +68,12 @@ async function MessageList({
           <DeleteFailedMessagesButton messageIds={failedQueueMessages.map((msg) => msg.id)} processor={queueName!} />
         </div>
       )}
-      {messages.map((message) => (
+      {messages.map((message: any) => (
         <div className="border p-4 border-slate-500 flex flex-col gap-2 text-sm" key={message.id}>
           <div className="flex justify-between items-start">
             <div>
               <p>id: {message.id}</p>
-              <p>created: {message.createdAt.toISOString()}</p>
+              <p>created: {message.createdAt ? new Date(message.createdAt).toISOString() : ""}</p>
               <p>status: {message.status}</p>
             </div>
             {status == QueueMessageStatus.FAILED && (

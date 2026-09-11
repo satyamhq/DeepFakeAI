@@ -2,7 +2,7 @@ import { revalidatePath } from "next/cache"
 import { ResolveResponse, getMediaResClient } from "../../services/mediares"
 import { db } from "../../server"
 import { extractMediaSourceData, idBasedPlatforms, MediaSourceData } from "../source"
-import { Media, MediaMetadata, Prisma, UserType } from "@prisma/client"
+import { Media, MediaMetadata, Prisma, UserType, Query, PostMedia } from "../../types/db"
 import { isGateEnabled } from "../../gating"
 import { ApiAuthInfo } from "../apiKey"
 import { needsKeywordAdded, needsKeywordRemoved } from "./util"
@@ -16,7 +16,7 @@ export async function checkSavedMedia(postUrl: string, viaExternal: boolean): Pr
 
   // if we are resolving for an external user and any of these media are not yet marked external, mark them so
   if (viaExternal) {
-    const needMarkIds = postMedia.filter((pm) => !pm.media.external).map((pm) => pm.mediaId)
+    const needMarkIds = postMedia.filter((pm: PostMedia & { media: Media }) => !pm.media.external).map((pm: PostMedia & { media: Media }) => pm.mediaId)
     if (needMarkIds.length > 0) {
       console.log(`Marking media as external [ids=${needMarkIds}]`)
       await db.media.updateMany({
@@ -27,7 +27,7 @@ export async function checkSavedMedia(postUrl: string, viaExternal: boolean): Pr
   }
 
   console.log(`Using cached media [post=${postUrl}, count=${postMedia.length}]`)
-  const media = postMedia.map((pm) => ({
+  const media = postMedia.map((pm: PostMedia & { media: Media }) => ({
     id: pm.media.id,
     url: pm.media.mediaUrl,
     mimeType: pm.media.mimeType,
@@ -64,7 +64,7 @@ export async function checkCreateQuery({ userId, postUrl, ipAddr, orgId, apiAuth
     } else {
       if (queries.length > 1) {
         console.warn(
-          `User has multiple queries for post [email=${userId}, url=${postUrl}, ids=${queries.map((pp) => pp.id)}]`,
+          `User has multiple queries for post [email=${userId}, url=${postUrl}, ids=${queries.map((pp: Query) => pp.id)}]`,
         )
       }
       return queries[0].id

@@ -1,4 +1,4 @@
-import { AnalysisResult } from "@prisma/client"
+import { AnalysisResult } from "../../types/db"
 import { MediaType } from "../../data/media"
 import { CachedResults } from "../../data/model"
 import { externalManipulationModelIds } from "../../model-processors/all"

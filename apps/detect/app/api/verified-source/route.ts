@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server"
 import { determineSourcePlatform } from "../source"
-import { MediaPublisher } from "@prisma/client"
+import { MediaPublisher } from "../../types/db"
 import { db, ensureInternalUser } from "../../server"
 import { canParseUrl, requireEnv, response } from "../util"
 import { updateVerifiedMediaAfterDelete, updateVerifiedMediaAfterInsert } from "./actions"

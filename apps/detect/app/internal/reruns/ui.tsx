@@ -1,6 +1,6 @@
 "use client"
 
-import { Rerun } from "@prisma/client"
+import { Rerun } from "../../types/db"
 import { useState, useRef } from "react"
 import { useFormStatus } from "react-dom"
 import { useRouter } from "next/navigation"
@@ -128,7 +128,7 @@ export function DeleteRerun({ rerun }: { rerun: Rerun }) {
         <Modal.Body>
           <div>Id: {rerun.id}</div>
           <div>
-            Started: <DateLabel date={rerun.started} />
+            Started: <DateLabel date={rerun.started ? new Date(rerun.started) : new Date()} />
           </div>
           <div>
             Completed: {rerun.complete} of {rerun.matched}

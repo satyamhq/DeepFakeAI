@@ -1,8 +1,8 @@
 "use server"
 
 import { createPipedriveContactEnabled, db } from "../../../server"
-import { Prisma } from "@prisma/client"
-import { clerkClient, currentUser } from "@clerk/nextjs/server"
+import { Prisma } from "../../../types/db"
+import { clerkClient, currentUser } from "../../../mockClerkServer"
 
 type ErrorCase = {
   type: "error"
@@ -62,14 +62,14 @@ export async function onboardNewUser({ org, agreedTerms, emailConsent }: UserPub
       createPipedriveContact({
         id: user.id,
         email,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        firstName: user.firstName ?? null,
+        lastName: user.lastName ?? null,
         org,
         emailStatus: emailConsent ? "subscribed" : "unsubscribed",
       })
     }
 
-    const updatedClerkUser = await clerkClient().users.updateUser(user.id, {
+    const updatedClerkUser = await (clerkClient().users as any).updateUser(user.id, {
       externalId,
       publicMetadata: { agreedTerms, emailConsent, org },
     })

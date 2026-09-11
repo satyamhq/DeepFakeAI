@@ -9,7 +9,9 @@ export type User = {
   imageUrl?: string
   primaryEmailAddress?: { emailAddress: string } | null
   emailAddresses?: Array<{ emailAddress: string }>
-  publicMetadata?: Record<string, unknown>
+  publicMetadata?: Record<string, any>
+  banned?: boolean
+  createdAt?: number
 }
 
 export const auth = () => ({
@@ -29,7 +31,7 @@ export const getAuth = (_req: NextRequest) => auth()
 
 export const buildClerkProps = () => ({})
 
-const mockClerkClientInstance = {
+const mockClerkClientInstance: any = {
   users: {
     getUser: async (_id: string): Promise<User> => ({
       id: _id,
@@ -40,19 +42,31 @@ const mockClerkClientInstance = {
       emailAddresses: [{ emailAddress: "user@deepfakeai.internal" }],
       primaryEmailAddress: { emailAddress: "user@deepfakeai.internal" },
       publicMetadata: {},
+      banned: false,
+      createdAt: Date.now(),
     }),
-    getUserList: async () => ({ data: [], totalCount: 0 }),
+    getUserList: async () => ({ data: [] as any[], totalCount: 0 }),
+    updateUser: async () => ({}),
     updateUserMetadata: async () => ({}),
-    getOrganizationMembershipList: async () => ({ data: [], totalCount: 0 }),
+    getOrganizationMembershipList: async () => ({ data: [] as any[], totalCount: 0 }),
   },
   organizations: {
     getOrganization: async () => null,
-    getOrganizationList: async () => ({ data: [], totalCount: 0 }),
-    getOrganizationMembershipList: async () => ({ data: [], totalCount: 0 }),
+    getOrganizationList: async () => ({ data: [] as any[], totalCount: 0 }),
+    getOrganizationMembershipList: async () => ({ data: [] as any[], totalCount: 0 }),
+  },
+  invitations: {
+    createInvitation: async ({ emailAddress }: { emailAddress: string }) => ({
+      id: "inv_" + Math.random().toString(36).substring(2),
+      emailAddress,
+    }),
   },
 }
 
-export const clerkClient = () => mockClerkClientInstance
+export const clerkClient: any = Object.assign(
+  () => mockClerkClientInstance,
+  mockClerkClientInstance
+)
 
 export const clerkMiddleware = (
   handler?: (auth: any, req: NextRequest) => any

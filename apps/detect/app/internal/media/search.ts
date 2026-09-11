@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client"
+import { Prisma } from "../../types/db"
 import { db } from "../../db"
 import { TAKE_DEFAULT } from "../ui"
 import { YMD } from "../summarize"
@@ -129,7 +129,7 @@ export async function searchMedia(searchParams: MediaSearchParams) {
     `searchMedia [skip=${skip}, take=${take}, search=${search}, type=${type}, truth=${truth}, audiotruth=${audiotruth}, fb=${fb}]`,
   )
   const total = await db.media.count({ where })
-  const media = await db.media.findMany({ skip, take, orderBy: [{ resolvedAt: "desc" }], include, where })
+  const media: MediaJoinResult[] = await db.media.findMany({ skip, take, orderBy: [{ resolvedAt: "desc" }], include, where })
 
   return { total, media }
 }
@@ -141,7 +141,7 @@ export async function getAllReviewers() {
   })
   const reviewers = new Set<string>()
   const addReviewer = (reviewer: string) => reviewer && reviewers.add(reviewer)
-  dupedReviewers.forEach((reviewer) => {
+  dupedReviewers.forEach((reviewer: any) => {
     addReviewer(reviewer.fakeReviewer)
     addReviewer(reviewer.audioFakeReviewer)
   })

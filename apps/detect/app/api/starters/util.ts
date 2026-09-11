@@ -1,4 +1,4 @@
-import { RequestState } from "@prisma/client"
+import { RequestState } from "../../types/db"
 import { db } from "../../db"
 import { response } from "../../data/model"
 import { ApiAuthInfo } from "../apiKey"

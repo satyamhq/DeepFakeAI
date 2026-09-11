@@ -1,4 +1,4 @@
-import { AnalysisResult, Media, MediaMetadata, RequestState } from "@prisma/client"
+import { AnalysisResult, Media, MediaMetadata, RequestState } from "../../types/db"
 import { db } from "../../server"
 import { mkDuration } from "../../data/model"
 import { manipulationModelInfo } from "../../model-processors/all"
@@ -55,7 +55,7 @@ async function summarizeModel(modelId: string, dateRange: DateRange) {
       // trim the scores down to just our score so we can show this summary in a compact MediaGrid
       ms.scores = { [modelId]: ms.score }
 
-      ms.duration = mkDuration(ar.created, ar.completed)
+      ms.duration = mkDuration(ar.created, ar.completed ?? null)
       sum.msums.push(ms)
     } catch (e) {
       if (e === missing) sum.missing += 1

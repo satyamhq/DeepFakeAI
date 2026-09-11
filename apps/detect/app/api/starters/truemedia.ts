@@ -10,7 +10,7 @@ import { z } from "zod"
 import { fetchSingleProgress } from "../../services/mediares"
 import { withLatency } from "../../logging"
 import { db } from "../../db"
-import { RequestState } from "@prisma/client"
+import { RequestState } from "../../types/db"
 
 // OPEN-TODO: To enable your own model, follow the pattern of other models in this
 // directory and /model-processors. Instructions are in github at

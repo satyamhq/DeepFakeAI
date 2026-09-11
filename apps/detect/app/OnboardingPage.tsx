@@ -7,7 +7,7 @@ import Link from "next/link"
 import { Button, Card, Checkbox, Label, TextInput } from "flowbite-react"
 import { termsUrl, privacyUrl } from "./site"
 import { onboardNewUser } from "./internal/users/manage/actions"
-import { useUser } from "@clerk/nextjs"
+import { useUser } from "./mockClerk"
 import DeepFakeAILogo from "./components/DeepFakeAILogo"
 
 /** This only works with Clerk */
@@ -29,7 +29,7 @@ export default function OnboardingPage() {
         setMessage(rsp.message)
         break
       case "updated":
-        await user?.reload()
+        await (user as any)?.reload?.()
         router.refresh()
         break
     }
@@ -59,7 +59,7 @@ export default function OnboardingPage() {
               onChange={(e) => setAgreedTerms(e.target.checked)}
             />
             <Label htmlFor="accept" className="text-slate-400">
-              By signing up, you agree to DeepFakeAI's &thinsp;
+              By signing up, you agree to DeepFakeAI&apos;s &thinsp;
               <Link className="text-lime-500" href={termsUrl}>
                 Terms of Services
               </Link>

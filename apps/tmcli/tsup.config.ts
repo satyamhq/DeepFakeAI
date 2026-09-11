@@ -8,5 +8,4 @@ export default defineConfig({
   minify: false,
   entry: ["src/*.ts"],
   outDir: "dist",
-  external: ["@prisma/client"],
 })

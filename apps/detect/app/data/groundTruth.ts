@@ -1,4 +1,4 @@
-import { Media, Trulean, MediaMetadata } from "@prisma/client"
+import { Media, Trulean, MediaMetadata } from "../types/db"
 import { JoinedMedia, mediaType } from "./media"
 
 /** Returns the ground truth for `media`. If it is a video, this combines the video and audio ground truths into a

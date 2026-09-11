@@ -38,7 +38,7 @@ export async function checkRateLimit({
     return true
   }
   console.log(
-    `Disallowing rate-limited request [user=${userId}, action=${action}, times=${otimes.map((tt) => now - tt)}]`,
+    `Disallowing rate-limited request [user=${userId}, action=${action}, times=${otimes.map((tt: number) => now - tt)}]`,
   )
   return false
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { Media, AnalysisResult } from "@prisma/client"
+import { Media, AnalysisResult } from "../types/db"
 import { SingleProgress } from "../services/mediares"
 import { formatPct } from "../data/model"
 import ShowMedia, { MediaHandleRef } from "./ShowMedia"

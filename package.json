@@ -11,7 +11,7 @@
     "turbo": "^2.2.1"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.0.0"
   },
   "lint-staged": {
     "**/*.{ts,tsx}": [],
@@ -26,10 +26,11 @@
   },
   "scripts": {
     "build": "turbo build",
-    "build:render": "prisma generate --schema=prisma/schema.prisma && cross-env NODE_OPTIONS=--max-old-space-size=2048 turbo build --filter=@truemedia/detect...",
+    "build:render": "cross-env NODE_OPTIONS=--max-old-space-size=2048 turbo build --filter=@truemedia/detect...",
+    "build:scheduler": "cross-env NODE_OPTIONS=--max-old-space-size=2048 turbo build --filter=@truemedia/scheduler...",
     "check-types": "cross-env NODE_OPTIONS=--max-old-space-size=4096 turbo check-types",
     "ci": "turbo run lint check-types build test",
-    "db:integration-test": "dotenv -e .env.test -- npx prisma migrate deploy",
+    "db:integration-test": "echo 'Using Supabase for database operations'",
     "dev": "turbo dev",
     "format": "prettier --write '**/*.{ts,tsx}' && syncpack format",
     "lint": "turbo lint",

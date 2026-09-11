@@ -1,5 +1,5 @@
 import "server-only"
-import { Media } from "@prisma/client"
+import { Media } from "../types/db"
 import { MediaResClient, ResolveResponse, ProgressResponse, Failure } from "@truemedia/clients/mediares"
 
 export type ResolvedMedia = Extract<ResolveResponse, { result: "resolved" }>["media"][number]

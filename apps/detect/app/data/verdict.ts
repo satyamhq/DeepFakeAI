@@ -1,4 +1,4 @@
-import { Trulean, Media, MediaMetadata } from "@prisma/client"
+import { Trulean, Media, MediaMetadata } from "../types/db"
 import { MediaType, mediaType } from "./media"
 import { meansFake, meansReal, determineFake } from "./groundTruth"
 import { CachedResults, ModelResult, modelPolicy, shouldIgnoreModel, ranks, scoreMeansFake } from "../data/model"

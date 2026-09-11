@@ -83,7 +83,7 @@ export default async function Page({
     userFeedback = await db.userFeedback.findMany({ where: { mediaId, userId: role.id }, include: { user: true } })
   }
   // figure out which post URL is the one we "reached" this media through
-  const post = media.posts.find((pm) => hashUrl(pm.postUrl) == postHash)
+  const post = media.posts.find((pm: any) => hashUrl(pm.postUrl) == postHash)
   const postUrl = (post ?? media.posts[0]).postUrl
 
   // see if this user has queried this media, enables actions like delete

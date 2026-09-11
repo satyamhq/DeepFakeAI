@@ -11,14 +11,34 @@ export type User = {
   imageUrl?: string
   primaryEmailAddress?: { emailAddress: string } | null
   emailAddresses?: Array<{ emailAddress: string }>
-  publicMetadata?: Record<string, unknown>
+  publicMetadata?: Record<string, any>
+  banned?: boolean
+  createdAt?: number | Date
+  reload?: () => Promise<void>
+  getOrganizationInvitations: () => Promise<any>
+  getOrganizationSuggestions: () => Promise<any>
+  organizationMemberships?: any[]
 }
+
+export type UserResource = User
+export type OrganizationMembershipResource = any
+export type OrganizationSuggestionResource = any
+export type UserOrganizationInvitationResource = any
+export type ClerkPaginatedResponse<T = any> = { data: T[]; totalCount: number }
 
 export const useUser = () => ({
   user: null as User | null,
   isLoaded: true,
   isSignedIn: false,
 })
+
+// Mock user with required methods for components that call them
+export const mockUser: User = {
+  id: "",
+  getOrganizationInvitations: async () => ({ data: [], totalCount: 0 }),
+  getOrganizationSuggestions: async () => ({ data: [], totalCount: 0 }),
+  organizationMemberships: [],
+}
 
 export const useAuth = () => ({
   userId: null as string | null,
@@ -35,15 +55,18 @@ export const useAuth = () => ({
 })
 
 export const useOrganization = () => ({
-  organization: null,
+  organization: null as { id: string; name: string; slug?: string } | null,
   isLoaded: true,
   membership: null,
 })
 
-export const useOrganizationList = () => ({
+export const useOrganizationList = (_opts?: any) => ({
   isLoaded: true,
-  organizationList: [],
-  userMemberships: { data: [], isLoading: false },
+  organizationList: [] as any[],
+  userMemberships: {
+    data: [] as Array<{ id?: string; organization: { id: string; name: string; slug?: string } }>,
+    isLoading: false,
+  },
   setActive: async () => {},
 })
 
@@ -64,12 +87,13 @@ export const useClerk = () => ({
   openUserProfile: () => {},
 })
 
-export const SignedIn = ({ children }: { children?: React.ReactNode }) => null
+export const SignedIn = ({ children: _children }: { children?: React.ReactNode }) => null
 export const SignedOut = ({ children }: { children?: React.ReactNode }) => <>{children}</>
 export const UserButton = () => null
-export const OrganizationSwitcher = () => null
+export const OrganizationSwitcher = (_props?: any) => null
 export const SignIn = () => null
 export const SignUp = () => null
+export const CreateOrganization = () => null
 export const ClerkProvider = ({ children }: { children: React.ReactNode }) => <>{children}</>
 
 export const auth = () => ({
@@ -105,5 +129,5 @@ export const clerkClient: any = Object.assign(
 )
 
 export const clerkMiddleware = () => {
-  return (req: any) => null
+  return (_req: any) => null
 }

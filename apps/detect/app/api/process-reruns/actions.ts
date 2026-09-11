@@ -1,4 +1,4 @@
-import { AnalysisResult, Media, RequestState } from "@prisma/client"
+import { AnalysisResult, Media, RequestState } from "../../types/db"
 import { db } from "../../server"
 import { Processor } from "../../data/model"
 import { Filter } from "../../internal/filter"
@@ -101,16 +101,16 @@ export async function loadMedia({
   }
 
   const matched = media.filter(
-    (mm) =>
+    (mm: Media & { analysisResults: AnalysisResult[] }) =>
       // If the mediaId is provided specifically we don't need to perform keyword matches
-      (mediaId || keywordFilter.matchesMedia(mm)) && (!onlyErrors || filterOnlyErrors(mm)),
+      (mediaId || keywordFilter.matchesMedia(mm as any)) && (!onlyErrors || filterOnlyErrors(mm)),
   )
 
   // filter out just the media that remain to be re-analyzed
   const incomplete = matched
-    .map((mm) => {
-      const oresult = mm.analysisResults.find((rr) => rr.source == proc.id)
-      const isIncomplete = !oresult || !oresult.completed || deltaDays(started, oresult.completed) > leewayDays
+    .map((mm: Media & { analysisResults: AnalysisResult[] }) => {
+      const oresult = mm.analysisResults.find((rr: AnalysisResult) => rr.source == proc.id)
+      const isIncomplete = !oresult || !oresult.completed || deltaDays(started, oresult.completed as Date) > leewayDays
       if (!isIncomplete) return null
 
       return {
@@ -122,7 +122,7 @@ export async function loadMedia({
         requestState: oresult?.requestState,
       } as IncompleteAnalysisResult
     })
-    .filter((inc) => !!inc)
+    .filter((inc: IncompleteAnalysisResult | null): inc is IncompleteAnalysisResult => !!inc)
 
-  return { matchedIds: matched.map((mm) => mm.id), incomplete }
+  return { matchedIds: matched.map((mm: Media & { analysisResults: AnalysisResult[] }) => mm.id), incomplete }
 }

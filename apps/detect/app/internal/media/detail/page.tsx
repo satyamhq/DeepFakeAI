@@ -1,4 +1,4 @@
-import { AnalysisResult, RequestState } from "@prisma/client"
+import { AnalysisResult, RequestState, PostMedia, Query } from "../../../types/db"
 import { IoWarningOutline } from "react-icons/io5"
 import { Tooltip } from "flowbite-react"
 import { db } from "../../../server"
@@ -72,14 +72,14 @@ export default async function Page({ searchParams }: { searchParams: { id: strin
   if (!media) return <ErrorBox title="Unknown Media" message="Unable to find information for that media item." />
 
   const postMedia = await db.postMedia.findFirst({ where: { mediaId: media.id } })
-  const queries = await db.query.findMany({
+  const queries: Array<Query & { user: any }> = await db.query.findMany({
     where: { postUrl: postMedia?.postUrl },
     include: { user: true },
     distinct: ["userId"],
   })
 
   const cached = media.results as CachedResults
-  const postUrls = media.posts.map((pp) => pp.postUrl)
+  const postUrls: string[] = (media.posts as PostMedia[]).map((pp: PostMedia) => pp.postUrl)
   return (
     <div className="flex flex-col gap-5">
       <h1 className="text-lg font-bold flex gap-2">
@@ -90,8 +90,8 @@ export default async function Page({ searchParams }: { searchParams: { id: strin
         <CopyTextButton label="Copy media ID" text={media.id} />
       </h1>
       <div className="flex flex-col gap-2 items-center mx-auto">
-        <MediaView media={media} analyses={media.analysisResults} maxHeight="max-h-96" />
-        {postUrls.map((purl) => (
+        <MediaView media={media} analyses={media.analysisResults as AnalysisResult[]} maxHeight="max-h-96" />
+        {postUrls.map((purl: string) => (
           <SourceLabel key={purl} url={purl} />
         ))}
       </div>
@@ -112,8 +112,8 @@ export default async function Page({ searchParams }: { searchParams: { id: strin
       <div>
         <h2 className="font-bold">Users Queried</h2>
         <ul>
-          {queries.map((query) => (
-            <li key={query.id}>{query.user.email}</li>
+          {queries.map((query: Query & { user: any }) => (
+            <li key={query.id}>{query.user?.email}</li>
           ))}
         </ul>
       </div>
@@ -121,26 +121,26 @@ export default async function Page({ searchParams }: { searchParams: { id: strin
       <div>
         <h2 className="font-bold">Analysis Results</h2>
         {table(
-          media.analysisResults,
-          (rr) => rr.source,
+          media.analysisResults as AnalysisResult[],
+          (rr: AnalysisResult) => rr.source,
           ["Source", "Started + Completed", "Req State + Id", "Score", "Raw Results"],
           [
-            (rr) => showText(rr.source),
-            (rr) => (
+            (rr: AnalysisResult) => showText(rr.source),
+            (rr: AnalysisResult) => (
               <>
                 <DateLabel date={rr.created} />
                 <br />
                 {rr.completed ? <DateLabel date={rr.completed} /> : showText("(incomplete)")}
               </>
             ),
-            (rr) => (
+            (rr: AnalysisResult) => (
               <>
                 <div>{rr.requestState ?? "n/a"}</div>
                 <div>{rr.requestId || "(none)"}</div>
               </>
             ),
-            (rr) => modelResults(cached, rr),
-            (rr) => (
+            (rr: AnalysisResult) => modelResults(cached, rr),
+            (rr: AnalysisResult) => (
               <div className="flex flex-row gap-2">
                 <ShowSourceButton source={rr.source} raw={JSON.parse(rr.json)} />
                 <RerunButton mediaId={rr.mediaId} source={rr.source} />

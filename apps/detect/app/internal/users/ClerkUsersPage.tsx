@@ -10,7 +10,7 @@ import Link from "next/link"
 
 import { ClockIcon } from "../../components/icons"
 import DateLabel from "../../components/DateLabel"
-import { useUser } from "@clerk/nextjs"
+import { useUser } from "../../mockClerk"
 import { getRoleByUser } from "../../auth"
 
 function BanUser({ id, email, isAdmin, isBanned }: { id: string; email: string; isAdmin: boolean; isBanned: boolean }) {

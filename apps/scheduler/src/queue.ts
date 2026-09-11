@@ -1,4 +1,5 @@
-import { Prisma, PrismaClient, QueueMessage, QueueMessageStatus } from "@prisma/client"
+import { QueueMessage, QueueMessageStatus } from "./dbTypes"
+import type { SchedulerDbClient } from "./db"
 import { Looper } from "./util"
 import { rootLogger } from "./logging"
 import { Logger } from "pino"
@@ -42,7 +43,7 @@ export class QueueService {
   private logger: Logger
 
   constructor(
-    private prisma: PrismaClient,
+    private prisma: SchedulerDbClient,
     logger: Logger = rootLogger,
   ) {
     this.logger = logger.child({ service: "QueueService" })
@@ -199,7 +200,7 @@ export class QueueService {
 
   async markFailedMessagesAsPending(
     queueName: string,
-    { where }: { where?: Pick<Prisma.QueueMessageWhereInput, "id"> } = {},
+    { where }: { where?: { id?: string | { in: string[] } } } = {},
   ) {
     const result = await this.prisma.queueMessage.updateMany({
       where: {
@@ -212,7 +213,7 @@ export class QueueService {
     return result.count
   }
 
-  async deleteFailedMessages(queueName: string, { where }: { where?: Pick<Prisma.QueueMessageWhereInput, "id"> } = {}) {
+  async deleteFailedMessages(queueName: string, { where }: { where?: { id?: string | { in: string[] } } } = {}) {
     await this.prisma.queueMessage.deleteMany({
       where: {
         ...where,
@@ -223,15 +224,26 @@ export class QueueService {
   }
 
   async getQueueStats() {
-    const stats = await this.prisma.queueMessage.groupBy({
+    interface QueueStat {
+      queueName: string
+      status: QueueMessageStatus
+      priority: number
+      _count: { _all: number }
+    }
+    interface OldestInQueue {
+      queueName: string
+      priority: number
+      _min: { createdAt: Date | null }
+    }
+    const stats: QueueStat[] = (await this.prisma.queueMessage.groupBy({
       by: ["queueName", "status", "priority"],
       _count: { _all: true },
-    })
-    const oldestInQueue = await this.prisma.queueMessage.groupBy({
+    })) as QueueStat[]
+    const oldestInQueue: OldestInQueue[] = (await this.prisma.queueMessage.groupBy({
       by: ["queueName", "priority"],
       where: { status: { in: [QueueMessageStatus.PENDING, QueueMessageStatus.IN_PROGRESS] } },
       _min: { createdAt: true },
-    })
+    })) as OldestInQueue[]
     const grouped: Record<string, { counts: Record<string, number>; latency: Record<string, number> }> = {}
     for (const stat of stats) {
       grouped[stat.queueName] = {
@@ -319,7 +331,7 @@ export class ParallelizedQueueConsumer {
     this.inProgressMessageCompletion = this.queue
       .getSoonestExpiringLeaseMessage(this.config.queueName)
       .then((nextLeaseExpiring) => {
-        if (nextLeaseExpiring != null) {
+        if (nextLeaseExpiring != null && nextLeaseExpiring.leaseExpiration != null) {
           const expiresInMs = nextLeaseExpiring.leaseExpiration.getTime() - Date.now()
           if (expiresInMs > 0) {
             this.logger.debug(

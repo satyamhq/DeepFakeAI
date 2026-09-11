@@ -2,7 +2,7 @@ import { checkIsThrottled } from "../../throttle/actions"
 import { throttleLimitForUserType } from "../../throttle/windowing"
 import { db } from "../../server"
 import { table } from "../ui"
-import { UserType } from "@prisma/client"
+import { UserType } from "../../types/db"
 import GatingConfigEditorLoader from "../components/gating/GatingConfigEditorLoader"
 
 export const dynamic = "force-dynamic"

@@ -1,4 +1,4 @@
-import { AnalysisResult } from "@prisma/client"
+import { AnalysisResult } from "../../types/db"
 import { useEffect, useRef, useState } from "react"
 import getErrorMessage from "../../utils/getErrorMessage"
 

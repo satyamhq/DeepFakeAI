@@ -32,7 +32,7 @@ export default function CreateOrgCTA({ loading, hasOrg, className = "" }: Create
   return (
     <Card className={`w-full text-center ${className}`}>
       <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-        Join Others at {user.publicMetadata.org || "Your Organization"}
+        Join Others at {user.publicMetadata?.org || "Your Organization"}
       </h5>
 
       <p className="font-normal text-gray-700 dark:text-gray-400">

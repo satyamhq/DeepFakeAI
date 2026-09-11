@@ -1,5 +1,4 @@
 import crypto from "crypto"
-import { Prisma } from "@prisma/client"
 import { db } from "../db"
 
 type ParsedAPIKey = {
@@ -31,7 +30,7 @@ export function parseAPIKey(key: string): ParsedAPIKey | null {
   return { type, key: keyPart, checksum }
 }
 
-export function getApiKeysForUser({ where }: { where?: Prisma.ApiKeyWhereInput } = {}) {
+export function getApiKeysForUser({ where }: { where?: Record<string, any> } = {}) {
   return db.apiKey.findMany({
     where,
     include: {

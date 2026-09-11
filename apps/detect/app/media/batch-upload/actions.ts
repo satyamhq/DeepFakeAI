@@ -1,6 +1,6 @@
 "use server"
 
-import { auth, clerkClient } from "@clerk/nextjs/server"
+import { auth, clerkClient } from "../../mockClerkServer"
 import { db, getServerRole } from "../../server"
 import { batchUploadJob } from "./schedulerJobs"
 import { roleAllowedToBatchUpload } from "./util"
@@ -36,10 +36,10 @@ export async function getBatches() {
   })
   return {
     type: "success" as const,
-    batches: batches.map((batch) => ({
+    batches: batches.map((batch: any) => ({
       id: batch.id,
-      createdAt: batch.createdAt.toISOString(),
-      itemCount: batch._count.items,
+      createdAt: batch.createdAt ? new Date(batch.createdAt).toISOString() : new Date().toISOString(),
+      itemCount: batch._count?.items ?? batch.items?.length ?? 0,
     })),
   }
 }
@@ -72,7 +72,7 @@ export async function submitBatch(urls: string[]): Promise<
     },
   })
   await batchUploadJob.schedule({ priority: "live", json: { batchUploadId: batch.id } })
-  const slackMessage = `⬆️ Batch upload of ${urls.length} items submitted by ${user?.fullName} (${user?.emailAddresses[0].emailAddress})`
+  const slackMessage = `⬆️ Batch upload of ${urls.length} items submitted by ${user?.fullName} (${user?.emailAddresses?.[0]?.emailAddress ?? "unknown"})`
   await Slack.postMessage(Slack.CHANNEL_SLACK_BATCH_NOTIFY, slackMessage)
   return { type: "success", batchId: batch.id }
 }

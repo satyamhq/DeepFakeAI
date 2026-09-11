@@ -35,7 +35,7 @@ async function BatchList() {
   return (
     <div className="flex flex-col gap-2">
       {batches.batches.length == 0 && <div>No batches submitted yet</div>}
-      {batches.batches.map((batch) => (
+      {batches.batches.map((batch: any) => (
         <BatchCard key={batch.id} batchId={batch.id} />
       ))}
     </div>

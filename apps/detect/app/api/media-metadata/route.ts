@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server"
 import { response } from "../util"
 import { getMediaMetadata, humanFactCheckersNotification, upsertMediaMetadata } from "./actions"
-import { Trulean, YesNoReview } from "@prisma/client"
+import { Trulean, YesNoReview } from "../../types/db"
 import { db, ensureInternalUser } from "../../server"
 
 export const dynamic = "force-dynamic"

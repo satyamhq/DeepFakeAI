@@ -21,13 +21,12 @@ docker build -f apps/scheduler/Dockerfile -t truemedia/scheduler .
 ## Running the Scheduler Locally in Docker
 
 After building the docker image, you can run it with docker run. Note that you'll
-want to override the POSTGRES_PRISMA_URL and WEBAPP_TRPC_URL environment variables
-to point to the host machine and not localhost.
+want to configure SUPABASE_URL and WEBAPP_TRPC_URL environment variables.
 
 ```bash
 docker run \
   --env-file .env \
-  --env POSTGRES_PRISMA_URL=postgres://mylocaluser:deepfake@host.docker.internal/mydatabase \
+  --env SUPABASE_URL=https://acqqbhrwmxstfyatvrkw.supabase.co \
   --env WEBAPP_TRPC_URL=http://host.docker.internal:3000/api/trpc \
   -p 3005:80 --pid=host -it truemedia/scheduler
 ```

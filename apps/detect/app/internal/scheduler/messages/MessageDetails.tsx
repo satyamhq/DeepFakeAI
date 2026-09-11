@@ -1,5 +1,5 @@
 "use client"
-import { QueueMessage } from "@prisma/client"
+import { QueueMessage } from "../../../types/db"
 import { useState } from "react"
 
 export function MessageDetails({ message }: { message: QueueMessage }) {

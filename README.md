@@ -84,39 +84,30 @@ This project uses [Supabase](https://supabase.com) as its PostgreSQL database pr
 
 **Supabase project ref:** `acqqbhrwmxstfyatvrkw`
 
-#### 1. Get your connection strings
+#### 1. Supabase Credentials
 
-In the [Supabase Dashboard](https://supabase.com/dashboard/project/acqqbhrwmxstfyatvrkw/settings/database), go to **Project Settings → Database → Connection string** and copy the following:
+The application uses **Supabase directly** via `@supabase/supabase-js` and `@supabase/ssr`:
 
 | Variable | Where to find it | Notes |
 |---|---|---|
-| `POSTGRES_PRISMA_URL` | **Transaction** pooler URI (port **6543**) | Append `?pgbouncer=true&connection_limit=10` |
-| `POSTGRES_URL_NON_POOLING` | **Direct** connection URI (port **5432**) | Used by Prisma migrations |
-| `POSTGRES_SHADOW_URL` | Same direct URI as above | Used by `prisma migrate dev` |
+| `SUPABASE_URL` | **Project Settings → API** | Supabase project URL |
+| `SUPABASE_PUBLISHABLE_KEY` | **Project Settings → API** | Anon / Publishable key |
+| `SUPABASE_SECRET_KEY` | **Project Settings → API** | Service role / Secret key |
+| `NEXT_PUBLIC_SUPABASE_URL` | **Project Settings → API** | Client-side Supabase URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | **Project Settings → API** | Client-side Anon key |
 
-#### 2. Add them to your `.env`
+#### 2. Configure your `.env`
 
-Copy `.env.example` to `.env` and fill in your database password:
+Copy `.env.example` to `.env`:
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` and replace `[YOUR-PASSWORD]` in the three `POSTGRES_*` variables with your Supabase database password.
+#### 3. Database Schema
 
-The final URLs will look like:
+Schema migrations are located in `supabase/migrations/` and can be applied directly to Supabase via the Supabase Dashboard SQL Editor or Supabase CLI.
 
-```
-POSTGRES_PRISMA_URL=postgresql://postgres.acqqbhrwmxstfyatvrkw:YOUR_PASSWORD@aws-0-ap-south-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=10
-POSTGRES_URL_NON_POOLING=postgresql://postgres.acqqbhrwmxstfyatvrkw:YOUR_PASSWORD@aws-0-ap-south-1.pooler.supabase.com:5432/postgres
-POSTGRES_SHADOW_URL=postgresql://postgres.acqqbhrwmxstfyatvrkw:YOUR_PASSWORD@aws-0-ap-south-1.pooler.supabase.com:5432/postgres
-```
-
-#### 3. Generate the Prisma client
-
-```bash
-npx prisma generate
-```
 
 #### 4. Push the schema to Supabase
 
@@ -149,41 +140,13 @@ npm run db:integration-test
 Then when running tests, set the `INTEGRATION` environment variable to `true`
 to run the integration tests.
 
-### Prisma
+### Supabase Database & Migrations
 
-The database schema is managed with Prisma. The schema is in `prisma/schema.prisma`.
+The database schema is managed via SQL migrations located in `supabase/migrations/`.
 
-Prisma handles migrations to our database schema, so all schema migrations should be done within
-the context of a Prisma managed migration. This will impact you in two ways:
-
-### Updating your database when someone else added a migration
-
-If someone else adds a schema migration, you will need to apply that migration to your local
-database. If the migration has shipped, then the easiest way to do this is to just copy the
-production database over your local database using the `sync-db.sh` script provided above, which give you both
-the latest schema and the latest data. Simple!
-
-However, if you don't want to do that for some reason, you can instead just tell Prisma to apply
-any unapplied migrations to your database like so:
-
-```
-npx prisma db push
-```
-
-#### Adding a migration
-
-When you want to make a schema migration, edit the `prisma/schema.prisma` to reflect the desired
-changes and then run:
-
-```
-npx prisma migrate dev
-```
-
-which will compute the necessary schema changes based on the changes to `schema.prisma` and apply
-them to your dev database. You will give a name to the migration, which will result in a directory
-and migration SQL file being added to the `prisma/migrations` directory.
-
-Once those migrations are committed and pushed to `main`, the next production build will apply the schema changes to the production database.
+- **Initial schema:** `supabase/migrations/20260912000000_init_supabase_schema.sql`
+- Direct access is provided via `@supabase/supabase-js` and `@supabase/ssr`.
+- Tables, views, and RLS policies can be run in the Supabase Dashboard SQL Editor or via Supabase CLI.
 
 ### Code formatting
 

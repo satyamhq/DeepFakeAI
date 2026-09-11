@@ -1,4 +1,4 @@
-import { Media } from "@prisma/client"
+import { Media } from "../types/db"
 import { MediaPublisherIcon } from "./SiteIcons"
 
 export function PlatformSourceLabel({ media }: { media: Media }) {

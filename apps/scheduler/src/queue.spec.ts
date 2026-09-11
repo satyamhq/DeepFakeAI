@@ -1,4 +1,5 @@
-import { PrismaClient, QueueMessageStatus } from "@prisma/client"
+import { QueueMessageStatus } from "./dbTypes"
+import { schedulerDb } from "./db"
 import { ConsumerEvents, ParallelizedQueueConsumer, QueueService, RateLimitStatus } from "./queue"
 import { LeasedMessage, ProcessorConfig, ProcessQueueMessageResponse } from "./schemas"
 import pino from "pino"
@@ -8,10 +9,9 @@ const describeIntegration = process.env.INTEGRATION ? describe : describe.skip
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 describeIntegration("Integration tests", () => {
-  let prisma: PrismaClient
+  const prisma = schedulerDb
   let queue: QueueService
   beforeAll(async () => {
-    prisma = new PrismaClient()
     queue = new QueueService(prisma, pino({ level: "info" }, pino.destination("/dev/null")))
   })
 
@@ -105,7 +105,7 @@ describeIntegration("Integration tests", () => {
           const soonestExpiring = await queue.getSoonestExpiringLeaseMessage("test")
           expect(soonestExpiring).not.toBeNull()
           await new Promise((resolve) =>
-            setTimeout(resolve, soonestExpiring!.leaseExpiration.getTime() - Date.now() + 400),
+            setTimeout(resolve, soonestExpiring!.leaseExpiration!.getTime() - Date.now() + 400),
           )
           const message = await leaseNextMessage(10)
           expect(message).not.toBeUndefined()

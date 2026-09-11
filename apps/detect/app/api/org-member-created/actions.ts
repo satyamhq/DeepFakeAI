@@ -1,6 +1,6 @@
 "use server"
 
-import { clerkClient } from "@clerk/nextjs/server"
+import { clerkClient } from "../../mockClerkServer"
 import { db } from "../../db"
 
 export default async function attributeUserQueriesToOrg(userId: string, orgId: string) {

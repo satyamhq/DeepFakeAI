@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Trulean } from "@prisma/client"
+import { Trulean } from "../../types/db"
 import { MdExpandMore, MdExpandLess } from "react-icons/md"
 import { siteUrl } from "../../site"
 import { MediaType, typeLabels, typeIcons } from "../../data/media"

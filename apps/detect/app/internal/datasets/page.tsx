@@ -1,4 +1,4 @@
-import { Dataset } from "@prisma/client"
+import { Dataset, DatasetGroup } from "../../types/db"
 import { db } from "../../server"
 import { MediaType } from "../../data/media"
 import { meansUnknown } from "../../data/groundTruth"
@@ -44,7 +44,7 @@ function DatasetRow({ dataset, counts }: { dataset: Dataset; counts: CountMeta }
 const DisableCounts = true
 export default async function Page() {
   const datasets = await loadDatasets()
-  const groups = await db.datasetGroup.findMany()
+  const groups: DatasetGroup[] = await db.datasetGroup.findMany()
 
   // Loading all of our tens of thousands of media records just to count up how many media items are in each dataset
   // has become prohibitively expensive. So we're disabling it. I'm leaving it here in case we want to move it to a

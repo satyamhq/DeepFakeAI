@@ -1,5 +1,5 @@
 import { setTimeout } from "timers/promises"
-import { Rerun, RequestState } from "@prisma/client"
+import { Rerun, RequestState } from "../../types/db"
 import { db } from "../../server"
 import { processors } from "../../model-processors/all"
 import { fetchSingleProgress } from "../../services/mediares"
@@ -22,20 +22,20 @@ const isActive = (state: RequestState | null) => state == "UPLOADING" || state =
 const maxAnalysisTime = 120
 
 async function processRerun(rerun: Rerun, status: { sources: Record<string, any> }, apiAuthInfo: ApiAuthInfo) {
-  const proc = processors[rerun.source]
+  const proc = processors[rerun.source!]
   if (!proc) {
     console.warn(`Rerun configured with unknown processor: ${rerun.source} (${rerun.id})`)
     return
   }
   const { matchedIds, incomplete } = await loadMedia({
     proc,
-    keywords: rerun.keywords,
+    keywords: rerun.keywords ?? "",
     mediaId: rerun.mediaId,
-    dateRange: { from: rerun.fromDate ?? undefined, to: rerun.toDate ?? undefined },
-    started: rerun.started,
-    includeUnknown: rerun.includeUnknown,
-    onlyErrors: rerun.onlyErrors,
-    leewayDays: rerun.leewayDays,
+    dateRange: { from: rerun.fromDate ? new Date(rerun.fromDate).toISOString().slice(0, 10) : undefined, to: rerun.toDate ? new Date(rerun.toDate).toISOString().slice(0, 10) : undefined },
+    started: (rerun.started ?? new Date()) as Date,
+    includeUnknown: rerun.includeUnknown ?? false,
+    onlyErrors: rerun.onlyErrors ?? false,
+    leewayDays: rerun.leewayDays ?? 0,
   })
 
   // if we are already at the max parallel analyses for this source, then we can't start any more
@@ -136,7 +136,7 @@ async function processRerun(rerun: Rerun, status: { sources: Record<string, any>
     )
   }
 
-  status.sources[rerun.source] = {
+  status.sources[rerun.source!] = {
     matched: matchedIds.length,
     incomplete: incomplete.length,
     pending: pending.length,

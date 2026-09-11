@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server"
-import { Media, AnalysisResult } from "@prisma/client"
+import { Media, AnalysisResult } from "../../types/db"
 import { db } from "../../server"
 import { response } from "../util"
 import { checkResults, updateResults, maybeUpdateResults } from "../get-results/actions"

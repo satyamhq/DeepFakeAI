@@ -1,4 +1,4 @@
-import { RequestState } from "@prisma/client"
+import { RequestState } from "../../types/db"
 import { db } from "../../server"
 import { response } from "../util"
 import { pruneToHighestScoringOutput } from "../../model-processors/hive-util"

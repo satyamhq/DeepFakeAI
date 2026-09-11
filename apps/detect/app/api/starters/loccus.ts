@@ -1,5 +1,5 @@
 import nodeFetch from "node-fetch"
-import { RequestState } from "@prisma/client"
+import { RequestState } from "../../types/db"
 import { fetchJson } from "../../fetch"
 import { MediaTrack } from "../../data/media"
 import { ErrorResponse, MaxMediaMB, UploadResponse, VerifyResponse, audioId } from "../../model-processors/loccus"

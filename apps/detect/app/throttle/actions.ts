@@ -4,7 +4,7 @@ import * as Slack from "../utils/Slack"
 
 import { db } from "../server"
 import { getCurrentWindowStart, throttleLimitForUserType } from "./windowing"
-import { UserType } from "@prisma/client"
+import { UserType } from "../types/db"
 import { isGateEnabled } from "../gating"
 import { auth as clerkAuth } from "../mockClerk"
 

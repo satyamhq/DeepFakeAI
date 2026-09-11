@@ -10,7 +10,7 @@ import { saveUploadedFile } from "./actions"
 import axios from "axios"
 import { checkIsCurrentUserThrottled } from "../../throttle/actions"
 import { InnerAccentContainer } from "../../QueryPageTabs"
-import { UserType } from "@prisma/client"
+import { UserType } from "../../types/db"
 import { createFileUpload } from "../../actions/mediares"
 
 const FILE_LIMIT_MB = 100

@@ -3,7 +3,7 @@
 import { Dispatch, SetStateAction, useState } from "react"
 import { Card, Checkbox, Dropdown, Select, TextInput } from "flowbite-react"
 import { FaRegSquare, FaRegCheckSquare } from "react-icons/fa"
-import { MediaMetadata, Trulean, YesNoReview } from "@prisma/client"
+import { MediaMetadata, Trulean, YesNoReview } from "../../types/db"
 import { JoinedMedia, emptyMeta, mediaType } from "../../data/media"
 import {
   fakeLabelsWithUnreviewed,

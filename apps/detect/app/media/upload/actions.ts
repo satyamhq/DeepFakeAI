@@ -7,7 +7,7 @@ import { checkIsThrottled } from "../../throttle/actions"
 import { buildFakeMediaUrl } from "./util"
 import { getMediaResClient } from "../../services/mediares"
 import { maybeAttributeWithOrg, checkCreateQuery, recordMediaUserType } from "../../api/resolve-media/resolve"
-import { UserType } from "@prisma/client"
+import { UserType } from "../../types/db"
 import { isUserInOrg } from "../../utils/clerk"
 
 export type SaveRequest = {

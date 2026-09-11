@@ -1,4 +1,4 @@
-import { Media, RequestState } from "@prisma/client"
+import { Media, RequestState } from "../../types/db"
 import { db } from "../../server"
 import { checkers } from "../starters/all"
 import { mediaType } from "../../data/media"

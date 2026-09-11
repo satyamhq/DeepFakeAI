@@ -1,6 +1,6 @@
 "use server"
 
-import { Trulean } from "@prisma/client"
+import { Trulean } from "../../types/db"
 import { db, getServerRole } from "../../server"
 import { humanFactCheckersNotification } from "../../api/media-metadata/actions"
 import { revalidatePath } from "next/cache"

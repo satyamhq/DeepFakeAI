@@ -1,4 +1,4 @@
-import { RequestState } from "@prisma/client"
+import { RequestState } from "../../types/db"
 import { siteUrl } from "../../site"
 import { db } from "../../server"
 import { fetchJson } from "../../fetch"
@@ -86,9 +86,8 @@ export const hiveSchedulerJob = makeSchedulerJob({
       return { status: "retry" }
     }
     const url = progress.url
-    // if we're talking to a local database, don't issue a Hive query as we will never receive a
-    // webhook callback on the local database; just return fake results
-    if (!process.env.LOCALHOST_NGROK_URL && process.env.POSTGRES_PRISMA_URL?.includes("@localhost")) {
+    // if running in test environment without ngrok, don't issue a Hive query
+    if (!process.env.LOCALHOST_NGROK_URL && process.env.NODE_ENV === "test") {
       logger.error({ event: "hive/local-database-not-supported" }, "Cannot perform Hive analysis from test environment")
       await db.analysisResult.update({
         where: { mediaId_source: { mediaId, source: proc } },

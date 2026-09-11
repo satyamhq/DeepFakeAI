@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server"
-import { RequestState } from "@prisma/client"
+import { RequestState } from "../../types/db"
 import { db } from "../../server"
 import { mediaType } from "../../data/media"
 import { resolveResults, determineVerdict } from "../../data/verdict"

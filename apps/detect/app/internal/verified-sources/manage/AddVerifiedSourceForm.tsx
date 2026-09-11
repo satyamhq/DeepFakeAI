@@ -1,7 +1,7 @@
 "use client"
 
 import { Button, Select } from "flowbite-react"
-import { MediaPublisher, VerifiedSource } from "@prisma/client"
+import { MediaPublisher, VerifiedSource } from "../../../types/db"
 import { createVerifiedSource } from "./actions"
 import { useState } from "react"
 

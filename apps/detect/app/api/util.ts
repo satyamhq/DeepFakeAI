@@ -1,4 +1,4 @@
-import { RequestState } from "@prisma/client"
+import { RequestState } from "../types/db"
 
 /** Creates our various API response types. */
 export const response = {

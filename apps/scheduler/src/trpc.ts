@@ -1,13 +1,13 @@
-import type { PrismaClient } from "@prisma/client"
 import { initTRPC, TRPCError } from "@trpc/server"
 import type { QueueService } from "./queue"
 import { SchedulerConfig } from "./config"
 import type { JWTPayload } from "jose"
 import { Poller } from "./util"
 import { ConsumerPool } from "./consumers"
+import type { SchedulerDbClient } from "./db"
 
 export type Context = {
-  prisma: PrismaClient
+  prisma: SchedulerDbClient
   queue: QueueService
   schedulerConfig: SchedulerConfig
   jwt: JWTPayload | null

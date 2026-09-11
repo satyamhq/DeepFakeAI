@@ -3,7 +3,7 @@ import { promises as fs } from "fs"
 import { TwitterApi } from "twitter-api-v2"
 import { NextRequest } from "next/server"
 import { getServerRole } from "../../server"
-import { requireEnv, response } from "../util"
+import { response } from "../util"
 
 export async function POST(req: NextRequest) {
   const role = await getServerRole()

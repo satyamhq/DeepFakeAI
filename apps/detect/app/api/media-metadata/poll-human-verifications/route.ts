@@ -1,4 +1,4 @@
-import { GroundTruthUpdate } from "@prisma/client"
+import { GroundTruthUpdate } from "../../../types/db"
 import { db } from "../../../server"
 import { response } from "../../util"
 import { notifyUsersGroundTruthUpdate } from "../actions"
@@ -37,7 +37,7 @@ export async function GET() {
   const allUpdates = await db.groundTruthUpdate.findMany({ orderBy: { createdAt: "asc" } })
   const mediaIdToUpdates: Record<string, GroundTruthUpdate[]> = {}
   await Promise.all(
-    allUpdates.map(async (update) => {
+    allUpdates.map(async (update: GroundTruthUpdate) => {
       try {
         await db.groundTruthUpdate.update({
           where: { id: update.id },
@@ -53,7 +53,7 @@ export async function GET() {
 
   const updateLog = allUpdates
     .map(
-      (update) =>
+      (update: GroundTruthUpdate) =>
         `[count=${update.pollCount}, old=${update.oldSummary}, new=${update.newSummary}, id=${update.mediaId}]`,
     )
     .join("\n")

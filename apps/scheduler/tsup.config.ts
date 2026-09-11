@@ -9,6 +9,5 @@ export default defineConfig({
   minify: false,
   entry: ["src/server.ts", "src/jwt.ts", "src/schemas.ts"],
   outDir: "dist",
-  external: ["@prisma/client"],
   noExternal: [/^@truemedia\/.*/],
 })

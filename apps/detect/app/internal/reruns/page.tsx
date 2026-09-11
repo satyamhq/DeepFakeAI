@@ -16,7 +16,7 @@ function formatDateRange(from: string | null, to: string | null): string {
 }
 
 export default async function Page() {
-  const reruns = await db.rerun.findMany({
+  const reruns: any[] = await db.rerun.findMany({
     include: { creator: true },
     orderBy: [{ started: "desc" }],
   })
@@ -68,7 +68,7 @@ export default async function Page() {
         <CreateRerun />
       </div>
 
-      {reruns.find((rr) => !rr.completed) && rerunTable("Active Reruns", false)}
+      {reruns.find((rr: any) => !rr.completed) && rerunTable("Active Reruns", false)}
       {rerunTable("Completed Reruns", true)}
     </>
   )

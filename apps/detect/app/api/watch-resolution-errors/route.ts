@@ -3,7 +3,7 @@ import * as Slack from "../../utils/Slack"
 import { db } from "../../server"
 import { response } from "../util"
 import { determineSourcePlatform } from "../source"
-import { MediaPublisher } from "@prisma/client"
+import { MediaPublisher } from "../../types/db"
 
 // prevent pre-rendering of this route
 export const dynamic = "force-dynamic"

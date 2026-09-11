@@ -1,6 +1,6 @@
 "use client"
 
-import { VerifiedSource } from "@prisma/client"
+import { VerifiedSource } from "../../types/db"
 import { showText, table } from "../ui"
 import { FaEdit, FaRegTrashAlt } from "react-icons/fa"
 import { deleteVerifiedSource, updateVerifiedSource } from "./manage/actions"

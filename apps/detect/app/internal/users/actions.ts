@@ -1,6 +1,6 @@
 "use server"
 
-import { clerkClient } from "@clerk/nextjs/server"
+import { clerkClient } from "../../mockClerkServer"
 import { db, getServerRole } from "../../server"
 import { isCuid } from "../../auth"
 

@@ -1,12 +1,11 @@
 import nodeFetch from "node-fetch"
 import NodeFormData from "form-data"
-import { RequestState } from "@prisma/client"
+import { RequestState } from "../../types/db"
 import { db } from "../../server"
 import { MediaType } from "../../data/media"
 import { response } from "../../data/model"
 import { getJson, fetchJson } from "../../fetch"
 import { ApiResponse, FaceApiResponse, processors } from "../../model-processors/sensity"
-import { requireEnv } from "../util"
 import { processing, fail } from "./util"
 import { Starter } from "./types"
 

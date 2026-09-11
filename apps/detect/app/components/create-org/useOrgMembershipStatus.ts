@@ -1,13 +1,13 @@
 "use client"
 
-import { useUser } from "@clerk/nextjs"
 import {
+  useUser,
+  User,
   ClerkPaginatedResponse,
   OrganizationMembershipResource,
   OrganizationSuggestionResource,
   UserOrganizationInvitationResource,
-  UserResource,
-} from "@clerk/types"
+} from "../../mockClerk"
 import { useEffect, useState } from "react"
 
 /**
@@ -21,7 +21,7 @@ export default function useOrgMembershipStatus():
       memberships: OrganizationMembershipResource[]
       invitations: UserOrganizationInvitationResource[]
       suggestions: OrganizationSuggestionResource[]
-      user: UserResource | null
+      user: User | null
     } {
   const { user, isLoaded, isSignedIn } = useUser()
   const [loading, setLoading] = useState(true)
@@ -29,9 +29,10 @@ export default function useOrgMembershipStatus():
   const [suggestions, setSuggestions] = useState<ClerkPaginatedResponse<OrganizationSuggestionResource> | null>(null)
   useEffect(() => {
     if (user == null) return
+    const safeUser = user as User
     Promise.all([
-      user.getOrganizationInvitations().then(setInvites),
-      user.getOrganizationSuggestions().then(setSuggestions),
+      safeUser.getOrganizationInvitations().then(setInvites),
+      safeUser.getOrganizationSuggestions().then(setSuggestions),
     ]).then(() => {
       setLoading(false)
     })
@@ -39,10 +40,10 @@ export default function useOrgMembershipStatus():
   if (!isLoaded) return { loading: true }
   if (user == null || !isSignedIn)
     return { loading: false, memberships: [], invitations: [], suggestions: [], user: null }
-  const memberships = user.organizationMemberships ?? []
+  const memberships = (user as User).organizationMemberships ?? []
 
   if (loading) {
     return { loading: true }
   }
-  return { loading, memberships, invitations: invites?.data ?? [], suggestions: suggestions?.data ?? [], user }
+  return { loading, memberships, invitations: invites?.data ?? [], suggestions: suggestions?.data ?? [], user: user as User }
 }

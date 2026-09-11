@@ -12,7 +12,7 @@ export default async function Page({ searchParams }: { searchParams: { offset: s
   const mode = searchParams.mode ?? "all"
   const where = mode == "all" ? {} : { user: { email: { not: { endsWith: "@deepfakeai.org" } } } }
   const total = await db.query.count({ where: where })
-  const queries = await db.query.findMany({
+  const queries: any[] = await db.query.findMany({
     skip: offset,
     take: count,
     where,
@@ -20,7 +20,7 @@ export default async function Page({ searchParams }: { searchParams: { offset: s
     include: { user: true },
   })
 
-  const postUrls = queries.map((qq) => qq.postUrl)
+  const postUrls = queries.map((qq: any) => qq.postUrl)
   const postMedias = await db.postMedia.findMany({ where: { postUrl: { in: postUrls } } })
   const postUrlToMediaId: Record<string, string> = {}
   const mediaIdToPostUrl: Record<string, string> = {}

@@ -1,4 +1,4 @@
-import { VerifiedSource } from "@prisma/client"
+import { VerifiedSource } from "../../types/db"
 import { idBasedPlatforms } from "../source"
 import { db } from "../../server"
 

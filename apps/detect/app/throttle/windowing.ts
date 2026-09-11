@@ -1,4 +1,4 @@
-import { UserType } from "@prisma/client"
+import { UserType } from "../types/db"
 
 export function getCurrentWindowStart() {
   const throttleWindowStart = new Date()

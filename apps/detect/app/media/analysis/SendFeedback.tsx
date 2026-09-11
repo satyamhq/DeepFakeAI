@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useFormStatus } from "react-dom"
-import { Trulean, UserFeedback } from "@prisma/client"
+import { Trulean, UserFeedback } from "../../types/db"
 import { Button, Modal, Textarea } from "flowbite-react"
 import { FaRegCheckCircle } from "react-icons/fa"
 import { FaRegCircleXmark } from "react-icons/fa6"

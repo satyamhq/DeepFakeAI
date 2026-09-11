@@ -1,7 +1,7 @@
 import { pageNav, showText, table } from "../ui"
 import { GoToClerkOrganizationsDashboard } from "../../components/GoToClerkDashboard"
 import Link from "next/link"
-import { clerkClient } from "@clerk/nextjs/server"
+import { clerkClient } from "../../mockClerkServer"
 import { ClockIcon } from "../../components/icons"
 
 export const dynamic = "force-dynamic"

@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server"
-import { RequestState, UserType } from "@prisma/client"
+import { RequestState, UserType } from "../../types/db"
 import { db, getServerRole, getRoleByUserId } from "../../server"
 import { mediaType } from "../../data/media"
 import { resolveResults, determineVerdict } from "../../data/verdict"

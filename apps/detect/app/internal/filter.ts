@@ -1,4 +1,4 @@
-import { Media, MediaMetadata } from "@prisma/client"
+import { Media, MediaMetadata } from "../types/db"
 import { mediaType } from "../data/media"
 import { CachedResults } from "../data/model"
 import { resolveResults } from "../data/verdict"

@@ -1,7 +1,7 @@
 "use client"
 
 import { Button, Select, Spinner, Textarea, TextInput } from "flowbite-react"
-import { NotableMedia, Notability, Prisma, MediaPublisher, MediaType } from "@prisma/client"
+import { NotableMedia, Notability, Prisma, MediaPublisher, MediaType } from "../../../../types/db"
 import {
   FaRegTrashAlt,
   FaCode,

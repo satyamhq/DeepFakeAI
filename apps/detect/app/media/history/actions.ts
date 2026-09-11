@@ -1,6 +1,6 @@
 "use server"
 
-import { Prisma, Trulean } from "@prisma/client"
+import { Prisma, Trulean } from "../../types/db"
 import { db } from "../../server"
 import { MediaSource } from "../../data/media"
 import { Verdict, VerdictResult } from "../../data/verdict"

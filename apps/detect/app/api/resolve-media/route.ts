@@ -6,7 +6,7 @@ import { checkApiAuthorization } from "../apiKey"
 import { checkRateLimit } from "../rate"
 import { ANONYMOUS_USER_ID } from "../../../instrumentation"
 import { isGoogleDrive } from "../source"
-import { UserType } from "@prisma/client"
+import { UserType } from "../../types/db"
 import { isUserInOrg } from "../../utils/clerk"
 
 export const dynamic = "force-dynamic"
@@ -107,7 +107,7 @@ export async function POST(req: Request) {
     const mediaIds = savedRsp.result !== "resolved" ? null : savedRsp.media.map((mm) => mm.id)
     if (mediaIds) {
       const medias = await db.media.findMany({ where: { id: { in: mediaIds } }, include: { meta: true } })
-      await Promise.all(medias.map((mm) => maybeAttributeWithOrg({ media: mm, orgId })))
+      await Promise.all(medias.map((mm: any) => maybeAttributeWithOrg({ media: mm, orgId })))
     }
 
     return response.make(200, savedRsp)

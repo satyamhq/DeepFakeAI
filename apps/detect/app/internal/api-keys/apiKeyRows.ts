@@ -1,4 +1,4 @@
-import { clerkClient } from "@clerk/nextjs/server"
+import { clerkClient } from "../../mockClerkServer"
 import {
   serializeApiKeyRecord,
   serializeClerkUser,
@@ -21,7 +21,7 @@ async function getApiKeyRowData(apiKey: ApiKeyWithCounts): Promise<ApiKeyTableRo
   const clerkUser = apiKey.userId
     ? await clerkClient()
         .users.getUserList({ externalId: [apiKey.userId] })
-        .then(({ data }) => data[0] ?? null)
+        .then(({ data }: any) => data?.[0] ?? null)
         .catch(() => null)
     : null
   const organization =
@@ -33,10 +33,10 @@ async function getApiKeyRowData(apiKey: ApiKeyWithCounts): Promise<ApiKeyTableRo
 
   let orgMemberActive = false
   if (clerkUser && organization) {
-    const orgMemberships = await clerkClient().users.getOrganizationMembershipList({
+    const orgMemberships: any = await clerkClient().users.getOrganizationMembershipList({
       userId: clerkUser.id,
     })
-    orgMemberActive = orgMemberships.data.some((m) => m.organization.id === organization.id)
+    orgMemberActive = (orgMemberships.data || []).some((m: any) => m.organization?.id === organization.id)
   }
 
   return {

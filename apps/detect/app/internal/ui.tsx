@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from "react"
 import Link from "next/link"
 import { Label, Radio } from "flowbite-react"
-import { Trulean } from "@prisma/client"
+import { Trulean } from "../types/db"
 import { formatPct } from "../data/model"
 import { FILE_UPLOAD_PSEUDO_URL_BASE, parseFakeMediaUrl } from "../media/upload/util"
 

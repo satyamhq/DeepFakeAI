@@ -1,4 +1,4 @@
-import { Trulean } from "@prisma/client"
+import { Trulean } from "../../types/db"
 import { meansFake, meansReal } from "../../data/groundTruth"
 import { JoinedMedia } from "../../data/media"
 import { mediaVerdict, Verdict, verdicts } from "../../data/verdict"

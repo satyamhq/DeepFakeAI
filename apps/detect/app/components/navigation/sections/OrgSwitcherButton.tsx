@@ -1,6 +1,6 @@
 "use client"
 
-import { OrganizationSwitcher } from "@clerk/nextjs"
+import { OrganizationSwitcher } from "../../../mockClerk"
 import useOrgMembershipStatus from "../../create-org/useOrgMembershipStatus"
 import CreateOrgButton from "../../create-org/CreateOrgButton"
 

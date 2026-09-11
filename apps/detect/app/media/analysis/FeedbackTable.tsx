@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Trulean } from "@prisma/client"
+import { Trulean } from "../../types/db"
 import { Accordion } from "flowbite-react"
 import { CiSquareMore } from "react-icons/ci"
 import { FaRegCheckCircle } from "react-icons/fa"

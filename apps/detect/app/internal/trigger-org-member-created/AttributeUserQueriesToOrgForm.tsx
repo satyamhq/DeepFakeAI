@@ -1,6 +1,6 @@
 "use client"
 
-import { useOrganizationList, useUser } from "@clerk/nextjs"
+import { useOrganizationList, useUser } from "../../mockClerk"
 import { Button, TextInput } from "flowbite-react"
 import { useState } from "react"
 

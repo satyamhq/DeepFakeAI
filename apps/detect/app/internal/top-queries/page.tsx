@@ -30,12 +30,12 @@ export default async function Page({ searchParams }: { searchParams: { days?: st
       <div className="text-4xl bold">
         Top Queries over last {days} day{days !== 1 ? "s" : ""}
       </div>
-      {queries.map(async (qq) => {
+      {queries.map(async (qq: any) => {
         const postMedia = await db.postMedia.findFirst({ where: { postUrl: qq.postUrl }, include: { media: true } })
         if (!postMedia?.mediaId) return null
         const verdicts = await getMediaVerdicts([postMedia?.mediaId])
         const verdict = verdicts[postMedia.mediaId]
-        const type = mediaType(postMedia.media.mimeType ?? "unknown")
+        const type = mediaType(postMedia.media?.mimeType ?? "unknown")
         return (
           <div key={qq.postUrl}>
             <Link href={qq.postUrl}>

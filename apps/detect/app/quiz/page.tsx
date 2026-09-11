@@ -1,11 +1,11 @@
 "use server"
 
 import React from "react"
-import { Media } from "@prisma/client"
+import { Media } from "../types/db"
 import { Metadata } from "next"
 import { mediaVerdict } from "../data/verdict"
 import { db } from "../server"
-import { currentSiteBaseUrl, signUpUrl } from "../site"
+import { currentSiteBaseUrl } from "../site"
 import { metadata } from "../layout"
 import Quiz from "./Quiz"
 import DeepFakeAILogo from "../components/DeepFakeAILogo"

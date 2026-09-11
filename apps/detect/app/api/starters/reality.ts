@@ -1,13 +1,10 @@
-import { RequestState } from "@prisma/client"
+import { RequestState } from "../../types/db"
 import { MediaType } from "../../data/media"
 import { response } from "../../data/model"
 import { db } from "../../server"
 import { processors } from "../../model-processors/reality"
-import { requireEnv } from "../util"
 import { fail } from "./util"
 import { Starter } from "./types"
-
-import { RealityDefender } from "@realitydefender/realitydefender"
 
 type GetUrlResponse = {
   code: string
@@ -29,9 +26,8 @@ const sources: Record<MediaType, keyof typeof processors> = {
 }
 
 export const startAnalysis: Starter = async (media, userId, priority, apiAuthInfo) => {
-  // if we're talking to a local database, don't issue a reality defender query as we will never
-  // receive a webhook callback on the local database; just return fake results
-  if (process.env.POSTGRES_PRISMA_URL?.includes("@localhost")) {
+  // If running in test environment, don't issue a live API call
+  if (process.env.NODE_ENV === "test") {
     return response.error("Cannot perform Reality Defender analysis from test environment")
   }
   const apiKey = process.env.REALITY_API_KEY

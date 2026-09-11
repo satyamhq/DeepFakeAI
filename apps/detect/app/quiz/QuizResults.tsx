@@ -58,7 +58,7 @@ export default function QuizResults({ questions, answers }: { questions: Questio
         <ShareResultsButton score={score} />
       </div>
       <p className="mt-3 md:mt-5">
-        Sign up to get access to DeepFakeAI's free deepfake detector. DeepFakeAI is non-profit, non-partisan, and
+        Sign up to get access to DeepFakeAI&apos;s free deepfake detector. DeepFakeAI is non-profit, non-partisan, and
         free.
       </p>
       <div className="flex flex-row justify-center items-center mt-6">

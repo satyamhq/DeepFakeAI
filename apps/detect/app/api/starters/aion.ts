@@ -1,11 +1,10 @@
 import nodeFetch from "node-fetch"
 import NodeFormData from "form-data"
-import { RequestState } from "@prisma/client"
+import { RequestState } from "../../types/db"
 import { ApiResponse, processors } from "../../model-processors/aion"
 import { MediaTrack } from "../../data/media"
 import { response } from "../../data/model"
 import { fetchJson, getJson } from "../../fetch"
-import { requireEnv } from "../util"
 import { complete } from "./util"
 import { Starter } from "./types"
 
