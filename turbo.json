@@ -6,6 +6,8 @@
       "outputs": [".next/**", "!.next/cache/**"]
     },
     "@truemedia/detect#build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**"],
       "env": [
         "NEXT_PUBLIC_*",
         "POSTGRES_PRISMA_URL",

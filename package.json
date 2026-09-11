@@ -2,12 +2,16 @@
   "name": "truemedia-workspaces",
   "version": "0.0.0",
   "devDependencies": {
+    "cross-env": "^10.1.0",
     "dotenv-cli": "^7.4.2",
     "husky": "^8.0.0",
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
     "syncpack": "^13.0.0",
     "turbo": "^2.2.1"
+  },
+  "engines": {
+    "node": ">=20 <21"
   },
   "lint-staged": {
     "**/*.{ts,tsx}": [],
@@ -22,6 +26,7 @@
   },
   "scripts": {
     "build": "turbo build",
+    "build:render": "prisma generate --schema=prisma/schema.prisma && cross-env NODE_OPTIONS=--max-old-space-size=2048 turbo build --filter=@truemedia/detect...",
     "check-types": "turbo check-types",
     "ci": "turbo run lint check-types build test",
     "db:integration-test": "dotenv -e .env.test -- npx prisma migrate deploy",
@@ -31,6 +36,7 @@
     "lint:fix": "turbo lint:fix",
     "prepare": "husky install",
     "start": "turbo start",
+    "start:render": "turbo start --filter=@truemedia/detect",
     "test": "turbo test"
   },
   "workspaces": [

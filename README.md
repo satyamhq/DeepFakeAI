@@ -213,6 +213,19 @@ npm run test
 
 CI is run in github. To run it locally before you push your changes, use `npm run ci`
 
+## Deployment on Render
+
+To deploy the DeepFakeAI detection web app on Render as a Web Service:
+
+1. **Create a Web Service** in Render connected to your repository.
+2. **Configure Settings**:
+   - **Environment**: `Node` (Node 20 is pinned via `.nvmrc`)
+   - **Build Command**: `npm install && npm run build:render`
+   - **Start Command**: `npm run start:render`
+3. **Environment Variables**:
+   - Add all required environment variables in Render's **Environment** tab (see `.env.example` for details, including database connection strings, Clerk authentication keys, and detector API keys).
+   - Memory management (`--max-old-space-size=2048`), `prisma generate`, and scoped builds (`--filter=@truemedia/detect...`) are handled automatically by `npm run build:render`.
+
 ### Telemetry
 
 #### Vercel Log routing
