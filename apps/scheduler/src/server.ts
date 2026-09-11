@@ -94,7 +94,7 @@ async function main() {
   app.get("/", (_req, res) => {
     res.send("OK")
   })
-  app.listen(PORT)
+  app.listen(PORT, "0.0.0.0")
   rootLogger.info(`Listening on port ${PORT}`)
 }
 

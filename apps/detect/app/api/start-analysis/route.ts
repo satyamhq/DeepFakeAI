@@ -7,6 +7,7 @@ import { checkResults } from "../get-results/actions"
 import { startAnalysisJob, getProcessorAllowlist } from "./actions"
 import { StarterId } from "../starters/types"
 import { internalIdForExternalId, processorsForModels } from "../../model-processors/all"
+import { isSchedulerConfigured } from "../../services/scheduler"
 
 export const dynamic = "force-dynamic"
 
@@ -49,20 +50,28 @@ export async function GET(req: NextRequest) {
   }
 
   if (media.schedulerMessageId == null) {
-    // media isn't ready yet, and there is no outstanding job to kick it off,
-    // let's start one.
-    const messageId = await startAnalysisJob.schedule({
-      priority: "batch",
-      json: {
-        userId,
-        mediaId,
-        priority: "batch",
-        includeIgnoredModels,
-        processorAllowlist: !processorAllowlist || processorAllowlist.length === 0 ? undefined : processorAllowlist,
-        apiAuthInfo,
-      },
-    })
-    await db.media.update({ where: { id: mediaId }, data: { schedulerMessageId: messageId } })
+    if (isSchedulerConfigured()) {
+      try {
+        const messageId = await startAnalysisJob.schedule({
+          priority: "batch",
+          json: {
+            userId,
+            mediaId,
+            priority: "batch",
+            includeIgnoredModels,
+            processorAllowlist: !processorAllowlist || processorAllowlist.length === 0 ? undefined : processorAllowlist,
+            apiAuthInfo,
+          },
+        })
+        if (messageId) {
+          await db.media.update({ where: { id: mediaId }, data: { schedulerMessageId: messageId } })
+        }
+      } catch (err) {
+        console.error("Failed to schedule analysis job:", err)
+      }
+    } else {
+      console.warn("Scheduler is not configured (SCHEDULER_URL not set). Skipping async queueing.")
+    }
   }
 
   const pending = info.pending.length

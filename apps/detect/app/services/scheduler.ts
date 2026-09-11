@@ -82,6 +82,13 @@ export const isSchedulableProcessor = (id: unknown): id is SchedulableProcessorI
  * myJob.schedule({priority: 'live', mediaId: '123', {version: 2, newField: 42}})
  * ```
  */
+export function isSchedulerConfigured(): boolean {
+  return !!(
+    (process.env.SCHEDULER_URL || SCHEDULER_URL) &&
+    (process.env.SCHEDULER_SHARED_AUTH_SECRET || SCHEDULER_SHARED_AUTH_SECRET)
+  )
+}
+
 export function makeSchedulerJob<
   HandleablePayload extends QueueMessageData["json"],
   SchedulablePayload extends HandleablePayload,
@@ -108,6 +115,12 @@ export function makeSchedulerJob<
       json: SchedulablePayload
       delayMs?: number
     }) => {
+      if (!isSchedulerConfigured()) {
+        console.warn(
+          `[Scheduler] Not configured (SCHEDULER_URL or SCHEDULER_SHARED_AUTH_SECRET missing). Skipping queue for processor '${processor}'.`,
+        )
+        return undefined
+      }
       const schedulerTRPCClient = getSchedulerClient()
       const { messageId } = await schedulerTRPCClient.enqueue.mutate({
         message: {
@@ -129,18 +142,20 @@ export function makeSchedulerJob<
 
 export function getSchedulerClient(): ReturnType<typeof createTRPCClient<SchedulerTRPCRouter>> {
   if (!schedulerTRPCClient) {
-    if (!SCHEDULER_URL) {
+    const schedulerUrl = process.env.SCHEDULER_URL || SCHEDULER_URL
+    const sharedSecret = process.env.SCHEDULER_SHARED_AUTH_SECRET || SCHEDULER_SHARED_AUTH_SECRET
+    if (!schedulerUrl) {
       throw new Error("SCHEDULER_URL is not set")
     }
-    if (!SCHEDULER_SHARED_AUTH_SECRET) {
+    if (!sharedSecret) {
       throw new Error("SCHEDULER_SHARED_AUTH_SECRET is not set")
     }
     schedulerTRPCClient = createTRPCClient<SchedulerTRPCRouter>({
       links: [
         httpBatchLink({
-          url: SCHEDULER_URL,
+          url: schedulerUrl,
           async headers() {
-            const token = await getSchedulerClientToken(SCHEDULER_SHARED_AUTH_SECRET)
+            const token = await getSchedulerClientToken(sharedSecret)
             return { Authorization: `Bearer ${token}` }
           },
         }),

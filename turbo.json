@@ -13,6 +13,8 @@
         "POSTGRES_PRISMA_URL",
         "POSTGRES_URL_NON_POOLING",
         "POSTGRES_SHADOW_URL",
+        "DATABASE_URL",
+        "RENDER_EXTERNAL_URL",
         "POSTMARK_TOKEN",
         "AION_API_KEY",
         "REALITY_API_KEY",

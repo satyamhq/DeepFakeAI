@@ -35,8 +35,11 @@
     "lint": "turbo lint",
     "lint:fix": "turbo lint:fix",
     "prepare": "husky install",
-    "start": "turbo start",
+    "start": "turbo start --filter=@truemedia/detect",
+    "start:all": "turbo start",
     "start:render": "turbo start --filter=@truemedia/detect",
+    "start:scheduler": "turbo start --filter=@truemedia/scheduler",
+    "start:web": "turbo start --filter=@truemedia/detect",
     "test": "turbo test"
   },
   "workspaces": [

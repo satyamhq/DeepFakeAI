@@ -3,8 +3,8 @@
 // TODO: use NEXT_PUBLIC_VERCEL_URL
 export const siteUrl = "OPEN-TODO-PLACEHOLDER"
 
-// TODO: rationalize this and siteUrl
-export const currentSiteBaseUrl = process.env.NEXT_PUBLIC_SITE_URL_BASE ?? "http://localhost:3000"
+export const currentSiteBaseUrl =
+  process.env.NEXT_PUBLIC_SITE_URL_BASE ?? process.env.RENDER_EXTERNAL_URL ?? "http://localhost:3000"
 
 export const termsUrl = "OPEN-TODO-PLACEHOLDER"
 

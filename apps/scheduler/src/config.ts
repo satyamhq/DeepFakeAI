@@ -33,7 +33,27 @@ export function loadEnvironmentConfig() {
       process.exit(1)
     }
   }
-  envConfigCache = envConfigSchema.parse(secretsJson)
+
+  // Support Render's native DATABASE_URL as fallback for POSTGRES_PRISMA_URL
+  const configSource: Record<string, any> =
+    typeof secretsJson === "object" && secretsJson !== null ? { ...secretsJson } : {}
+
+  if (!configSource.POSTGRES_PRISMA_URL && configSource.DATABASE_URL) {
+    configSource.POSTGRES_PRISMA_URL = configSource.DATABASE_URL
+  }
+
+  const parsed = envConfigSchema.safeParse(configSource)
+  if (!parsed.success) {
+    const missingKeys = parsed.error.issues.map((i) => i.path.join(".")).join(", ")
+    rootLogger.error(
+      `[Scheduler Config] Missing required environment variables: ${missingKeys}.\n` +
+        `Note: The scheduler is an independent background worker service requiring SCHEDULER_SHARED_AUTH_SECRET and POSTGRES_PRISMA_URL (or DATABASE_URL).\n` +
+        `If deploying on Render, run the scheduler as a separate Background Worker service with these environment variables, NOT inside the main Web Service.`,
+    )
+    process.exit(1)
+  }
+
+  envConfigCache = parsed.data
   return envConfigCache
 }
 

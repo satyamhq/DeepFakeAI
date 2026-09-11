@@ -8,18 +8,34 @@ declare global {
   var cachedPrisma: PrismaClient
 }
 
+function getDatasourceUrl(): string | undefined {
+  const url = process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL
+  if (!url) {
+    return undefined
+  }
+  // Ensure POSTGRES_PRISMA_URL is populated for schema.prisma env("POSTGRES_PRISMA_URL")
+  if (!process.env.POSTGRES_PRISMA_URL) {
+    process.env.POSTGRES_PRISMA_URL = url
+  }
+  // In production, optimize connection pool size if not already specified
+  if (process.env.NODE_ENV === "production" && !url.includes("connection_limit=")) {
+    const separator = url.includes("?") ? "&" : "?"
+    const poolUrl = `${url}${separator}connection_limit=10`
+    process.env.POSTGRES_PRISMA_URL = poolUrl
+    return poolUrl
+  }
+  return url
+}
+
+const datasourceUrl = getDatasourceUrl()
+
 // Prisma's recommendation of using a new PrismaClient instance per request in a production environment.
 let prisma: PrismaClient
 if (process.env.NODE_ENV === "production") {
-  // This is a terrible hack: Next.js provides no way for us to modify the Postgres database URL environment variables
-  // that it automatically sets, and Prisma provides no other way to configure the connection pool size other than via
-  // the POSTGRES_PRISMA_URL environment variable. So we have to hackily append a connection pool size adjustment (the
-  // default is 5) to the environment variable just before creating the Prisma client. Go team.
-  process.env.POSTGRES_PRISMA_URL = process.env.POSTGRES_PRISMA_URL + "&connection_limit=10"
-  prisma = new PrismaClient()
+  prisma = datasourceUrl ? new PrismaClient({ datasourceUrl }) : new PrismaClient()
 } else {
   if (!global.cachedPrisma) {
-    global.cachedPrisma = new PrismaClient()
+    global.cachedPrisma = datasourceUrl ? new PrismaClient({ datasourceUrl }) : new PrismaClient()
   }
   prisma = global.cachedPrisma
 }
