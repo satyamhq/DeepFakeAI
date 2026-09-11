@@ -1,0 +1,41 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm ci",
+  "buildCommand": "node -v && touch .env && npx prisma migrate deploy && prisma generate && npm run build",
+  "outputDirectory": "apps/detect/.next",
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/process-reruns",
+      "schedule": "*/3 * * * *"
+    },
+    {
+      "path": "/api/check-complete",
+      "schedule": "*/3 * * * *"
+    },
+    {
+      "path": "/api/media-metadata/poll-human-verifications",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/watch-provider-errors",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/watch-trending-queries",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/watch-resolution-errors",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/watch-user-signups-spiking",
+      "schedule": "0 * * * *"
+    }
+  ]
+}

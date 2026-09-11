@@ -1,0 +1,15 @@
+{
+  // this ../../node_modules is a workaround for a bug in ts-node
+  // that is fixed in the latest version, but is not yet being used
+  // by jest: https://github.com/TypeStrong/ts-node/issues/2076
+  // Also, package.json overrides don't seem to work because of a
+  // bug in npm: https://github.com/npm/cli/issues/4834 so I can't
+  // explicitly set the ts-node version to the latest.
+  // "extends": "@truemedia/config-typescript/base.json",
+  "extends": "../../node_modules/@truemedia/config-typescript/base.json",
+  "include": ["src/*.ts"],
+  "compilerOptions": {
+    "target": "es2018",
+    "esModuleInterop": false
+  }
+}

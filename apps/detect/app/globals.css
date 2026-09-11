@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+    font-family: "Gellix";
+    src: url("../public/fonts/Gellix-Black.woff") format("woff") src("../public/fonts/Gellix-Black.woff") format("woff2");
+}
+
+.blink-pill-anim {
+    animation-name: blink-pill;
+    animation-duration: 1.5s;
+    animation-iteration-count: infinite;
+    animation-timing-function: steps(1, jump-end);
+}
+
+@keyframes blink-pill {
+    50% { background-color: transparent; }
+}
+
+.user-history-filters button {
+    flex-grow: 1;
+}

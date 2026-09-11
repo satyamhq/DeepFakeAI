@@ -1,0 +1,57 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "@truemedia/detect#build": {
+      "env": [
+        "NEXT_PUBLIC_*",
+        "POSTGRES_PRISMA_URL",
+        "POSTMARK_TOKEN",
+        "AION_API_KEY",
+        "REALITY_API_KEY",
+        "SENSITY_API_TOKEN",
+        "BLOB_READ_WRITE_TOKEN",
+        "GITHUB_REPO_CLONE_TOKEN",
+        "PRISMA_GENERATOR_CLIENT",
+        "OPENAI_API_KEY",
+        "DFTOTAL_API_KEY",
+        "GOOGLE_API_KEY",
+        "VETRIC_API_KEY",
+        "MICROSOFT_API_KEY",
+        "SENTRY_AUTH_TOKEN",
+        "LOCCUS_API_KEY",
+        "SLACK_TOKEN",
+        "TWITTER_CONSUMER_KEY",
+        "TWITTER_CONSUMER_SECRET",
+        "TWITTER_ACCESS_TOKEN_KEY",
+        "TWITTER_ACCESS_TOKEN_SECRET",
+        "CLERK_SECRET_KEY",
+        "CLERK_ORG_CREATED_WEBHOOK_SECRET",
+        "ANON_QUERY",
+        "GROUND_TRUTH_UPDATE_EMAILS_ENABLED",
+        "SCHEDULER_SHARED_AUTH_SECRET",
+        "SCHEDULER_URL",
+        "VERIFIED_LABEL_ENABLED"
+      ]
+    },
+    "dev": {
+      "persistent": true,
+      "cache": false
+    },
+    "start": {
+      "persistent": true,
+      "cache": false,
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "outputs": [],
+      "dependsOn": ["^lint"]
+    },
+    "lint:fix": {},
+    "check-types": {},
+    "test": {}
+  }
+}

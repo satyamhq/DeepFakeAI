@@ -1,0 +1,54 @@
+{
+  "name": "@truemedia/tmcli",
+  "version": "0.0.0",
+  "bin": {
+    "tmcli": "dist/main.mjs"
+  },
+  "dependencies": {
+    "@trpc/client": "^11.0.0-rc.566",
+    "@truemedia/scheduler": "*",
+    "chalk": "^4.1.2",
+    "commander": "^12.1.0",
+    "express": "^4.21.1",
+    "listr2": "^8.2.5",
+    "ngrok": "^5.0.0-beta.2",
+    "ora": "^8.1.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@commander-js/extra-typings": "^12.1.0",
+    "@swc/core": "^1.7.36",
+    "@swc/jest": "^0.2.36",
+    "@truemedia/clients": "*",
+    "@truemedia/config-eslint": "*",
+    "@truemedia/config-typescript": "*",
+    "@types/jest": "^29.5.12",
+    "@types/node": "18.11.3",
+    "dotenv": "^16.4.5",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.3"
+  },
+  "exports": "./dist/main.mjs",
+  "files": [
+    "dist"
+  ],
+  "lint-staged": {
+    "**/*.ts": [
+      "prettier --write",
+      "../../bin/eslint_staged.sh --"
+    ]
+  },
+  "prettier": {
+    "semi": false
+  },
+  "private": true,
+  "scripts": {
+    "build": "tsup-node",
+    "check-types": "tsc --noEmit",
+    "dev": "tsup-node --watch",
+    "lint": "eslint . --max-warnings 0",
+    "test": "jest --passWithNoTests"
+  }
+}

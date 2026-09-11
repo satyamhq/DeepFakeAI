@@ -1,0 +1,278 @@
+openapi: "3.0.0"
+info:
+  title: "API Documentation"
+  version: "1.0"
+  description: |
+    TrueMedia.org provides a suite of APIs for analyzing media for detection of manipulation.
+
+    These endpoints require authorization. Include your API key in the request by replacing TM_API_KEY: `curl -H "x-api-key: TM_API_KEY" -d '{ "postUrl": "URL" }' https://OPEN-TODO-PLACEHOLDER/api/resolve-media` To try out the API on this page, first click the Authorize button below.
+tags:
+  - name: API
+    description: These endpoints can be used together to upload media to TrueMedia.org and retrieve analysis results for that media.
+paths:
+  /api/resolve-media:
+    post:
+      tags:
+        - API
+      summary: "Resolve media from a given URL"
+      description: |
+        Resolves media content from a provided URL. The URL can be to a social media post, or other public server location hosting the media.
+
+        URLs may have multiple pieces of media. For example: a social media URL may lead to a post with five images. This endpoint returns an ID for each piece of media at the URL.
+
+        Resolving media will result in the target media files being cached by our system, but will not trigger an analysis for those media. To do that, use `/api/start-analysis`.
+
+        | Input Type | Supported Formats                                         | File Size                              | Duration                                                |
+        |------------|-----------------------------------------------------------|----------------------------------------|---------------------------------------------------------|
+        | **Image**  | jpg, png, webp<br>*Some detectors support tiff, gif*      | 10MB<br>*Some detectors support 32MB*  | n/a                                                     |
+        | **Video**  | mov, mp4<br>*Some detectors support avi, webm, mkv, flv*  | 32MB<br>*Some detectors support 100MB* | 180 seconds<br>*Some detectors only analyze 90 seconds* |
+        | **Audio**  | wav, mp3, m4a, ogg <br>*Some detectors support flac, acc* | 20MB<br>*Some detectors support 32MB*  | 5 minutes<br>*Some detectors only analyze 90 seconds*   |
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                postUrl:
+                  type: string
+                  format: uri
+                  example: "https://example.com/post123"
+              required:
+                - postUrl
+      responses:
+        "200":
+          description: "Media resolution result: either successfully resolved, or failure. Toggle the dropdown below to see examples of both types of responses."
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      result:
+                        type: string
+                        enum: [resolved]
+                      media:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Media"
+                  - type: object
+                    properties:
+                      result:
+                        type: string
+                        enum: [failure]
+                      reason:
+                        type: string
+              examples:
+                resolved:
+                  value:
+                    result: "resolved"
+                    media:
+                      - id: "4ihV6gu2xnTThzagQ6cMpTA_8GY.jpg"
+                        url: "https://pbs.twimg.com/media/GK0HFlnW0AAJs5c.jpg"
+                        mimeType: "image/jpeg"
+                failure:
+                  value:
+                    result: "failure"
+                    reason: "Unknown media file"
+        "400":
+          description: "Missing `postUrl` in request body"
+        "403":
+          description: "Forbidden from performing this action"
+        "429":
+          description: "Too many requests, rate limit exceeded"
+  /api/start-analysis:
+    get:
+      tags:
+        - API
+      summary: "Start analysis for one media item"
+      description: |
+        Starts the analysis for a specific media item by ID. The ID can be obtained from the `/api/resolve-media` endpoint.
+
+        | Input Type | Average Processing Time | Typical Range |
+        |------------|-------------------------|---------------|
+        | **Image**  | 1:35                    | 0:30 - 3:20   |
+        | **Video**  | 2:25                    | 0:45 - 25:00  |
+        | **Audio**  | 0:42                    | 0:13 - 1:10   |
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: string
+          required: true
+          description: "The ID of the media item to analyze"
+      responses:
+        "200":
+          description: |
+            Successful response indicates if the analysis is already COMPLETE, or now PROCESSING.
+
+            Toggle the dropdown below to see examples of each type of response (PROCESSING and COMPLETE).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  state:
+                    description: "Indicates whether the analysis is already COMPLETE, or now PROCESSING."
+                    type: string
+                    enum: [COMPLETE, PROCESSING]
+                  pending:
+                    type: number
+              examples:
+                COMPLETE:
+                  value:
+                    state: "COMPLETE"
+                    pending: 0
+                PROCESSING:
+                  value:
+                    state: "PROCESSING"
+                    pending: 4
+        "400":
+          description: "Missing required parameter: id"
+        "401":
+          description: "Not authorized to perform this action"
+        "404":
+          description: "No media found with the provided ID"
+  /api/check-analysis:
+    get:
+      tags:
+        - API
+      summary: "Check status of the analysis for one media item and retrieve its analysis results"
+      description: |
+        Retrieves the analysis results for a specific media item by ID. The ID can be obtained from the `/api/resolve-media` endpoint.
+
+        If the analysis is still processing, this returns the status of in-progress analyses. Partial results will be returned until the status is COMPLETE, so it's necessary to poll this API until the full results are ready.
+
+        We recommend polling every 30 seconds or so since some analyses can take a couple minutes.
+
+        Do not call this API more than once per second. This is important to keep in mind if you're polling for many analysis results at the same time.
+
+        | Input Type | Average Processing Time | Typical Range |
+        |------------|-------------------------|---------------|
+        | **Image**  | 1:35                    | 0:30 - 3:20   |
+        | **Video**  | 2:25                    | 0:45 - 5:00   |
+        | **Audio**  | 0:42                    | 0:13 - 1:10   |
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: string
+          required: true
+          description: "The ID of the media item to check and retrieve results"
+      responses:
+        "200":
+          description: |
+            Successful response with partial or full media analysis results. When the analysis is underway you will see partial results. When the analysis is complete, the results and verdict are ready to use.
+
+            If for some reason all of the detectors fail to return results, you will see a response with state ERROR and an "errors" array with a list of errors returned by the detectors. In general, failures only tend to happen if a file format is unsupported, or if the media is too large to be analyzed. Different detectors have different maximum sizes that they can handle, see chart above.
+
+            Toggle the dropdown below to see examples of each type of response (UPLOADING, PROCESSING, COMPLETE, and ERROR).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  state:
+                    description: "Indicates whether the analysis is COMPLETE, or still UPLOADING or PROCESSING. If the analysis fails for the supplied media, this is returned as ERROR. Results are partial and the verdict is tentative while processing."
+                    type: string
+                    enum: [COMPLETE, PROCESSING, UPLOADING, ERROR]
+                  results:
+                    description: "The results contain an entry for every detector that analyzed the media. The key is the ID of the detector, and the value is the analysis for this detector."
+                    type: object
+                    properties:
+                      image-detector-name:
+                        $ref: "#/components/schemas/Result"
+                      video-detector-name:
+                        $ref: "#/components/schemas/Result"
+                      audio-detector-name:
+                        $ref: "#/components/schemas/Result"
+                  verdict:
+                    $ref: "#/components/schemas/Verdict"
+              examples:
+                COMPLETE:
+                  value:
+                    state: "COMPLETE"
+                    verdict: "high"
+                    results:
+                      video1: { rank: "high", score: 0.7986209988594055, analysisTime: 1.243 }
+                      audio1: { rank: "high", score: 0.7186686992645264, analysisTime: 10.453 }
+                      audio2: { rank: "high", score: 0.9674407429993153, analysisTime: 5.283 }
+                      video2: { rank: "high", score: 0.8139402667681376, analysisTime: 7.987 }
+                      video3: { rank: "low", score: 0.12114653193081419, analysisTime: 25.781 }
+                      video4: { rank: "high", score: 0.8819727301597595, analysisTime: 5.876 }
+                      video5: { rank: "low", score: 0.2921225428581238, analysisTime: 12.237 }
+                UPLOADING:
+                  value:
+                    state: "UPLOADING"
+                PROCESSING:
+                  value:
+                    state: "PROCESSING"
+                    pending: 3
+                    results:
+                      image1: { rank: "high", score: 0.7096343040466309, analysisTime: 1.233 }
+                      image2: { rank: "uncertain", score: 0.4622875452041626, analysisTime: 0.663 }
+                ERROR:
+                  value:
+                    state: "ERROR"
+                    errors: ["error 1", "error 2"]
+        "400":
+          description: "Missing required parameter: id"
+        "401":
+          description: "Not authorized to perform this action"
+        "404":
+          description: "No media found with the provided ID"
+        "429":
+          description: "Too many requests, rate limit exceeded"
+components:
+  schemas:
+    Result:
+      description: "The analysis result for one detector."
+      type: object
+      properties:
+        rank:
+          $ref: "#/components/schemas/Rank"
+        score:
+          $ref: "#/components/schemas/Score"
+        analysisTime:
+          $ref: "#/components/schemas/AnalysisTime"
+      example: [rank: "high", score: 0.8154211839040121, analysisTime: 1.558]
+    AnalysisTime:
+      description: "The duration in seconds that this detector spent analyzing the media."
+      type: number
+    Score:
+      description: "A numerical score from 0 to 1 of whether this detector believes it is fake (1) or real (0)"
+      type: number
+      minimum: 0
+      maximum: 1
+    Rank:
+      description: "This label describes the detector's analysis. low = Little Evidence, uncertain = Uncertain, and high = Substantial Evidence. n/a indicates that a particular detector was unable to analyze a piece of media."
+      type: string
+      enum: [low, uncertain, high, n/a]
+    Verdict:
+      description: "This label describes TrueMedia.org's overall verdict. low = Little Evidence, uncertain = Uncertain, high = Substantial Evidence, and trusted indicates that the media is from a trusted source. These are translated in the TrueMedia.org website to green, yellow, and red frames around the media and the text labels listed above."
+      type: string
+      enum: [low, uncertain, high, trusted]
+    Media:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "4ihV6gu2xnTThzagQ6cMpTA_8GY.jpg"
+        url:
+          type: string
+          format: uri
+          example: "https://pbs.twimg.com/media/GK0HFlnW0AAJs5c.jpg"
+        mimeType:
+          type: string
+          example: "image/jpeg"
+  securitySchemes:
+    ApiKeyAuth: # arbitrary name for the security scheme
+      type: apiKey
+      in: header # can be "header", "query" or "cookie"
+      name: X-API-KEY # name of the header, query parameter or cookie

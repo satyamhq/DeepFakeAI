@@ -1,0 +1,40 @@
+{
+  "name": "truemedia-workspaces",
+  "version": "0.0.0",
+  "devDependencies": {
+    "dotenv-cli": "^7.4.2",
+    "husky": "^8.0.0",
+    "lint-staged": "^15.2.2",
+    "prettier": "^3.2.5",
+    "syncpack": "^13.0.0",
+    "turbo": "^2.2.1"
+  },
+  "lint-staged": {
+    "**/*.{ts,tsx}": [],
+    "**/package.json": [
+      "syncpack format --source"
+    ]
+  },
+  "packageManager": "npm@10.8.2",
+  "prettier": {
+    "semi": false,
+    "printWidth": 120
+  },
+  "scripts": {
+    "build": "turbo build",
+    "check-types": "turbo check-types",
+    "ci": "turbo run lint check-types build test",
+    "db:integration-test": "dotenv -e .env.test -- npx prisma migrate deploy",
+    "dev": "turbo dev",
+    "format": "prettier --write '**/*.{ts,tsx}' && syncpack format",
+    "lint": "turbo lint",
+    "lint:fix": "turbo lint:fix",
+    "prepare": "husky install",
+    "start": "turbo start",
+    "test": "turbo test"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

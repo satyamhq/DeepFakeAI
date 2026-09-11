@@ -1,0 +1,537 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("POSTGRES_PRISMA_URL")
+  directUrl         = env("POSTGRES_URL_NON_POOLING")
+  shadowDatabaseUrl = env("POSTGRES_SHADOW_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @default(now()) @map("updated_at")
+
+  // The `email` field is deprecated. The correct source of truth is in Clerk,
+  // where the user may have multiple emails and may have updated their email
+  // to be different than the one here in prisma, which may be stale.
+  email         String?   @unique
+
+  queries        Query[]
+  feedback       UserFeedback[]
+  reruns         Rerun[]
+  rateLimits     RateLimit[]
+  apiKeys        ApiKey[]       @relation("user")
+  createdApiKeys ApiKey[]       @relation("createdBy")
+
+  @@map("users")
+}
+
+model Query {
+  id        String   @id @default(cuid())
+  postUrl   String   @map("post_url")
+  time      DateTime @default(now())
+  orgId     String?  @map("org_id")
+  apiKeyId  String?  @map("api_key_id")
+  userId    String   @map("user_id")
+  ipAddr    String   @default("") @map("ip_addr")
+  isDeleted Boolean  @default(false) @map("is_deleted")
+
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apiKey          ApiKey?           @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+  BatchUploadItem BatchUploadItem[]
+
+  @@index([userId])
+  @@map("queries")
+}
+
+model PostMetadata {
+  postUrl String @id @map("post_url")
+  json    String @map("json")
+
+  @@map("post_metadata")
+}
+
+model PostMedia {
+  postUrl String @map("post_url")
+  mediaId String @map("media_id")
+
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@id([postUrl, mediaId])
+  @@map("post_media")
+}
+
+model Media {
+  // The cache id of the media (provided by mediares service).
+  id             String         @id
+  // The source URL for the media.
+  mediaUrl       String         @map("media_url")
+  // The mime-type for the media.
+  mimeType       String         @map("mime_type")
+  // The duration of the media, in seconds. 0 for images, or if unknown.
+  duration       Int            @default(0)
+  // The size of the media in bytes. 0 if unknown.
+  size           Int            @default(0)
+  // The time at which `mediaUrl` was resolved from `post`.
+  resolvedAt     DateTime       @default(now()) @map("resolved_at")
+  // The cache id of associated audio media (optional).
+  audioId        String?        @map("audio_id")
+  // The mime_type of associated audio media (optional).
+  audioMimeType  String?        @map("audio_mime_type")
+  // Whether this media has been viewed by an external (non-truemedia.org) user.
+  external       Boolean        @default(false)
+  // Cached results from all applicable models, computed from the raw AnalysisResults.
+  results        Json           @default("{}")
+  // The time it took to analyze this media in seconds. 0 if unknown.
+  analysisTime   Int            @default(0) @map("analysis_time")
+  // The platform where this media was published, if known
+  source         MediaPublisher @default(UNKNOWN)
+  // The platform-specific ID of the user posting the media (if from social media)
+  sourceUserId   String?        @map("source_user_id")
+  // Human-friendly username of the user posting the media (if from social media)
+  sourceUserName String?        @map("source_user_name")
+  // Whether the source of this media is in our verified list
+  verifiedSource Boolean        @default(false) @map("verified_source")
+  // Whether an internal employee has posted this media to X.com
+  postedToX      Boolean        @default(false)
+  // Whether this media was trimmed into a shorter media for analysis.
+  trimmed        Boolean        @default(false)
+
+  // The id of the message in the scheduler service that is processing this media.
+  schedulerMessageId String? @map("scheduler_message_id")
+
+  // The id of the API key used to resolve this media.
+  apiKeyId String? @map("api_key_id")
+
+  posts              PostMedia[]
+  meta               MediaMetadata?
+  analysisResults    AnalysisResult[]
+  notability         NotableMedia?
+  quizMedia          QuizMedia?
+  feedback           UserFeedback[]
+  mentionQueue       MentionQueue[]
+  groundTruthUpdates GroundTruthUpdate[]
+  mediaThrottle      MediaThrottle[]
+  apiKey             ApiKey?             @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+  BatchUploadItem    BatchUploadItem[]
+
+  @@index([resolvedAt])
+  @@map("media")
+}
+
+// Records the type of user who first uploaded media
+// Informs overall category rate limiting for media resolution
+model MediaThrottle {
+  mediaId  String   @id @map("media_id")
+  userType UserType @map("user_type")
+
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@map("media_throttle")
+}
+
+enum UserType {
+  ANONYMOUS // User is using the website and is not authenticated
+  REGISTERED // User is using the website and is authenticated
+  API // User is not using the website and is authenticated
+}
+
+// This is used to track the ground truth "fake" status of a media track.
+enum Trulean {
+  UNREVIEWED // This item has not been reviewed and fake status is unknown
+  UNKNOWN // This item has been reviwed and fake status remains unknown
+  FALSE // Media/track is real
+  TRUE // Media/track is fake
+}
+
+enum YesNoReview {
+  YES
+  NO
+  UNREVIEWED
+}
+
+model MediaMetadata {
+  mediaId          String  @id @map("media_id")
+  fake             Trulean @default(UNREVIEWED)
+  audioFake        Trulean @default(UNREVIEWED) @map("audio_fake")
+  relabelFake      Trulean @default(UNREVIEWED) @map("relabel_fake")
+  relabelAudioFake Trulean @default(UNREVIEWED) @map("relabel_audio_fake")
+  language         String  @default("")
+  handle           String  @default("")
+  source           String  @default("")
+  keywords         String  @default("")
+  comments         String  @default("")
+  speakers         String  @default("")
+  misleading       Boolean @default(false)
+  noPhotorealisticFaces Boolean @default(false) @map("no_photorealistic_faces")
+
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  fakeReviewer             String @default("")
+  audioFakeReviewer        String @default("")
+  relabelFakeReviewer      String @default("") @map("relabel_fake_reviewer")
+  relabelAudioFakeReviewer String @default("") @map("relabel_fake_audio_reviewer")
+
+  videoObjectOverlay YesNoReview @default(UNREVIEWED) @map("video_object_overlay")
+  videoTextOverlay   YesNoReview @default(UNREVIEWED) @map("video_text_overlay")
+  videoEffects       YesNoReview @default(UNREVIEWED) @map("video_effects")
+
+  @@map("media_metadata")
+}
+
+model UserFeedback {
+  userId   String  @map("user_id")
+  mediaId  String  @map("media_id")
+  fake     Trulean @default(UNKNOWN)
+  comments String  @default("")
+
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, mediaId])
+  @@map("user_feedback")
+}
+
+enum RequestState {
+  ERROR
+  UPLOADING
+  PROCESSING
+  COMPLETE
+}
+
+model AnalysisResult {
+  /// The URL of the media that was analyzed, also the primary key.
+  mediaId      String        @map("media_id")
+  /// The partner or model that did the analysis. For example: `hive`, `clarity` or `alt_freezing`
+  source       String
+  /// The full JSON response from the partner/model.
+  json         String
+  /// The user on behalf of whom the analysis was done, if any.
+  userId       String?       @map("user_id")
+  /// The time at which the analysis was initiated.
+  created      DateTime      @default(now())
+  /// The time at which the analysis was completed.
+  completed    DateTime?
+  /// A request id used to identify callbacks from the analysis partner.
+  requestId    String?       @map("request_id")
+  /// The state the request is in.
+  requestState RequestState? @map("request_state")
+
+  apiKeyId String? @map("api_key_id")
+
+  media  Media   @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  apiKey ApiKey? @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+
+  @@id([mediaId, source])
+  @@map("analysis_results")
+}
+
+enum Notability {
+  NOTABLE
+  CANDIDATE
+  WAS_NOTABLE
+  PLAIN
+}
+
+enum MediaPublisher {
+  UNKNOWN
+  OTHER
+  X
+  TIKTOK
+  MASTODON
+  YOUTUBE
+  REDDIT
+  GOOGLE_DRIVE
+  INSTAGRAM
+  FACEBOOK
+}
+
+enum MediaType {
+  UNKNOWN
+  VIDEO
+  IMAGE
+  AUDIO
+}
+
+model NotableMedia {
+  /// The URL of the media that was analyzed, also the primary key.
+  mediaId String @id @map("media_id")
+
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  /// The type of notability.
+  notability Notability @default(PLAIN)
+
+  /// The time at which the NotableMedia was initiated.
+  created DateTime @default(now())
+
+  /// A manual scoring of the NotableMedia.
+  /// Everything defaults to zero. Higher scores represent more Notable media.
+  score Int @default(0)
+
+  /// A title describing the notable media.
+  title String @default("")
+
+  /// A short description of the media.
+  description String @default("")
+
+  /// The platform the media was published on.
+  appearedIn MediaPublisher @default(UNKNOWN) @map("appeared_in")
+
+  /// The type of the media.
+  mediaType MediaType @default(UNKNOWN) @map("media_type")
+
+  /// The URL of an image preview of the media.
+  imagePreviewUrl String @default("") @map("image_preview_url")
+
+  @@map("notable_media")
+}
+
+model QuizMedia {
+  /// The URL of the media that was analyzed, also the primary key.
+  mediaId String @id @map("media_id")
+
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+}
+
+model Rerun {
+  id             String    @id @default(cuid())
+  creatorId      String    @map("creator_id")
+  source         String
+  keywords       String
+  mediaId        String    @default("")
+  fromDate       String?   @map("from_date")
+  toDate         String?   @map("to_date")
+  includeUnknown Boolean   @default(false) @map("include_unknown")
+  onlyErrors     Boolean   @default(false) @map("only_errors")
+  leewayDays     Int       @default(0) @map("leeway_days")
+  matched        Int
+  started        DateTime
+  complete       Int
+  completed      DateTime?
+
+  creator User @relation(fields: [creatorId], references: [id])
+
+  @@map("reruns")
+}
+
+model RateLimit {
+  userId String @map("user_id")
+  action String
+  times  Int[]
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, action])
+  @@map("rate_limits")
+}
+
+model MentionQueue {
+  id String @id @default(cuid())
+
+  /// What platform the mention is from
+  platform MediaPublisher
+
+  /// Platform-specific identifier for the mention
+  platformId String @map("platform_id")
+
+  /// Platform-specific username of the mentioner. Used for @mentions in the bot's replies.
+  platformUserName String? @map("platform_user_name")
+
+  /// Identifier for the extracted media
+  /// This comes from the post with the media, expected to be the parent of the mention above.
+  mediaId String? @map("media_id")
+
+  /// Timestamp when added to the queue
+  enqueued DateTime
+
+  /// SetNull allows deleting Media from the Media table without losing track of seen mentions
+  media        Media?         @relation(fields: [mediaId], references: [id], onDelete: SetNull)
+  MentionReply MentionReply[]
+
+  @@unique([platform, platformId])
+  @@map("mention_queue")
+}
+
+model MentionReply {
+  id String @id @default(cuid())
+
+  /// row ID of the mention for response
+  mentionId String @map("mention_id")
+
+  // Which kind of reply was posted
+  type ReplyType @default(FINAL)
+
+  // Timestamp when the reply was posted
+  replied DateTime
+
+  // Platform where the reply is published
+  platform MediaPublisher
+
+  // Platform-specific ID for the reply
+  platformId String @map("platform_id")
+
+  replyTo MentionQueue @relation(fields: [mentionId], references: [id])
+
+  @@unique([mentionId, type])
+  @@map("mention_reply")
+}
+
+enum ReplyType {
+  PROCESSING
+  FINAL
+}
+
+model VerifiedSource {
+  id String @id @default(cuid())
+
+  platform MediaPublisher
+
+  // Human-friendly name for this source
+  // Optional, mainly for cases where the platform ID isn't meaningful to humans (like YouTube)
+  displayName String? @map("display_name")
+
+  // The actual value used to identify this source on the platform
+  // For most sources this is a username/handle
+  // For YouTube this is the channel ID, for Facebook its the account ID
+  platformId String @map("platform_id")
+
+  added DateTime @default(now())
+
+  @@unique([platform, platformId])
+  @@map("verified_source")
+}
+
+model GroundTruthUpdate {
+  id String @id @default(cuid())
+
+  // The id of the media being updated
+  mediaId String @map("media_id")
+
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  // The old summary
+  oldSummary String
+
+  // The new summary
+  newSummary String
+
+  // This number gets incremented each time the
+  // /api/media-metadata/poll-human-verifications endpoint is polled.
+  // The idea is to deal with simple increments instead of bothering with
+  // timestamps and dates and timezones.
+  pollCount Int @default(0)
+
+  // We still need a `createdAt` property so we can sort each batch of
+  // `GroundTruthUpdate` by the time the updates were created and report the
+  // overall initial value and the overall final value.
+  createdAt DateTime @default(now()) @map("created_at")
+}
+
+model Dataset {
+  id       String @id @default(cuid())
+  name     String
+  source   String
+  keywords String
+
+  @@unique([name])
+  @@map("datasets")
+}
+
+model DatasetGroup {
+  id       String    @id @default(cuid())
+  name     String
+  setIds   String[]
+  fromDate DateTime? @map("from_date")
+  toDate   DateTime? @map("to_date")
+
+  @@unique([name])
+  @@map("dataset_groups")
+}
+
+model PersistentScratch {
+  id  String @id @default(cuid())
+  key String
+  val String
+}
+
+model ApiKey {
+  id            String         @id @default(cuid())
+  key           String         @unique
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @default(now()) @map("updated_at")
+  enabled       Boolean        @default(true)
+  userId        String?        @map("user_id")
+  user          User?          @relation("user", fields: [userId], references: [id], onDelete: SetNull)
+  orgId         String?        @map("org_id")
+  createdById   String?        @map("created_by_id")
+  createdBy     User?          @relation("createdBy", fields: [createdById], references: [id], onDelete: SetNull)
+  queueMessages QueueMessage[]
+
+  queries         Query[]
+  media           Media[]
+  analysisResults AnalysisResult[]
+
+  @@unique([userId, orgId])
+  @@map("api_keys")
+}
+
+model BatchUpload {
+  id        String            @id @default(cuid())
+  userId    String            @map("user_id")
+  orgId     String?           @map("org_id")
+  apiKeyId  String?           @map("api_key_id")
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @default(now()) @map("updated_at")
+  items     BatchUploadItem[]
+
+  @@map("batch_uploads")
+}
+
+model BatchUploadItem {
+  id                 String   @id @default(cuid())
+  batchUploadId      String   @map("batch_upload_id")
+  postUrl            String   @map("post_url")
+  queryId            String?  @map("query_id")
+  mediaId            String?  @map("media_id")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @map("updated_at")
+  resolveUrlJobId    String?  @map("resolve_url_job_id")
+  startAnalysisJobId String?  @map("start_analysis_job_id")
+  debugInfo          Json?    @map("debug_info")
+
+  query       Query?      @relation(fields: [queryId], references: [id], onDelete: SetNull)
+  batchUpload BatchUpload @relation(fields: [batchUploadId], references: [id], onDelete: Cascade)
+  media       Media?      @relation(fields: [mediaId], references: [id], onDelete: SetNull)
+
+  @@map("batch_upload_items")
+}
+
+enum QueueMessageStatus {
+  PENDING
+  IN_PROGRESS
+  FAILED
+  COMPLETED
+  CANCELED
+}
+
+model QueueMessage {
+  id              String             @id @default(cuid())
+  apikeyId        String?            @map("apikey_id")
+  apiKey          ApiKey?            @relation(fields: [apikeyId], references: [id], onDelete: SetNull)
+  queueName       String             @map("queue_name")
+  message         Json
+  priority        Int
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @default(now()) @map("updated_at")
+  leaseId         String?            @map("lease_id")
+  leaseExpiration DateTime?          @map("lease_expiration")
+  leasedAtTimes   DateTime[]         @map("lease_times")
+  attempts        Int                @default(0)
+  status          QueueMessageStatus @default(PENDING)
+
+  @@map("queue_messages")
+}

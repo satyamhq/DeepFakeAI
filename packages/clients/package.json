@@ -1,0 +1,52 @@
+{
+  "name": "@truemedia/clients",
+  "version": "0.0.0",
+  "dependencies": {
+    "@trpc/client": "^11.0.0-rc.566",
+    "@truemedia/scheduler": "*",
+    "fetch-blob": "^3.2.0",
+    "form-data": "^4.0.1",
+    "formdata-polyfill": "^4.0.10",
+    "node-fetch": "^3.3.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@swc/core": "^1.7.36",
+    "@swc/jest": "^0.2.36",
+    "@truemedia/config-eslint": "*",
+    "@truemedia/config-typescript": "*",
+    "@types/jest": "^29.5.12",
+    "@types/node": "18.11.3",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.3"
+  },
+  "exports": {
+    "./*": {
+      "types": "./src/*.ts",
+      "require": "./dist/*.js",
+      "import": "./dist/*.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "lint-staged": {
+    "**/*.ts": [
+      "prettier --write",
+      "../../bin/eslint_staged.sh --"
+    ]
+  },
+  "prettier": {
+    "semi": false
+  },
+  "private": true,
+  "scripts": {
+    "build": "tsup-node",
+    "check-types": "tsc --noEmit",
+    "dev": "tsup-node --watch",
+    "lint": "eslint . --max-warnings 0",
+    "test": "jest --passWithNoTests"
+  }
+}
