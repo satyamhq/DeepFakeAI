@@ -192,6 +192,7 @@ export type CachedResult = {
   rationale?: string
   sourceUrl?: string
   duration?: number
+  fallback?: boolean
   raw?: any
 }
 

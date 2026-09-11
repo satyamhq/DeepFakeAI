@@ -2,30 +2,37 @@ import { MediaPublisher } from "../types/db"
 import { IconType } from "react-icons"
 import {
   FaXTwitter,
-  // FaYoutube,
-  FaTiktok,
+  FaYoutube,
+  FaLinkedin,
   FaReddit,
   FaGoogleDrive,
   FaInstagram,
   FaFacebook,
+  FaTiktok,
 } from "react-icons/fa6"
 import { LinkIcon, TruthSocial } from "./icons"
 import { useUser } from "../mockClerk"
 import { getRoleByUser } from "../auth"
 
-const icons = [
-  { label: "TikTok", icon: FaTiktok },
+const supportedSourceIcons = [
   { label: "X", icon: FaXTwitter },
-  // { label: "YouTube", icon: FaYoutube },
+  { label: "YouTube", icon: FaYoutube },
+  { label: "LinkedIn", icon: FaLinkedin },
   { label: "Reddit", icon: FaReddit },
   { label: "Google Drive", icon: FaGoogleDrive },
   { label: "Instagram", icon: FaInstagram },
   { label: "Facebook", icon: FaFacebook },
+]
+
+const legacyIcons = [
+  { label: "TikTok", icon: FaTiktok },
   { label: "Truth Social", icon: TruthSocial },
 ]
 
+const allIcons = [...supportedSourceIcons, ...legacyIcons]
+
 export function MediaPublisherIcon({ platform }: { platform: MediaPublisher }) {
-  const icon = icons.find((icon) => icon.label.toLowerCase() === platform.toLowerCase())
+  const icon = allIcons.find((icon) => icon.label.toLowerCase() === platform.toLowerCase())
   return icon ? <icon.icon /> : <LinkIcon />
 }
 
@@ -47,7 +54,7 @@ export default function SiteIcons() {
   return (
     <div className="flex flex-row flex-wrap gap-4 md:gap-8 text-gray-200">
       {/* Hide the Google Drive icon unless the user is logged in */}
-      {icons
+      {supportedSourceIcons
         .filter(({ label }) => label !== "Google Drive" || role.isLoggedIn)
         .map(({ label, icon }) => mkIcon(label, icon))}
     </div>

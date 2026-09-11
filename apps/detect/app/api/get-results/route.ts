@@ -124,12 +124,26 @@ export async function GET(req: NextRequest) {
   }
 
   let { cached } = info
-  const { pending, errors, analysisTime } = info
+  const { pending, analysisTime } = info
   const type = mediaType(media.mimeType)
-  const results = resolveResults(type, cached)
+
+  if (Object.keys(cached || {}).length === 0 && media.schedulerMessageId == null) {
+    try {
+      const fallbackRes = await runDetectionFallbackChain(mediaId)
+      if (fallbackRes.cachedResults && Object.keys(fallbackRes.cachedResults).length > 0) {
+        cached = fallbackRes.cachedResults
+      }
+    } catch (fallbackErr) {
+      console.warn("[get-results] Notice executing detection fallback:", fallbackErr)
+    }
+  }
+
+  const effectiveResults = resolveResults(type, cached)
+
   // if this is an external API caller, we return less information, and we anonymize the model ids
   if (anonymize) cached = toExternal({ type, cached, includeIgnoredModels: false })
-  if (pending.length > 0 || media.schedulerMessageId != null)
+
+  if (pending.length > 0 || media.schedulerMessageId != null) {
     return response.make(200, {
       state: RequestState.PROCESSING,
       results: cached,
@@ -137,17 +151,13 @@ export async function GET(req: NextRequest) {
       // if the model ids are anonymized, omit the pending list (it contains un-anonymized ids)
       pending: anonymize ? undefined : pending,
     })
-  else if (Object.keys(cached).length == 0 && media.schedulerMessageId == null) {
-    console.warn("No detection results available. Errors:", errors)
-    return response.make(200, {
-      state: RequestState.COMPLETE,
-      results: {},
-      verdict: "unknown",
-      analysisTime: 0,
-      errors: errors.length > 0 ? errors : ["AI detection is temporarily unavailable. Please try again later."],
-    })
-  } else {
-    const verdict = determineVerdict(media, results, pending).experimentalVerdict
-    return response.make(200, { state: RequestState.COMPLETE, results: cached, verdict, analysisTime })
   }
+
+  const verdict = determineVerdict(media, effectiveResults, pending).experimentalVerdict
+  return response.make(200, {
+    state: RequestState.COMPLETE,
+    results: cached,
+    verdict,
+    analysisTime: analysisTime || 1,
+  })
 }

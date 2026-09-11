@@ -130,6 +130,11 @@ export function extractMediaSourceData(postUrl: string, json: object): MediaSour
             sourceUserName: userName,
           }
         }
+        case MediaPublisher.LINKEDIN: {
+          return {
+            source: MediaPublisher.LINKEDIN,
+          }
+        }
       }
     } catch (e) {
       console.error("error extracting media source data:", e)
@@ -156,9 +161,15 @@ export function determineSourcePlatform(url: string): MediaPublisher {
       return MediaPublisher.X
     } else if (isYouTube(parsed)) {
       return MediaPublisher.YOUTUBE
+    } else if (isLinkedIn(parsed)) {
+      return MediaPublisher.LINKEDIN
     }
   }
   return MediaPublisher.UNKNOWN
+}
+
+function isLinkedIn(url: URL): boolean {
+  return url.hostname.includes("linkedin.com") || url.hostname.includes("lnkd.in")
 }
 
 function isYouTube(url: URL): boolean {

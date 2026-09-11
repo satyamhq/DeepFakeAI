@@ -14,7 +14,7 @@ import {
   FaLink,
   FaFacebook,
 } from "react-icons/fa"
-import { FaXTwitter } from "react-icons/fa6"
+import { FaXTwitter, FaLinkedin } from "react-icons/fa6"
 import { ReactElement, useState } from "react"
 import { deleteNotableMedia, updateNotableMedia } from "../actions"
 import { VideoCameraIcon, ImageIcon, MicrophoneIcon, ArrowRightIcon } from "../../../../components/icons"
@@ -53,6 +53,7 @@ const mediaSources: Record<MediaPublisher, string> = {
   INSTAGRAM: "Instagram",
   OTHER: "Other",
   FACEBOOK: "Facebook",
+  LINKEDIN: "LinkedIn",
 }
 
 const mediaSourceIcons: Record<string, ReactElement> = {
@@ -66,6 +67,7 @@ const mediaSourceIcons: Record<string, ReactElement> = {
   GOOGLE_DRIVE: <FaGoogleDrive className="inline ml-2" />,
   INSTAGRAM: <FaInstagram className="inline ml-2" />,
   FACEBOOK: <FaFacebook className="inline ml-2" />,
+  LINKEDIN: <FaLinkedin className="inline ml-2" />,
 }
 
 export type FormState = { state: string; message?: string }

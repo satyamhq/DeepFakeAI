@@ -44,6 +44,7 @@ export enum MediaPublisher {
   GOOGLE_DRIVE = "GOOGLE_DRIVE",
   INSTAGRAM = "INSTAGRAM",
   FACEBOOK = "FACEBOOK",
+  LINKEDIN = "LINKEDIN",
 }
 
 export enum UserType {
