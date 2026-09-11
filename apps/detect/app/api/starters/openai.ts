@@ -76,7 +76,9 @@ async function startQuestionAnalysis(
   performYesNoAnalysis: () => Promise<YesNoResponse | undefined>,
   apiAuthInfo: ApiAuthInfo,
 ) {
-  if (!process.env.OPENAI_API_KEY) return response.error("OpenAI API key not configured")
+  if (!process.env.GEMINI_API_KEY && !process.env.OPENAI_API_KEY) {
+    return response.error("AI API key (GEMINI_API_KEY or OPENAI_API_KEY) not configured")
+  }
 
   const started = new Date()
   const fail = (msg: string, json: Record<string, any>) =>

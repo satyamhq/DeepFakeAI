@@ -18,7 +18,7 @@ type SensityResponse = {
   report_id: string
 }
 
-export const bearerToken = requireEnv("SENSITY_API_TOKEN")
+export const getBearerToken = () => process.env.SENSITY_API_TOKEN ?? ""
 
 const tasks = {
   video: "face_manipulation",
@@ -38,7 +38,7 @@ export async function checkAnalysis(requestId: string, type: MediaType, id: stri
   // request the current status of our analysis job from Sensity
   const taskUrl = `${SENSITY_BASE_URL}/${tasks[type]}/${requestId}`
   const [resultsCode, resultsJson] = await fetchJson(taskUrl, {
-    headers: { Authorization: bearerToken },
+    headers: { Authorization: getBearerToken() },
   })
   if (resultsCode != 200) {
     console.warn(`Failure checking Sensity processing status [media=${id}, req=${requestId}, type=${type}]:`)
@@ -112,7 +112,7 @@ export const startAnalysis: Starter = async (media, userId, priority, apiAuthInf
     const [apiCode, apiJson] = await getJson(
       await nodeFetch(`${SENSITY_BASE_URL}/${tasks[media.type]}`, {
         method: "POST",
-        headers: { Authorization: bearerToken },
+        headers: { Authorization: getBearerToken() },
         body: form,
       }),
     )

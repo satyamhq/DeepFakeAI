@@ -14,11 +14,20 @@ export async function POST(req: NextRequest) {
   const text = json.text ?? ""
   const shouldIncludeGraphic = json.shouldIncludeGraphic ?? false
 
+  const appKey = process.env.TWITTER_CONSUMER_KEY
+  const appSecret = process.env.TWITTER_CONSUMER_SECRET
+  const accessToken = process.env.TWITTER_ACCESS_TOKEN_KEY
+  const accessSecret = process.env.TWITTER_ACCESS_TOKEN_SECRET
+
+  if (!appKey || !appSecret || !accessToken || !accessSecret) {
+    return response.make(500, JSON.stringify("Twitter credentials (consumer key/secret and access tokens) not fully configured."))
+  }
+
   const client = new TwitterApi({
-    appKey: requireEnv("TWITTER_CONSUMER_KEY"),
-    appSecret: requireEnv("TWITTER_CONSUMER_SECRET"),
-    accessToken: requireEnv("TWITTER_ACCESS_TOKEN_KEY"),
-    accessSecret: requireEnv("TWITTER_ACCESS_TOKEN_SECRET"),
+    appKey,
+    appSecret,
+    accessToken,
+    accessSecret,
   })
 
   try {

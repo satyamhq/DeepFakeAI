@@ -7,9 +7,12 @@ import { REALITY_BASE_URL } from "../starters/reality"
 
 export const dynamic = "force-dynamic"
 
-const apiKey = requireEnv("REALITY_API_KEY")
-
 export async function POST(req: Request) {
+  const apiKey = process.env.REALITY_API_KEY
+  if (!apiKey) {
+    return response.make(500, { error: "REALITY_API_KEY not configured" })
+  }
+
   const reqJson = await req.json()
   const requestId: string = reqJson.requestId
   if (!requestId) {

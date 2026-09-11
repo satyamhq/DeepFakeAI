@@ -14,14 +14,18 @@ import { z } from "zod"
 const HIVE_URL = "https://api.thehive.ai/api/v2/task/async"
 const HIVE_WEBHOOK_URL = `${process.env.LOCALHOST_NGROK_URL ?? siteUrl}/api/hive-webhook`
 
-const apiKeys = {
-  /*"hive-video-facemap"*/ "hive-video": process.env.HIVE_VIDEO_API_KEY,
-  /*"hive-image-genai"*/ "hive-image": process.env.HIVE_IMAGE_API_KEY,
-  "hive-image-multi": process.env.HIVE_IMGVID_MULTI_API_KEY,
-  "hive-video-multi": process.env.HIVE_IMGVID_MULTI_API_KEY,
-  "hive-audio": process.env.HIVE_AUDIO_API_KEY,
+export type HiveProcessorId = "hive-video" | "hive-image" | "hive-image-multi" | "hive-video-multi" | "hive-audio"
+
+export function getHiveApiKey(proc: HiveProcessorId): string | undefined {
+  const specific = {
+    "hive-video": process.env.HIVE_VIDEO_API_KEY,
+    "hive-image": process.env.HIVE_IMAGE_API_KEY,
+    "hive-image-multi": process.env.HIVE_IMGVID_MULTI_API_KEY,
+    "hive-video-multi": process.env.HIVE_IMGVID_MULTI_API_KEY,
+    "hive-audio": process.env.HIVE_AUDIO_API_KEY,
+  }[proc]
+  return specific || process.env.HIVE_API_KEY || process.env.HIVE_SECRET_KEY || process.env.HIVE_ACCESS_KEY_ID
 }
-export type HiveProcessorId = keyof typeof apiKeys
 
 export async function startAnalysis(
   proc: HiveProcessorId,
@@ -96,7 +100,7 @@ export const hiveSchedulerJob = makeSchedulerJob({
       return { status: "complete" }
     }
 
-    const apiKey = apiKeys[proc]
+    const apiKey = getHiveApiKey(proc)
     if (!apiKey) {
       logger.error({ event: "hive/missing-api-key", proc }, `Hive API key not configured for '${proc}'`)
       throw new Error(`Hive API key not configured for '${proc}' media.`)

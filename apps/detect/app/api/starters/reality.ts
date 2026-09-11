@@ -7,6 +7,8 @@ import { requireEnv } from "../util"
 import { fail } from "./util"
 import { Starter } from "./types"
 
+import { RealityDefender } from "@realitydefender/realitydefender"
+
 type GetUrlResponse = {
   code: string
   errno: number
@@ -18,8 +20,6 @@ type GetUrlResponse = {
 
 // Reality Defender documentation: https://docs.realitydefender.com/
 export const REALITY_BASE_URL = "https://api.prd.realitydefender.xyz/api"
-
-const apiKey = requireEnv("REALITY_API_KEY")
 
 const sources: Record<MediaType, keyof typeof processors> = {
   video: "rd-video",
@@ -34,7 +34,8 @@ export const startAnalysis: Starter = async (media, userId, priority, apiAuthInf
   if (process.env.POSTGRES_PRISMA_URL?.includes("@localhost")) {
     return response.error("Cannot perform Reality Defender analysis from test environment")
   }
-  if (!process.env.REALITY_API_KEY) {
+  const apiKey = process.env.REALITY_API_KEY
+  if (!apiKey) {
     return response.error("Reality Defender API key not configured")
   }
 

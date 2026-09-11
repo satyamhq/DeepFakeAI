@@ -6,31 +6,62 @@ import { YesNo, YesNoResponse } from "../../../model-processors/openai"
 import { chatOpenAI } from "./chatOpenAI"
 import { transcriptPrompt } from "./transcriptPrompt"
 
+import { GoogleGenerativeAI } from "@google/generative-ai"
+
 async function getTranscript(media: MediaTrack): Promise<string> {
   if (!media.url) {
     throw new Error(`getTranscript: Missing media URL [id=${media.id}]`)
   }
 
-  const apiKey = requireEnv("OPENAI_API_KEY")
-  const openai = new OpenAI({
-    apiKey,
-  })
+  const geminiKey = process.env.GEMINI_API_KEY
+  const openaiKey = process.env.OPENAI_API_KEY
 
-  const mediaRsp = await nodeFetch(media.url)
-  if (!mediaRsp.ok) {
-    const detail = await mediaRsp.text()
-    throw new Error(`getTranscript: Failed to download media for upload to OpenAI [url=${media.url}, error=${detail}]`)
+  if (geminiKey) {
+    try {
+      const mediaRsp = await nodeFetch(media.url)
+      if (mediaRsp.ok) {
+        const buffer = await mediaRsp.buffer()
+        const base64 = buffer.toString("base64")
+        const genAI = new GoogleGenerativeAI(geminiKey)
+        const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" })
+        const result = await model.generateContent([
+          {
+            inlineData: {
+              mimeType: media.mimeType || "audio/mp3",
+              data: base64,
+            },
+          },
+          { text: "Transcribe the spoken audio verbatim in its original language. Return only the transcription." },
+        ])
+        const text = result.response.text()
+        if (text) return text
+      }
+    } catch (e) {
+      console.warn("Gemini transcription failed, trying fallback:", e)
+    }
   }
-  if (!mediaRsp.body) {
-    throw new Error(`getTranscript: Got empty media request body [mediaRsp=${mediaRsp}]`)
+
+  if (openaiKey) {
+    try {
+      const openai = new OpenAI({ apiKey: openaiKey })
+      const mediaRsp = await nodeFetch(media.url)
+      if (!mediaRsp.ok) {
+        const detail = await mediaRsp.text()
+        throw new Error(`getTranscript: Failed to download media [url=${media.url}, error=${detail}]`)
+      }
+      if (mediaRsp.body) {
+        const transcription = await openai.audio.transcriptions.create({
+          model: "whisper-1",
+          file: await toFile(mediaRsp.body, media.file),
+        })
+        return transcription?.text ?? ""
+      }
+    } catch (e) {
+      console.warn("OpenAI transcription failed:", e)
+    }
   }
 
-  const transcription = await openai.audio.transcriptions.create({
-    model: "whisper-1",
-    file: await toFile(mediaRsp.body, media.file),
-  })
-
-  return transcription?.text
+  return ""
 }
 
 // ChatGPT likes to return emojis in the transcript, which is nonsense, so we filter them out

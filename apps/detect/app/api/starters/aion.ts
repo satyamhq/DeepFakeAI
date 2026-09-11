@@ -12,13 +12,15 @@ import { Starter } from "./types"
 // AI or Not API documentation: https://docs.aiornot.com/
 const AION_IMAGE_URL = "https://api.aiornot.com/v1/reports/image"
 const AION_AUDIO_URL = "https://api.aiornot.com/v1/reports/audio"
-const AION_HEADERS = {
-  Accept: "application/json",
-  Authorization: `Bearer ${requireEnv("AION_API_KEY")}`,
-}
 
 export const startAnalysis: Starter = async (media: MediaTrack, userId: string, priority, apiAuthInfo) => {
-  if (!process.env.AION_API_KEY) return response.error("AION API key not configured")
+  const apiKey = process.env.AION_API_KEY
+  if (!apiKey) return response.error("AION API key not configured")
+
+  const AION_HEADERS = {
+    Accept: "application/json",
+    Authorization: `Bearer ${apiKey}`,
+  }
 
   console.log(`Starting AION analysis [media=${media.id}, type=${media.type}, url=${media.url}]`)
   const started = new Date()
