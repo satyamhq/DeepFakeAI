@@ -10,7 +10,6 @@ import { saveUploadedFile } from "./actions"
 import axios from "axios"
 import { checkIsCurrentUserThrottled } from "../../throttle/actions"
 import { InnerAccentContainer } from "../../QueryPageTabs"
-import { useOrganization } from "@clerk/nextjs"
 import { UserType } from "@prisma/client"
 import { createFileUpload } from "../../actions/mediares"
 
@@ -90,10 +89,9 @@ function useUploadFileState() {
   const router = useRouter()
   const [targetFile, setTargetFile] = useState<File | null>(null)
   const [state, setState] = useState<UploadState>({ type: "default" })
-  const org = useOrganization()
 
   const submitDisabled = targetFile === null || ["uploading", "formError"].includes(state.type)
-  const inputDisabled = state.type === "uploading" && !org.isLoaded
+  const inputDisabled = state.type === "uploading"
 
   function onPercentDoneChange(percentDone: number) {
     setState({ type: "uploading", percentDone })
@@ -133,8 +131,7 @@ function useUploadFileState() {
     }
     setState({ type: "uploading", percentDone: 0 })
     try {
-      const orgId = org.organization?.id
-      const { id: mediaId, postUrl } = await uploadFileForAnalysis(targetFile, orgId, onPercentDoneChange)
+      const { id: mediaId, postUrl } = await uploadFileForAnalysis(targetFile, undefined, onPercentDoneChange)
       // redirect to analysis page for this id
       router.replace(analyzeUrl(mediaId, postUrl))
     } catch (e: any) {

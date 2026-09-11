@@ -15,7 +15,7 @@ import {
 import ErrorBox from "../../components/ErrorBox"
 import { updateMetadata } from "./actions"
 import { FlowbiteCheckBadgeIcon } from "../../components/icons"
-import { useUser } from "@clerk/nextjs"
+import { useUser } from "../../mockClerk"
 
 const groundTruthLabels: Record<Trulean, string> = {
   ...fakeLabelsWithUnreviewed,

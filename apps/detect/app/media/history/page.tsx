@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server"
+import { auth } from "../../mockClerk"
 import { redirect } from "next/navigation"
 import { getServerRole } from "../../server"
 import UserHistory from "./UserHistory"
@@ -26,7 +26,7 @@ export default async function Page({
   }
 }) {
   const role = await getServerRole()
-  if (role.isNotLoggedIn) redirect(signInUrl)
+  if (role.isNotLoggedIn) redirect("/")
 
   const authed = auth()
   const { as } = searchParams

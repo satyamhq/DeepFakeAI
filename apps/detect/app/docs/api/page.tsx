@@ -6,6 +6,8 @@ import { getSwaggerApiDocs } from "./getSwaggerApiDocs"
 import ApiKeyTable from "../../internal/api-keys/ApiKeyTable"
 import { activeApiKeyRows } from "./actions"
 
+export const dynamic = "force-dynamic"
+
 export default async function Page() {
   const { userId } = auth()
   if (!userId) redirect("/")

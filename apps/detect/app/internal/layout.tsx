@@ -2,6 +2,8 @@ import { redirect } from "next/navigation"
 import { getServerRole } from "../server"
 import Navigation from "../components/navigation/Navigation"
 
+export const dynamic = "force-dynamic"
+
 export default async function Layout({ children }: { children: React.ReactNode }) {
   const role = await getServerRole()
 

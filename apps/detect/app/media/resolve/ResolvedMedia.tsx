@@ -12,7 +12,7 @@ import ShowMedia from "../../components/ShowMedia"
 import LoadingDots from "../../components/LoadingDots"
 import MediaError from "./MediaError"
 import { startAnalysis } from "./ResolveMedia"
-import { useUser } from "@clerk/nextjs"
+import { useUser } from "../../mockClerk"
 import { getRoleByUser } from "../../auth"
 import { fetchProgress } from "../../actions/mediares"
 

@@ -1,4 +1,4 @@
-import { useUser } from "@clerk/clerk-react"
+import { useUser } from "../../../mockClerk"
 import { JoinedMedia } from "../../../data/media"
 import { CachedResults, ModelResult } from "../../../data/model"
 import { getRoleByUser } from "../../../auth"

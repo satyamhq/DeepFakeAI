@@ -1,6 +1,6 @@
 "use server"
 
-import { clerkClient } from "@clerk/nextjs/server"
+import { clerkClient } from "../../mockClerk"
 
 export async function getUserMembershipCount(userId: string) {
   const memberships = await clerkClient().users.getOrganizationMembershipList({ userId })

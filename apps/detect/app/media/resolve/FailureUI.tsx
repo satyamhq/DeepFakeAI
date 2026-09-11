@@ -3,7 +3,6 @@
 import Link from "next/link"
 import SiteIcons from "../../components/SiteIcons"
 import QueryLimitReachedModal from "./QueryLimitReachedModal"
-import { SignedIn, SignedOut } from "@clerk/nextjs"
 import { Button } from "flowbite-react"
 
 export default function FailureUI({
@@ -26,19 +25,14 @@ export default function FailureUI({
         </div>
         <div className="text-lg max-w-xl">{reason}</div>
 
-        <SignedIn>
-          <div className="text-lg mt-5">
-            Consider downloading the image or video and uploading it to DeepFakeAI directly.
+        <div className="mt-5 p-4 rounded-xl bg-gray-800 border border-gray-700 max-w-xl">
+          <div className="text-gray-300 mb-3">
+            Tip: You can download the media file directly and use our <b>Upload Media</b> tab on the home page.
           </div>
-        </SignedIn>
-
-        <SignedOut>
-          <div className="mt-5">
-            <Link href="/signup">
-              <Button color="lime">Create an Account</Button>
-            </Link>
-          </div>
-        </SignedOut>
+          <Link href="/">
+            <Button color="lime">Go to Upload Tab</Button>
+          </Link>
+        </div>
 
         <div className="h-5"></div>
         {details && (

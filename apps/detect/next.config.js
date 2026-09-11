@@ -17,6 +17,19 @@ module.exports = {
     },
   },
   webpack: function (config) {
+    const path = require("path")
+    const mockClerkPath = path.resolve(__dirname, "app/mockClerk.tsx")
+    const mockClerkServerPath = path.resolve(__dirname, "app/mockClerkServer.ts")
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@clerk/nextjs/server$": mockClerkServerPath,
+      "@clerk/nextjs/server": mockClerkServerPath,
+      "@clerk/nextjs$": mockClerkPath,
+      "@clerk/nextjs": mockClerkPath,
+      "@clerk/clerk-react$": mockClerkPath,
+      "@clerk/clerk-react": mockClerkPath,
+    }
+
     config.module.rules.push({
       test: /\.ya?ml$/,
       use: "js-yaml-loader",
@@ -32,7 +45,13 @@ const sentryOrg = process.env.SENTRY_ORG
 const sentryProject = process.env.SENTRY_PROJECT
 const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN
 
-if (sentryOrg && sentryProject && sentryAuthToken) {
+if (
+  process.env.ENABLE_SENTRY_BUILD_UPLOAD === "true" &&
+  sentryOrg &&
+  sentryProject &&
+  sentryAuthToken &&
+  !sentryAuthToken.includes("your-")
+) {
   const { withSentryConfig } = require("@sentry/nextjs")
 
   module.exports = withSentryConfig(module.exports, {

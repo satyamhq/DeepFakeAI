@@ -3,13 +3,11 @@
 import { useContext, useState } from "react"
 import { RiExpandLeftLine } from "react-icons/ri"
 import { IoMdClose } from "react-icons/io"
-import { useUser } from "@clerk/nextjs"
 import { NavigationContext } from "./NavigationContext"
 import InternalTools from "./sections/InternalTools"
 import TopLinks from "./sections/TopLinks"
 import Header from "./sections/Header"
 import BottomLinksClerk from "./sections/BottomLinksClerk"
-import { getRoleByUser } from "../../auth"
 import { RequiredActiveOrg } from "./RequiredActiveOrg"
 
 export const NavItem = ({ icon, children }: { icon?: React.ReactNode; children?: React.ReactNode }) => (
@@ -21,13 +19,7 @@ export const NavItem = ({ icon, children }: { icon?: React.ReactNode; children?:
 
 function LeftSidebar({ children }: { children: React.ReactNode }) {
   const { isNavigationExpanded } = useContext(NavigationContext)
-  const { user } = useUser()
-  const role = getRoleByUser(user)
-
-  // With so many internal tool links we want to "unstick" the Logout/Donate/Terms of Use/etc links
-  // so they scroll with the list of all the internal links. Regular users will still see Logout/etc.
-  // always stick in the bottom left of the screen.
-  const logoutStaysInBottomLeft = !role.friend
+  const logoutStaysInBottomLeft = true
 
   // If the navigation is in the "default" state (the user has not toggled it), then it should be hidden on mobile and
   // expanded on desktop; once they have manually toggled it then we force it to be shown or hidden.

@@ -1,4 +1,4 @@
-import { auth, clerkClient } from "@clerk/nextjs/server"
+import { auth, clerkClient } from "../mockClerk"
 import { getServerRole } from "../server"
 
 export async function isUserInAnyOrg() {

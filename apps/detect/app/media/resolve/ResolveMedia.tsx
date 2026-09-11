@@ -12,7 +12,7 @@ import LoadingDots from "../../components/LoadingDots"
 import ResolvedMedia from "./ResolvedMedia"
 import { maybeUpdateLocalStorageHistory } from "../anon-recent/local-history"
 import { getRoleByUser } from "../../auth"
-import { useUser } from "@clerk/nextjs"
+import { useUser } from "../../mockClerk"
 import FailureUI from "./FailureUI"
 
 function blameYouTube(reason: string, details: string | undefined | null) {

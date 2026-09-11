@@ -9,7 +9,7 @@ import { FlowbiteBugIcon, FlowbiteBuildingIcon } from "../../icons"
 import { DebugContext } from "../../DebugContext"
 import { ToggleSwitch } from "flowbite-react"
 import { NavItem } from "../Navigation"
-import { useUser } from "@clerk/clerk-react"
+import { useUser } from "../../../mockClerk"
 import { getRoleByUser } from "../../../auth"
 
 export default function InternalTools() {

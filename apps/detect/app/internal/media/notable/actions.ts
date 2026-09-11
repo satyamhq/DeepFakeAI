@@ -1,10 +1,23 @@
 "use server"
 
 import { db } from "../../../server"
+import { supabase } from "../../../supabase"
 import { TAKE_DEFAULT } from "../../ui"
 
 export async function getNotableMedia(skip = 0, take = TAKE_DEFAULT) {
   try {
+    // Try Supabase notable_media table first
+    const { data: supaData, count: supaCount, error: supaErr } = await supabase
+      .from("notable_media")
+      .select("*, media(*)", { count: "exact" })
+      .range(skip, skip + take - 1)
+      .order("created", { ascending: false })
+
+    if (!supaErr && supaData && supaData.length > 0) {
+      return { total: supaCount || supaData.length, media: supaData }
+    }
+
+    // Fallback to Prisma if configured
     const total = await db.notableMedia.count({ take })
     const media = await db.notableMedia.findMany({
       skip,
@@ -14,7 +27,7 @@ export async function getNotableMedia(skip = 0, take = TAKE_DEFAULT) {
     })
     return { total, media }
   } catch (error) {
-    console.warn("Could not fetch notable media (database not connected):", error)
+    console.warn("Could not fetch notable media (Supabase/DB empty or offline):", error)
     return { total: 0, media: [] }
   }
 }

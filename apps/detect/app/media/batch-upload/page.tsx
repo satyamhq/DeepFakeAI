@@ -4,6 +4,8 @@ import { getBatches } from "./actions"
 import { Suspense } from "react"
 import { BatchCard } from "./[batchId]/BatchCard"
 
+export const dynamic = "force-dynamic"
+
 export default async function Page() {
   return (
     <div>

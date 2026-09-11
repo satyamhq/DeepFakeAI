@@ -34,7 +34,7 @@ export const startAnalysis: Starter = async (media, userId, priority, apiAuthInf
       mediaId: media.id,
     },
   })
-  return await processing(media.id, source, userId, messageId, apiAuthInfo)
+  return await processing(media.id, source, userId, messageId ?? "", apiAuthInfo)
 }
 
 async function fetchUrlAsBase64(

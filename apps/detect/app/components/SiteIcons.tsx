@@ -10,7 +10,7 @@ import {
   FaFacebook,
 } from "react-icons/fa6"
 import { LinkIcon, TruthSocial } from "./icons"
-import { useUser } from "@clerk/nextjs"
+import { useUser } from "../mockClerk"
 import { getRoleByUser } from "../auth"
 
 const icons = [

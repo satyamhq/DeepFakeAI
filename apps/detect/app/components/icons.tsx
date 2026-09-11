@@ -42,8 +42,8 @@ export const MicrophoneIcon = () => (
   </svg>
 )
 
-export const ArrowRightIcon = () => (
-  <svg className="inline w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+export const ArrowRightIcon = ({ className = "inline w-6 h-6" }: { className?: string } = {}) => (
+  <svg className={className} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
     <path
       stroke="currentColor"
       strokeLinecap="round"

@@ -1,4 +1,4 @@
-import { clerkClient } from "@clerk/nextjs/server"
+import { clerkClient } from "../../mockClerk"
 import { Trulean } from "@prisma/client"
 import { db, getServerRole } from "../../server"
 import { PostMediaWithMeta, QueriesWithUser, UserQuery } from "./actions"
@@ -127,7 +127,7 @@ export async function buildExternalIdToEmail(orgId: string | undefined | null) {
         organizationId: orgId,
         limit: 500,
       })
-      const userIds = members.data.flatMap((mm) => mm.publicUserData?.userId ?? [])
+      const userIds = members.data.flatMap((mm: any) => mm.publicUserData?.userId ?? [])
       const users = await clerkClient().users.getUserList({ userId: userIds, limit: 500 })
       for (const user of users.data) {
         if (user.externalId && user.primaryEmailAddress?.emailAddress) {

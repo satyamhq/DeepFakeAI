@@ -38,7 +38,7 @@ export const startAnalysis: Starter = async (media, userId, priority, apiAuthInf
       },
     },
   })
-  return await processing(media.id, source, userId, messageId, apiAuthInfo)
+  return await processing(media.id, source, userId, messageId ?? "", apiAuthInfo)
 }
 
 export const dftotalSchedulerJob = makeSchedulerJob({

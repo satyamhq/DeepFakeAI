@@ -1,4 +1,4 @@
-import { clerkClient } from "@clerk/nextjs/server"
+import { clerkClient } from "../../mockClerk"
 import { ANONYMOUS_USER_ID, ANONYMOUS_USER_NAME } from "../../../instrumentation"
 
 export async function HistoryHeader({

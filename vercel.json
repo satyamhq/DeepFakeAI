@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "npm ci",
-  "buildCommand": "node -v && touch .env && npx prisma migrate deploy && prisma generate && npm run build",
+  "buildCommand": "node -v && prisma generate --schema=prisma/schema.prisma && npm run build",
   "outputDirectory": "apps/detect/.next",
   "git": {
     "deploymentEnabled": {

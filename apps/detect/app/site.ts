@@ -1,20 +1,19 @@
-// it would be nice to get the URL of the current deployment from Vercel, but apparently that's not
-// supported because "environment variables should be immutable" or somesuch nonsense
-// TODO: use NEXT_PUBLIC_VERCEL_URL
-export const siteUrl = "OPEN-TODO-PLACEHOLDER"
-
 export const currentSiteBaseUrl =
   process.env.NEXT_PUBLIC_SITE_URL_BASE ?? process.env.RENDER_EXTERNAL_URL ?? "http://localhost:3000"
 
-export const termsUrl = "OPEN-TODO-PLACEHOLDER"
+export const siteUrl = currentSiteBaseUrl
 
-export const privacyUrl = "OPEN-TODO-PLACEHOLDER"
+export const termsUrl = "/terms"
 
-export const signInUrl = "/signin"
+export const privacyUrl = "/privacy"
 
-export const signUpUrl = "/signup"
+export const contactUrl = "/contact"
 
-export const contactUrl = "mailto:OPEN-TODO-PLACEHOLDER"
+export const aboutUrl = "/about"
+
+export const signInUrl = "/"
+
+export const signUpUrl = "/"
 
 export const disclaimerText =
   "Disclaimer: DeepFakeAI uses both leading vendors and state-of-the-art academic AI methods. However, errors can occur."

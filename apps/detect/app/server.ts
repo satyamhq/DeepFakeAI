@@ -3,7 +3,7 @@ import { NextRequest } from "next/server"
 import { response } from "./api/util"
 import { checkApiAuthorization } from "./api/apiKey"
 import { db } from "./db"
-import { auth as clerkAuth } from "@clerk/nextjs/server"
+import { auth as clerkAuth } from "./mockClerkServer"
 
 // maintain backwards compat with where this was previously referenced
 export { db } from "./db"
@@ -15,9 +15,13 @@ export const getServerRole = async () => {
 
 /** Returns the `Role` of the given user ID. */
 export async function getRoleByUserId(userId: string): Promise<Role> {
-  const user = await db.user.findUnique({ where: { id: userId } })
-  const email = user?.email
-  return getRoleByIdEmail(userId, email)
+  try {
+    const user = await db.user.findUnique({ where: { id: userId } })
+    const email = user?.email
+    return getRoleByIdEmail(userId, email)
+  } catch {
+    return getRoleByIdEmail(userId, undefined)
+  }
 }
 
 /** Handles checking the bearer token in the request and returning the correct response codes. */
@@ -33,7 +37,7 @@ export async function ensureInternalUser(req: NextRequest): Promise<Response | n
 }
 
 export function isAnonEnabled(): boolean {
-  return process.env.ANON_QUERY === "true"
+  return true
 }
 
 /**

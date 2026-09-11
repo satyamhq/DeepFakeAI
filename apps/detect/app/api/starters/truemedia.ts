@@ -58,7 +58,7 @@ export async function startAnalysis(
     priority,
     json: { mediaId: media.id },
   })
-  return await processing(media.id, source, userId, messageId, apiAuthInfo)
+  return await processing(media.id, source, userId, messageId ?? "", apiAuthInfo)
 }
 
 export const truemediaSchedulerJobs = Object.fromEntries(

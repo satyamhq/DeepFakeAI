@@ -32,7 +32,7 @@ import VerdictDescription from "./VerdictDescription"
 import { PlatformSourceLabel } from "../../components/PlatformSourceLabel"
 import { ToggleVerifiedSource } from "../../components/ToggleVerifiedSource"
 import { determineRelevance } from "../../data/relevance"
-import { useUser } from "@clerk/nextjs"
+import { useUser } from "../../mockClerk"
 import { getRoleByUser } from "../../auth"
 import PostToXButton from "../../internal/media/PostToXButton"
 import SoftDeleteButton from "./SoftDeleteButton"
@@ -303,7 +303,9 @@ export function MediaDetailsCard({
     const experimentalReasons = determineVerdict(media, ready, pending).experimentalReasons
     const experimentalReasonsBase = determineRelevance(type, ready, pending).experimentalReasons
 
-    const isVoteOverridden = !experimentalReasonsBase.every((value, index) => value === experimentalReasons[index])
+    const isVoteOverridden = !experimentalReasonsBase.every(
+      (value: string, index: number) => value === experimentalReasons[index],
+    )
 
     return (
       debug &&
