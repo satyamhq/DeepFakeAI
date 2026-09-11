@@ -1,66 +1,116 @@
-// Example Request
-// POST /api/upload-media
-// { file: [FormMultiPart] }
-//
-// Example Response
-// {
-//   "result": "created",
-//   "media": {
-//     "id": "t7ULiQEw7vqAgTtZPn-v2xWJZtc.jpg",
-//     "mimeType": "image/jpeg"
-//   }
-// }
-
-import nodeFetch from "node-fetch"
 import { NextRequest } from "next/server"
-import { getMediaResClient } from "../../services/mediares"
+import { createHash } from "crypto"
+import path from "path"
+
 import { checkApiAuthorization } from "../apiKey"
 import { response } from "../util"
 import { saveUploadedFile } from "../../media/upload/actions"
+import { getServerRole, isAnonEnabled } from "../../server"
+import { uploadMediaToStorage } from "../../db"
+
+const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100MB
+
+const SUPPORTED_EXTENSIONS = [
+  "png", "jpg", "jpeg", "webp", "gif", "tiff",
+  "webm", "mp4", "wmv", "avi", "flv", "mov", "mkv",
+  "ogg", "m4a", "wav", "flac", "mp3", "aac",
+]
 
 function fail(status: number, error: string, details?: any) {
-  console.warn("File Upload API Error:", error)
+  console.warn(`[Upload Media API] Error (${status}):`, error, details ?? "")
   return response.make(status, { result: "failure", reason: error, details })
 }
 
+function generateMediaId(filename: string, buffer: Buffer): string {
+  const hash = createHash("sha256").update(buffer).digest("base64url").slice(0, 24)
+  const rawExt = path.extname(filename).toLowerCase()
+  const ext = rawExt.startsWith(".") ? rawExt : `.${rawExt}`
+  return `${hash}${ext || ".bin"}`
+}
+
 export async function POST(req: NextRequest) {
-  const authInfoResult = await checkApiAuthorization(req.headers)
-  if (!authInfoResult.success) return fail(401, authInfoResult.publicReason)
-  const userId = authInfoResult.authInfo.userId
-
-  const formData = await req.formData()
-
-  const file = formData.get("file") as File
-  if (!file) return fail(400, "'file' missing from form data.")
-  if (file.size >= 100000000) return fail(413, "File must be under 100MB.", `Size was ${file.size / 1_000_000} MB.`)
-
-  const uploadData = await getMediaResClient().createFileUpload(file.name)
-  if (uploadData.result !== "upload") return fail(500, "/create_file_upload failed", uploadData)
-
   try {
-    const s3Upload = await nodeFetch(uploadData.putUrl, { method: "PUT", body: Buffer.from(await file.arrayBuffer()) })
-    if (!s3Upload.ok) return fail(500, `Error PUTing to S3`, { status: s3Upload.status, text: s3Upload.text })
-  } catch (err) {
-    return fail(500, `Error uploading to S3 bucket`, err)
+    let userId: string | undefined
+
+    // 1. Check API key or session authorization
+    const authInfoResult = await checkApiAuthorization(req.headers)
+    if (authInfoResult.success) {
+      userId = authInfoResult.authInfo.userId
+    } else {
+      const role = await getServerRole()
+      if (role.user) {
+        userId = role.id
+      } else if (!isAnonEnabled()) {
+        return fail(401, authInfoResult.publicReason || "Authentication required.")
+      }
+    }
+
+    // 2. Parse FormData
+    const formData = await req.formData()
+    const file = formData.get("file") as File | null
+    const orgId = (formData.get("orgId") as string | null) || undefined
+
+    if (!file || typeof file === "string") {
+      return fail(400, "'file' missing from form data.")
+    }
+
+    // 3. Validation: Size
+    if (file.size > MAX_FILE_SIZE) {
+      return fail(
+        413,
+        `File size exceeds 100MB limit.`,
+        `Size was ${(file.size / (1024 * 1024)).toFixed(1)} MB.`
+      )
+    }
+
+    // 4. Validation: File extension
+    const rawExt = (file.name.split(".").pop() || "").toLowerCase()
+    if (!SUPPORTED_EXTENSIONS.includes(rawExt)) {
+      return fail(
+        415,
+        `Unsupported media format '.${rawExt}'. Supported formats: ${SUPPORTED_EXTENSIONS.join(", ")}.`
+      )
+    }
+
+    // 5. Read buffer and generate persistent Media ID
+    const buffer = Buffer.from(await file.arrayBuffer())
+    const mediaId = generateMediaId(file.name, buffer)
+    const storagePath = `uploads/${mediaId}`
+    const mimeType = file.type || "application/octet-stream"
+
+    // 6. Upload directly to Supabase Storage
+    const storageResult = await uploadMediaToStorage(storagePath, buffer, mimeType)
+    if (!storageResult.success) {
+      console.error(`[Upload Media API] Storage upload failed:`, storageResult.error)
+      return fail(503, "Storage upload failed. Please try again later.", storageResult.error)
+    }
+
+    // 7. Register database records
+    const saveFileUploadResponse = await saveUploadedFile({
+      id: mediaId,
+      mimeType,
+      filename: file.name,
+      size: buffer.length,
+      storageUrl: storageResult.publicUrl,
+      userId,
+      orgId,
+    })
+
+    if (saveFileUploadResponse.type === "error") {
+      return fail(500, "Error saving upload record in database.", saveFileUploadResponse.message)
+    }
+
+    console.info(
+      `[Upload Media API] Successfully uploaded [user=${userId || "anonymous"}, file=${file.name}, mediaId=${mediaId}, bucket=${storageResult.bucket}]`
+    )
+
+    return response.make(201, {
+      result: "created",
+      media: { id: mediaId, mimeType },
+      postUrl: saveFileUploadResponse.mediaUrl,
+    })
+  } catch (err: any) {
+    console.error("[Upload Media API] Unhandled exception:", err)
+    return fail(500, "Internal server error during upload processing.", err?.message || String(err))
   }
-
-  const saveFileUploadResponse = await saveUploadedFile({
-    id: uploadData.id,
-    mimeType: uploadData.mimeType,
-    filename: file.name,
-    userId,
-  })
-
-  if (saveFileUploadResponse.type === "error") {
-    return fail(500, "Error saving upload response.", saveFileUploadResponse.message)
-  }
-
-  console.info(
-    `Media uploaded [user=${userId}, file=${file.name}, mimeType=${uploadData.mimeType}, mediaId=${uploadData.id}]`,
-  )
-
-  return response.make(201, {
-    result: "created",
-    media: { id: uploadData.id, mimeType: uploadData.mimeType },
-  })
 }

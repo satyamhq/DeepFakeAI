@@ -73,11 +73,35 @@ function makeTruemediaSchedulerJob(processor: TrueMediaProcessorId) {
     }),
     handler: async ({ mediaId }, parentLogger) => {
       const logger = parentLogger.child({ mediaId })
-      const progress = await fetchSingleProgress(mediaId)
-      if (progress.result !== "progress" || progress.url == null) {
-        return { status: "retry" }
+      let url: string | undefined
+
+      try {
+        const progress = await fetchSingleProgress(mediaId)
+        if (progress.result === "progress" && progress.url) {
+          url = progress.url
+        }
+      } catch {
+        // Progress fetch notice
       }
-      const url = progress.url
+
+      if (!url) {
+        const dbMedia = await db.media.findUnique({ where: { id: mediaId }, include: { meta: true } })
+        const metaStorageUrl = (dbMedia as any)?.meta?.comments?.startsWith("storageUrl:")
+          ? (dbMedia as any).meta.comments.replace("storageUrl:", "")
+          : undefined
+        url = metaStorageUrl || dbMedia?.mediaUrl
+      }
+
+      if (!url) {
+        logger.warn({ event: "truemedia/missing-url" }, `Missing URL for ${processor} analysis.`)
+        await handleTrueMediaModelResponse({
+          mediaId,
+          code: 404,
+          body: JSON.stringify({ error: "Media URL not accessible" }),
+          processor,
+        })
+        return { status: "complete" }
+      }
 
       // Update the created time to now so that the time between
       // created and completed is the total time the job took.
@@ -87,16 +111,27 @@ function makeTruemediaSchedulerJob(processor: TrueMediaProcessorId) {
       })
 
       const baseUrl = urls[processor]
-      const [jsonResp, latencyMs] = await withLatency(
-        fetchJson(baseUrl, {
-          method: "POST",
-          body: JSON.stringify(mkPayload[processor](url)),
-        }),
-      )
-      const [code, json] = jsonResp
-      logger.info({ event: "analysis-finished", code, latencyMs }, `Analysis finished`)
-      await handleTrueMediaModelResponse({ mediaId, code, body: JSON.stringify(json), processor })
-      return { status: "complete" }
+      try {
+        const [jsonResp, latencyMs] = await withLatency(
+          fetchJson(baseUrl, {
+            method: "POST",
+            body: JSON.stringify(mkPayload[processor](url)),
+          }),
+        )
+        const [code, json] = jsonResp
+        logger.info({ event: "analysis-finished", code, latencyMs }, `Analysis finished`)
+        await handleTrueMediaModelResponse({ mediaId, code, body: JSON.stringify(json), processor })
+        return { status: "complete" }
+      } catch (err: any) {
+        logger.warn({ event: "truemedia/analysis-error" }, `Error executing ${processor}: ${err?.message || err}`)
+        await handleTrueMediaModelResponse({
+          mediaId,
+          code: 500,
+          body: JSON.stringify({ error: `${processor} service unavailable: ${err?.message || "connection error"}` }),
+          processor,
+        })
+        return { status: "complete" }
+      }
     },
   })
 }

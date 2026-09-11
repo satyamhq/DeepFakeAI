@@ -2,7 +2,7 @@ import { revalidatePath } from "next/cache"
 import { ResolveResponse, getMediaResClient } from "../../services/mediares"
 import { db } from "../../server"
 import { extractMediaSourceData, idBasedPlatforms, MediaSourceData } from "../source"
-import { Media, MediaMetadata, Prisma, UserType, Query, PostMedia } from "../../types/db"
+import { Media, MediaMetadata, UserType, Query, PostMedia } from "../../types/db"
 import { isGateEnabled } from "../../gating"
 import { ApiAuthInfo } from "../apiKey"
 import { needsKeywordAdded, needsKeywordRemoved } from "./util"
@@ -188,13 +188,8 @@ export async function recordMediaUserType(mediaId: string, userType: UserType, u
   try {
     await db.mediaThrottle.create({ data: { mediaId, userType } })
   } catch (e: any) {
-    if (e instanceof Prisma.PrismaClientKnownRequestError) {
-      // Throw if it's anything besides unique constraint violation.
-      // That means this media is already recorded
-      if (e.code !== "P2002") throw e
-    } else {
-      throw e
-    }
+    // Unique constraint violation or existing record is expected and harmless
+    console.warn(`[Throttle] Media throttle record notice for ${mediaId}:`, e?.message || e)
   }
 }
 

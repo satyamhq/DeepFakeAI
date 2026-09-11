@@ -66,11 +66,39 @@ export const loccusAudioJob = makeSchedulerJob({
   }),
   handler: async ({ mediaId }, parentLogger) => {
     const logger = parentLogger.child({ mediaId })
-    const progress = await fetchSingleProgress(mediaId)
-    if (progress.result !== "progress" || progress.url == null) {
-      return { status: "retry" }
+    let url: string | undefined
+
+    try {
+      const progress = await fetchSingleProgress(mediaId)
+      if (progress.result === "progress" && progress.url) {
+        url = progress.url
+      }
+    } catch {
+      // Progress fetch failed
     }
-    const result = await runLoccusForScheduler({ id: mediaId, url: progress.url }, logger)
+
+    if (!url) {
+      const dbMedia = await db.media.findUnique({ where: { id: mediaId }, include: { meta: true } })
+      const metaStorageUrl = (dbMedia as any)?.meta?.comments?.startsWith("storageUrl:")
+        ? (dbMedia as any).meta.comments.replace("storageUrl:", "")
+        : undefined
+      url = metaStorageUrl || dbMedia?.mediaUrl
+    }
+
+    if (!url) {
+      logger.warn({ event: "loccus/missing-url" }, "Missing URL for Loccus analysis.")
+      await db.analysisResult.update({
+        where: { mediaId_source: { mediaId, source: audioId } },
+        data: {
+          requestState: RequestState.ERROR,
+          completed: new Date(),
+          json: JSON.stringify({ message: "Media URL not accessible" }),
+        },
+      })
+      return { status: "complete" }
+    }
+
+    const result = await runLoccusForScheduler({ id: mediaId, url }, logger)
     return result
   },
 })
@@ -90,6 +118,13 @@ async function runLoccusForScheduler(
     })
   }
   const logger = parentLogger.child({ mediaId: media.id })
+  const apiKey = process.env.LOCCUS_API_KEY
+  if (!apiKey) {
+    logger.warn({ event: "loccus/missing-api-key" }, "LOCCUS_API_KEY not configured")
+    await saveFailureResult({ message: "Loccus API key not configured" })
+    return { status: "complete" }
+  }
+
   logger.info({ event: "loccus/analysis-starting" }, `Fetching analysis for processor loccus-audio`)
   const [mediaBase64Result, downloadLatency] = await withLatency(fetchUrlAsBase64(media.url))
   if (mediaBase64Result.type === "too-big") {
@@ -128,7 +163,7 @@ async function runLoccusForScheduler(
   const headers = {
     Accept: "application/json",
     "Content-Type": "application/json",
-    Authorization: `Bearer ${requireEnv("LOCCUS_API_KEY")}`,
+    Authorization: `Bearer ${apiKey}`,
   }
   console.log(`Uploading media to Loccus [media=${media.id}, url=${media.url}]`)
   const [[upCode, upJson], uploadLatency] = await withLatency(

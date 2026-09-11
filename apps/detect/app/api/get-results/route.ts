@@ -18,11 +18,11 @@ export const dynamic = "force-dynamic"
 // https://vercel.com/docs/functions/serverless-functions/runtimes#max-duration
 export const maxDuration = 300
 
-const makeError = (errors: string[]) => response.make(500, { state: RequestState.ERROR, errors })
+const makeError = (status: number, errors: string[]) => response.make(status, { state: RequestState.ERROR, errors })
 
 export async function GET(req: NextRequest) {
   const mediaId = req.nextUrl.searchParams.get("id")
-  if (!mediaId) return makeError(["Missing required parameter: id"])
+  if (!mediaId) return makeError(400, ["Missing required parameter: id"])
   let anonymize = true
   let userType: UserType = UserType.ANONYMOUS
   let includeIgnoredModels = false
@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
   }
 
   let media = await db.media.findUnique({ where: { id: mediaId }, include: { meta: true } })
-  if (!media) return makeError([`No media with id: ${mediaId}`])
+  if (!media) return makeError(404, [`No media with id: ${mediaId}`])
   const analysisResults = await db.analysisResult.findMany({ where: { mediaId } })
 
   if (req.headers.get("anonymous-query")) userId = ANONYMOUS_USER_ID
@@ -115,7 +115,7 @@ export async function GET(req: NextRequest) {
     })
   else if (Object.keys(cached).length == 0 && media.schedulerMessageId == null) {
     console.warn("Unexpected empty cache. Errors: ", errors)
-    return makeError(errors)
+    return makeError(500, errors)
   } else {
     const verdict = determineVerdict(media, results, pending).experimentalVerdict
     return response.make(200, { state: RequestState.COMPLETE, results: cached, verdict, analysisTime })

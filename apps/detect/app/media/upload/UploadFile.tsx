@@ -6,12 +6,10 @@ import { useRouter } from "next/navigation"
 
 import { analyzeUrl } from "../../data/media"
 
-import { saveUploadedFile } from "./actions"
 import axios from "axios"
 import { checkIsCurrentUserThrottled } from "../../throttle/actions"
 import { InnerAccentContainer } from "../../QueryPageTabs"
 import { UserType } from "../../types/db"
-import { createFileUpload } from "../../actions/mediares"
 
 const FILE_LIMIT_MB = 100
 const BYTES_PER_MB = 1024 * 1024
@@ -135,10 +133,15 @@ function useUploadFileState() {
       // redirect to analysis page for this id
       router.replace(analyzeUrl(mediaId, postUrl))
     } catch (e: any) {
-      console.error(`Failed to upload file: ${e}`)
+      console.error(`Failed to upload file:`, e)
+      const rawMessage = e?.message || ""
+      const errorMessage =
+        rawMessage.includes("Server Components render") || !rawMessage
+          ? "Sorry, we couldn't upload your file. Please check your network connection and try again."
+          : `Sorry, we couldn't upload your file. ${rawMessage}`
       setState({
         type: "uploadError",
-        errorMessage: "Sorry we couldn't upload your file. " + e.message,
+        errorMessage,
       })
     }
   }
@@ -147,7 +150,7 @@ function useUploadFileState() {
 }
 
 /**
- * Uploads a file to s3 for analysis, creates required db records
+ * Uploads a file directly to Supabase Storage for analysis and creates required db records
  * @param file file object to upload
  * @return the mediaId of the uploaded file that can be used to view the analysis
  */
@@ -157,48 +160,53 @@ export async function uploadFileForAnalysis(
   onPercentDoneChange: (percentDone: number) => void,
 ): Promise<{ id: string; postUrl: string }> {
   // check if we're throttled
-  const isThrottled = await checkIsCurrentUserThrottled(UserType.REGISTERED)
-  if (isThrottled) {
-    console.warn(`Throttling request for media upload.`)
-    throw new Error("Too many requests in the last hour, please try again later.")
+  try {
+    const isThrottled = await checkIsCurrentUserThrottled(UserType.REGISTERED)
+    if (isThrottled) {
+      console.warn(`Throttling request for media upload.`)
+      throw new Error("Too many requests in the last hour, please try again later.")
+    }
+  } catch (err: any) {
+    if (err?.message?.includes("Too many requests")) throw err
+    // Throttle check failed (e.g. offline/network), proceed gracefully
   }
 
-  // ask mediares to create a new mediaId and presigned url for this file
-  const uploadData = await createFileUpload(file.name)
-  if (uploadData.result !== "upload") {
-    throw new Error(`Failed to create file upload data for ${file.name}`)
+  const formData = new FormData()
+  formData.append("file", file)
+  if (orgId) {
+    formData.append("orgId", orgId)
   }
 
-  // upload the file to s3
-  console.log(`Uploading to s3 [id=${uploadData.id}, filename=${file.name}, signedUrl=${uploadData.putUrl}]`)
-  const uploadResult = await axios.put(uploadData.putUrl, file, {
+  // Upload to Supabase-backed upload-media API with progress tracking
+  const response = await axios.post("/api/upload-media", formData, {
     headers: {
-      "Content-Type": file.type,
+      "Content-Type": "multipart/form-data",
     },
     onUploadProgress: (progressEvent) => {
       if (progressEvent.total) {
-        // subtract 5% from the percent done to avoid the 100% completion because there's
-        // still other network activity that needs to happen after the file is uploaded
-        onPercentDoneChange(Math.max(0, (progressEvent.loaded / progressEvent.total) * 100.0 - 5))
+        onPercentDoneChange(Math.min(95, Math.max(0, (progressEvent.loaded / progressEvent.total) * 100.0)))
       }
     },
+    validateStatus: () => true, // Don't throw on non-2xx status so we can inspect structured errors
   })
-  if (uploadResult.status !== 200) {
-    throw new Error(`Failed to upload file: ${uploadResult.statusText}`)
+
+  if (response.status !== 200 && response.status !== 201) {
+    const errorMsg =
+      response.data?.reason ||
+      response.data?.error ||
+      response.data?.message ||
+      response.statusText ||
+      "Upload failed."
+    throw new Error(errorMsg)
   }
 
-  // create db records for the uploaded file
-  const saveFileUploadResponse = await saveUploadedFile({
-    id: uploadData.id,
-    mimeType: file.type,
-    filename: file.name,
-    orgId,
-  })
-  if (saveFileUploadResponse.type === "error") {
-    throw new Error(saveFileUploadResponse.message)
-  }
-  // the mediaUrl does double duty as the postUrl for these uploaded files
-  const postUrl = saveFileUploadResponse.mediaUrl
+  onPercentDoneChange(100)
+  const mediaId = response.data?.media?.id
+  const postUrl = response.data?.postUrl
 
-  return { id: uploadData.id, postUrl }
+  if (!mediaId || !postUrl) {
+    throw new Error("Server returned an incomplete upload response.")
+  }
+
+  return { id: mediaId, postUrl }
 }

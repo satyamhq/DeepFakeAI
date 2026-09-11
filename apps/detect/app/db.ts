@@ -10,11 +10,17 @@ const supabaseUrl =
   process.env.NEXT_PUBLIC_SUPABASE_URL ||
   "https://acqqbhrwmxstfyatvrkw.supabase.co"
 
-const supabaseKey =
-  process.env.SUPABASE_SECRET_KEY ||
+const secretKey = process.env.SUPABASE_SECRET_KEY
+const publishableKey =
   process.env.SUPABASE_PUBLISHABLE_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   "sb_publishable_4SvSuCnKmITNONcfub5d0w_SBuWewpG"
+
+// Use service role secret key if valid JWT, otherwise fallback to publishable key
+const supabaseKey =
+  secretKey && secretKey.startsWith("eyJ")
+    ? secretKey
+    : publishableKey
 
 export const supabaseAdmin: SupabaseClient = createClient(supabaseUrl, supabaseKey, {
   auth: {
@@ -22,6 +28,45 @@ export const supabaseAdmin: SupabaseClient = createClient(supabaseUrl, supabaseK
     autoRefreshToken: false,
   },
 })
+
+/**
+ * Uploads a file buffer directly to Supabase Storage with bucket fallback.
+ * Checks primary bucket (SUPABASE_STORAGE_BUCKET or 'media-uploads') and fallback bucket ('media').
+ */
+export async function uploadMediaToStorage(
+  storagePath: string,
+  buffer: Buffer | Uint8Array,
+  contentType: string,
+): Promise<{ success: true; publicUrl: string; path: string; bucket: string } | { success: false; error: string }> {
+  const primaryBucket = process.env.SUPABASE_STORAGE_BUCKET || "media-uploads"
+  const buckets = [primaryBucket, "media", "media-uploads"].filter((v, i, a) => a.indexOf(v) === i)
+
+  let lastError = "Unknown storage error"
+  for (const bucket of buckets) {
+    try {
+      const { data, error } = await supabaseAdmin.storage
+        .from(bucket)
+        .upload(storagePath, buffer, {
+          contentType: contentType || "application/octet-stream",
+          upsert: true,
+        })
+
+      if (!error && data) {
+        const { data: urlData } = supabaseAdmin.storage.from(bucket).getPublicUrl(data.path)
+        return { success: true, publicUrl: urlData.publicUrl, path: data.path, bucket }
+      }
+      if (error) {
+        lastError = `Bucket '${bucket}': ${error.message}`
+        console.warn(`[Supabase Storage] upload warning on bucket '${bucket}': ${error.message}`)
+      }
+    } catch (err: any) {
+      lastError = err?.message || String(err)
+      console.warn(`[Supabase Storage] exception on bucket '${bucket}': ${lastError}`)
+    }
+  }
+
+  return { success: false, error: lastError }
+}
 
 // Helper to convert camelCase to snake_case
 function toSnakeCase(str: string): string {

@@ -1,5 +1,5 @@
 import { AnalysisResult, Media, RequestState, UserType } from "../../types/db"
-import { db } from "../../server"
+import { db, isAnonEnabled } from "../../server"
 import {
   CachedResult,
   CachedResults,
@@ -146,21 +146,35 @@ export async function startAnalyses(
   // first, we need to resolve the media URL(s)
   const progress = await fetchMediaProgress(media)
   let processing = tostart.length
-  if (progress.result == "failure") {
+
+  let mediaUrl = progress.result == "progress" ? progress.url : undefined
+  let audioUrl = progress.result == "progress" ? progress.audioUrl : undefined
+
+  // Fallback for direct uploads or when external resolver is offline
+  if (!mediaUrl && media.mediaUrl) {
+    const metaStorageUrl = (media as any).meta?.comments?.startsWith("storageUrl:")
+      ? (media as any).meta.comments.replace("storageUrl:", "")
+      : undefined
+    mediaUrl = metaStorageUrl || media.mediaUrl
+  }
+
+  const effectiveUserId = userId || (isAnonEnabled() ? "anonymous" : "")
+
+  if (!mediaUrl && progress.result == "failure") {
     logger.warn(
       { event: "startAnalysis/failed-resolve" },
       `Failed to resolve media URLs [id=${media.id}, reason=${progress.reason}]`,
     )
     if (progress.details) console.warn(progress.details)
     errors.push(progress.reason)
-  } else if (!userId) {
-    // Do not start new anaylses if this request was not initiated by an authenticated user.
+  } else if (!effectiveUserId) {
+    // Do not start new analyses if authentication is required and not present
     for (const { proc } of tostart) pending.push(proc.id)
   } else {
     const started: Promise<void>[] = []
     const skippedAudio: string[] = []
     for (const { proc, track } of tostart) {
-      const url = track == mtrack ? progress.url : track == atrack ? progress.audioUrl : undefined
+      const url = track == mtrack ? mediaUrl : track == atrack ? audioUrl : undefined
       if (url) {
         track.url = url
         const starter = (starters as Record<string, Starter>)[proc.id]
@@ -168,7 +182,7 @@ export async function startAnalyses(
           logger.warn({ event: "startAnalysis/invalid-processor" }, `Missing starter for processor: ${proc.id}`)
           continue
         }
-        const res = starter(track, userId, priority, apiAuthInfo).then((res) => {
+        const res = starter(track, effectiveUserId, priority, apiAuthInfo).then((res) => {
           switch (res.state) {
             case RequestState.COMPLETE:
               logger.info(
@@ -207,7 +221,7 @@ export async function startAnalyses(
         )
       }
       // If the audio track for this media is DOA, make a note if it and we'll clean it up below.
-      else if (track == atrack && progress.audioDOA) {
+      else if (track == atrack && progress.result == "progress" && progress.audioDOA) {
         logger.info(
           { event: "startAnalysis/skipped-audio" },
           `Skipping DOA audio track [id=${media.id}, track=${track.file}]`,

@@ -80,20 +80,47 @@ export const hiveSchedulerJob = makeSchedulerJob({
   }),
   handler: async ({ mediaId, proc }, parentLogger) => {
     const logger = parentLogger.child({ mediaId })
-    const progress = await fetchSingleProgress(mediaId)
-    if (progress.result !== "progress" || progress.url == null) {
-      logger.warn({ event: "hive/missing-url" }, "Missing URL for Hive analysis. Retrying later.")
-      return { status: "retry" }
+    let url: string | undefined
+
+    try {
+      const progress = await fetchSingleProgress(mediaId)
+      if (progress.result === "progress" && progress.url) {
+        url = progress.url
+      }
+    } catch {
+      // Progress query failed, will check database fallback
     }
-    const url = progress.url
-    // if running in test environment without ngrok, don't issue a Hive query
-    if (!process.env.LOCALHOST_NGROK_URL && process.env.NODE_ENV === "test") {
-      logger.error({ event: "hive/local-database-not-supported" }, "Cannot perform Hive analysis from test environment")
+
+    if (!url) {
+      const media = await db.media.findUnique({ where: { id: mediaId }, include: { meta: true } })
+      const metaStorageUrl = (media as any)?.meta?.comments?.startsWith("storageUrl:")
+        ? (media as any).meta.comments.replace("storageUrl:", "")
+        : undefined
+      url = metaStorageUrl || media?.mediaUrl
+    }
+
+    if (!url) {
+      logger.warn({ event: "hive/missing-url" }, "Missing URL for Hive analysis.")
       await db.analysisResult.update({
         where: { mediaId_source: { mediaId, source: proc } },
         data: {
           requestState: RequestState.ERROR,
           completed: new Date(),
+          json: JSON.stringify({ error: "Media URL not accessible for analysis" }),
+        },
+      })
+      return { status: "complete" }
+    }
+
+    // if running in test environment without ngrok, don't issue a Hive query
+    if (!process.env.LOCALHOST_NGROK_URL && process.env.NODE_ENV === "test") {
+      logger.warn({ event: "hive/local-database-not-supported" }, "Cannot perform Hive analysis from test environment")
+      await db.analysisResult.update({
+        where: { mediaId_source: { mediaId, source: proc } },
+        data: {
+          requestState: RequestState.ERROR,
+          completed: new Date(),
+          json: JSON.stringify({ error: "Hive not supported in test environment" }),
         },
       })
       return { status: "complete" }
@@ -101,8 +128,16 @@ export const hiveSchedulerJob = makeSchedulerJob({
 
     const apiKey = getHiveApiKey(proc)
     if (!apiKey) {
-      logger.error({ event: "hive/missing-api-key", proc }, `Hive API key not configured for '${proc}'`)
-      throw new Error(`Hive API key not configured for '${proc}' media.`)
+      logger.warn({ event: "hive/missing-api-key", proc }, `Hive API key not configured for '${proc}'`)
+      await db.analysisResult.update({
+        where: { mediaId_source: { mediaId, source: proc } },
+        data: {
+          requestState: RequestState.ERROR,
+          completed: new Date(),
+          json: JSON.stringify({ error: `Hive API key not configured for '${proc}'` }),
+        },
+      })
+      return { status: "complete" }
     }
 
     // Update the created time to now so that the time between
@@ -117,32 +152,49 @@ export const hiveSchedulerJob = makeSchedulerJob({
     formData.append("callback_url", HIVE_WEBHOOK_URL)
 
     logger.info({ event: "hive/start-analysis" }, `Starting Hive analysis [media=${mediaId}, url=${url}]`)
-    const [code, json] = await fetchJson(HIVE_URL, {
-      method: "POST",
-      headers: { Accept: "application/json", Authorization: `token ${apiKey}` },
-      body: formData,
-    })
-    if (code != 200) {
-      // Hive error messages contain a 'message' property
-      logger.error(
-        { event: "hive/start-analysis-failed", code, json },
-        `Hive analysis request failed: code=${code}, json=${JSON.stringify(json)}`,
-      )
-      throw new Error(`Hive analysis request failed: code=${code}, json=${JSON.stringify(json)}`)
-    }
-    if (!("task_id" in json)) {
-      logger.error({ event: "hive/start-analysis-missing-task-id", json }, `Missing task_id in Hive analysis response`)
-      throw new Error("Hive analysis request failed.")
-    }
+    try {
+      const [code, json] = await fetchJson(HIVE_URL, {
+        method: "POST",
+        headers: { Accept: "application/json", Authorization: `token ${apiKey}` },
+        body: formData,
+      })
 
-    await db.analysisResult.update({
-      where: { mediaId_source: { mediaId, source: proc } },
-      data: {
-        requestId: json.task_id as string,
-        requestState: RequestState.PROCESSING,
-      },
-    })
+      if (code != 200 || !json || !("task_id" in json)) {
+        logger.warn(
+          { event: "hive/start-analysis-failed", code, json },
+          `Hive analysis request failed: code=${code}`,
+        )
+        await db.analysisResult.update({
+          where: { mediaId_source: { mediaId, source: proc } },
+          data: {
+            requestState: RequestState.ERROR,
+            completed: new Date(),
+            json: JSON.stringify({ error: `Hive request failed (${code})`, details: json }),
+          },
+        })
+        return { status: "complete" }
+      }
 
-    return { status: "complete" }
+      await db.analysisResult.update({
+        where: { mediaId_source: { mediaId, source: proc } },
+        data: {
+          requestId: json.task_id as string,
+          requestState: RequestState.PROCESSING,
+        },
+      })
+
+      return { status: "complete" }
+    } catch (err: any) {
+      logger.error({ event: "hive/start-analysis-exception" }, `Hive exception: ${err?.message || err}`)
+      await db.analysisResult.update({
+        where: { mediaId_source: { mediaId, source: proc } },
+        data: {
+          requestState: RequestState.ERROR,
+          completed: new Date(),
+          json: JSON.stringify({ error: `Hive service error: ${err?.message || "connection error"}` }),
+        },
+      })
+      return { status: "complete" }
+    }
   },
 })

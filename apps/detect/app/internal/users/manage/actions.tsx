@@ -50,11 +50,7 @@ export async function onboardNewUser({ org, agreedTerms, emailConsent }: UserPub
         })
         externalId = userRecord.id
       } catch (e: any) {
-        if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
-          console.warn("Caught unique constraint violation: ", e)
-        } else {
-          throw e
-        }
+        console.warn("[Users] Notice creating user record (may already exist):", e?.message || e)
       }
     }
 

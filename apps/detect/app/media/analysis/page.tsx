@@ -50,26 +50,28 @@ export default async function Page({
   })
   if (!media) return <ErrorBox title="Unknown Media" message="Unable to find information for that media item." />
 
-  // if this media has unknown size, fire off a request to the mediares server to find out how big it is
+  // if this media has unknown size, fire off a request to find out how big it is
   if (media.size == 0) {
-    const progress = await fetchSingleProgress(media.id)
-    if (progress.result == "failure") {
-      console.log(`Failed to fetch media size [id=${media.id}, reason=${progress.reason}]`)
-      // if the error is "Unknown media file" then the original resolution failed to complete and we're left with a
-      // dangling media record on this side of the system and nothing to ever populate it in the media cache, so just
-      // delete this media record so that we'll retry the whole process from the start if they try the query again
-      if (progress.reason == "Unknown media file") {
-        console.log(`Initial media resolution failed, deleting dangling media record [id=${media.id}]`)
-        await db.media.delete({ where: { id: mediaId } })
+    try {
+      const isUpload = media.mediaUrl && (media.mediaUrl.includes("fileuploads") || media.mediaUrl.startsWith("http"))
+      const progress = await fetchSingleProgress(media.id)
+      if (progress.result == "failure") {
+        console.log(`Notice fetching media size [id=${media.id}, reason=${progress.reason}]`)
+        // Never delete uploaded files if external progress query fails
+        if (!isUpload && progress.reason == "Unknown media file") {
+          console.log(`Initial media resolution failed, deleting dangling media record [id=${media.id}]`)
+          await db.media.delete({ where: { id: mediaId } })
+        }
+      } else if (progress.total && progress.total > 0) {
+        console.log(`Storing media size [id=${media.id}, size=${progress.total}]`)
+        media.size = progress.total
+        await db.media.update({
+          where: { id: media.id },
+          data: { size: progress.total },
+        })
       }
-    } else if (!progress.total) console.log(`Media size not yet known? [id=${media.id}]`)
-    else {
-      console.log(`Storing media size [id=${media.id}, size=${progress.total}]`)
-      media.size = progress.total
-      await db.media.update({
-        where: { id: media.id },
-        data: { size: progress.total },
-      })
+    } catch (err) {
+      console.warn(`[Analysis Page] Notice checking media progress for ${media.id}:`, err)
     }
   }
 
@@ -83,8 +85,8 @@ export default async function Page({
     userFeedback = await db.userFeedback.findMany({ where: { mediaId, userId: role.id }, include: { user: true } })
   }
   // figure out which post URL is the one we "reached" this media through
-  const post = media.posts.find((pm: any) => hashUrl(pm.postUrl) == postHash)
-  const postUrl = (post ?? media.posts[0]).postUrl
+  const post = media.posts?.find((pm: any) => hashUrl(pm.postUrl) == postHash)
+  const postUrl = (post ?? media.posts?.[0])?.postUrl || media.mediaUrl || ""
 
   // see if this user has queried this media, enables actions like delete
   const hasUserQueried =

@@ -13,13 +13,14 @@ const AION_IMAGE_URL = "https://api.aiornot.com/v1/reports/image"
 const AION_AUDIO_URL = "https://api.aiornot.com/v1/reports/audio"
 
 export const startAnalysis: Starter = async (media: MediaTrack, userId: string, priority, apiAuthInfo) => {
-  const apiKey = process.env.AION_API_KEY
-  if (!apiKey) return response.error("AION API key not configured")
+  try {
+    const apiKey = process.env.AION_API_KEY || process.env.AIORNOT_API_KEY
+    if (!apiKey) return response.error("AION API key not configured")
 
-  const AION_HEADERS = {
-    Accept: "application/json",
-    Authorization: `Bearer ${apiKey}`,
-  }
+    const AION_HEADERS = {
+      Accept: "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    }
 
   console.log(`Starting AION analysis [media=${media.id}, type=${media.type}, url=${media.url}]`)
   const started = new Date()
@@ -88,4 +89,8 @@ export const startAnalysis: Starter = async (media: MediaTrack, userId: string, 
 
   const rsp = json as ApiResponse
   return await complete(media.id, source, userId, started, rsp.id, RequestState.COMPLETE, json, apiAuthInfo)
+  } catch (err: any) {
+    console.warn("[AION] Analysis starter exception:", err?.message || err)
+    return response.error("AION analysis error", err?.message || String(err))
+  }
 }

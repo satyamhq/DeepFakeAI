@@ -52,19 +52,50 @@ export const dftotalSchedulerJob = makeSchedulerJob({
   }),
   handler: async ({ media }, parentLogger) => {
     const logger = parentLogger.child({ mediaId: media.id })
-    const progress = await fetchSingleProgress(media.id)
-    let url: string
-    if (progress.result == "failure") {
-      logger.error({ event: "dftotal/failed" }, `MediaRes failed: ${progress.reason}`)
-      return { status: "failed" }
-    } else if (progress.result == "progress") {
-      if (progress.url == null) {
-        logger.warn({ event: "dftotal/missing-url" }, "No URL in mediares progress response")
-        return { status: "retry" }
+    let url: string | undefined
+
+    try {
+      const progress = await fetchSingleProgress(media.id)
+      if (progress.result === "progress" && progress.url) {
+        url = progress.url
       }
-      url = progress.url
-    } else {
-      throw missingCaseError(progress)
+    } catch {
+      // Progress fetch notice
+    }
+
+    if (!url) {
+      const dbMedia = await db.media.findUnique({ where: { id: media.id }, include: { meta: true } })
+      const metaStorageUrl = (dbMedia as any)?.meta?.comments?.startsWith("storageUrl:")
+        ? (dbMedia as any).meta.comments.replace("storageUrl:", "")
+        : undefined
+      url = metaStorageUrl || dbMedia?.mediaUrl
+    }
+
+    if (!url) {
+      logger.warn({ event: "dftotal/missing-url" }, "No URL accessible for DF Total")
+      await db.analysisResult.update({
+        where: { mediaId_source: { mediaId: media.id, source } },
+        data: {
+          requestState: RequestState.ERROR,
+          completed: new Date(),
+          json: JSON.stringify({ error: "Media URL not accessible" }),
+        },
+      })
+      return { status: "complete" }
+    }
+
+    const apiKey = process.env.DFTOTAL_API_KEY
+    if (!apiKey) {
+      logger.warn({ event: "dftotal/missing-api-key" }, "DFTOTAL_API_KEY not configured")
+      await db.analysisResult.update({
+        where: { mediaId_source: { mediaId: media.id, source } },
+        data: {
+          requestState: RequestState.ERROR,
+          completed: new Date(),
+          json: JSON.stringify({ error: "DFTOTAL_API_KEY not configured" }),
+        },
+      })
+      return { status: "complete" }
     }
 
     // first open a stream to download the media
@@ -105,7 +136,7 @@ export const dftotalSchedulerJob = makeSchedulerJob({
           method: "POST",
           headers: {
             Accept: "application/json",
-            Authorization: requireEnv("DFTOTAL_API_KEY"),
+            Authorization: apiKey,
           },
           body: form,
         }),

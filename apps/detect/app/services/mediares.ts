@@ -26,12 +26,17 @@ type MediaProgress = {
 export type FetchProgress = MediaProgress | Failure
 
 export async function fetchSingleProgress(id: string): Promise<SingleProgress> {
-  const frsp = await getMediaResClient().fetchProgress([id])
-  if (frsp.result != "progress") return frsp
-  const status = frsp.statuses[id]
-  if (!status) return { result: "failure", reason: "Unknown media file" }
-  if (status.error) return { result: "failure", reason: status.error }
-  return { ...status, result: "progress" }
+  try {
+    const frsp = await getMediaResClient().fetchProgress([id])
+    if (frsp.result != "progress") return frsp
+    const status = frsp.statuses[id]
+    if (!status) return { result: "failure", reason: "Unknown media file" }
+    if (status.error) return { result: "failure", reason: status.error }
+    return { ...status, result: "progress" }
+  } catch (err: any) {
+    console.warn(`[mediares] fetchSingleProgress notice for ${id}:`, err?.message || err)
+    return { result: "failure", reason: err?.message || "Media resolver service unavailable" }
+  }
 }
 
 // mediares returns this precise string as an error when it goes to extract an audio track and discovers that the video
@@ -42,56 +47,59 @@ const noAudioError = "Video has no audio track"
 const oldNoAudioError = "Unknown media file"
 
 export async function fetchMediaProgress(media: Pick<Media, "id" | "audioId" | "size">): Promise<FetchProgress> {
-  console.log(`Fetching download status: ${media.id} (audio: ${media.audioId})`)
-  const ids = [media.id]
-  if (media.audioId) ids.push(media.audioId)
-  const frsp = await getMediaResClient().fetchProgress(ids)
-  if (frsp.result != "progress") return frsp
+  try {
+    console.log(`Fetching download status: ${media.id} (audio: ${media.audioId})`)
+    const ids = [media.id]
+    if (media.audioId) ids.push(media.audioId)
+    const frsp = await getMediaResClient().fetchProgress(ids)
+    if (frsp.result != "progress") return frsp
 
-  const res: MediaProgress = {
-    result: "progress",
-    transferred: 0,
-    total: 0,
-    size: media.size,
-  }
-  for (const id of Object.keys(frsp.statuses)) {
-    const ss = frsp.statuses[id]
-    // if the main media is an error, return an error
-    if (ss.error && id == media.id) return { result: "failure", reason: ss.error }
-    // fill in the cache urls if we have them
-    if (id == media.id) {
-      if (ss.url) res.url = ss.url
-      if (ss.total > 0) res.size = ss.total
+    const res: MediaProgress = {
+      result: "progress",
+      transferred: 0,
+      total: 0,
+      size: media.size,
     }
-    if (id == media.audioId) {
-      res.audioUrl = ss.url
-      res.audioSize = ss.total
-      // check for DOA audio: if mediares says the video has no audio track (which it discovered after downloading the
-      // video and trying to extract the audio track) then declare the audio to be DOA and our caller can remove it
-      // from the media record
-      if (
-        ss.error == noAudioError ||
-        // TODO: remove this old check once mediares is updated
-        (ss.error == oldNoAudioError && res.url)
-      ) {
-        res.audioDOA = true
+    for (const id of Object.keys(frsp.statuses)) {
+      const ss = frsp.statuses[id]
+      // if the main media is an error, return an error
+      if (ss.error && id == media.id) return { result: "failure", reason: ss.error }
+      // fill in the cache urls if we have them
+      if (id == media.id) {
+        if (ss.url) res.url = ss.url
+        if (ss.total > 0) res.size = ss.total
       }
+      if (id == media.audioId) {
+        res.audioUrl = ss.url
+        res.audioSize = ss.total
+        // check for DOA audio: if mediares says the video has no audio track (which it discovered after downloading the
+        // video and trying to extract the audio track) then declare the audio to be DOA and our caller can remove it
+        // from the media record
+        if (
+          ss.error == noAudioError ||
+          // TODO: remove this old check once mediares is updated
+          (ss.error == oldNoAudioError && res.url)
+        ) {
+          res.audioDOA = true
+        }
+      }
+      // aggregate the progress of the two media
+      res.transferred += ss.transferred
+      res.total += ss.total
     }
-    // aggregate the progress of the two media
-    res.transferred += ss.transferred
-    res.total += ss.total
+    return res
+  } catch (err: any) {
+    console.warn(`[mediares] fetchMediaProgress notice for ${media.id}:`, err?.message || err)
+    return { result: "failure", reason: err?.message || "Media resolver service unavailable" }
   }
-  return res
 }
 
 let client: MediaResClient | null = null
 export function getMediaResClient() {
   if (client != null) return client
-  if (!process.env.MEDIA_RESOLVER_URL) {
-    throw new Error("MEDIA_RESOLVER_URL env variable not set")
-  }
-  client = new MediaResClient(process.env.MEDIA_RESOLVER_URL, {
-    // tell Vercel to please not cache our requests
+  const url = process.env.MEDIA_RESOLVER_URL || "http://localhost:4000"
+  client = new MediaResClient(url, {
+    // tell Vercel/Next.js to please not cache our requests
     fetch: (req, init = {}) => fetch(req, { ...init, cache: "no-store" }),
   })
   return client
