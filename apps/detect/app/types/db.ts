@@ -37,7 +37,6 @@ export enum MediaPublisher {
   UNKNOWN = "UNKNOWN",
   OTHER = "OTHER",
   X = "X",
-  TIKTOK = "TIKTOK",
   MASTODON = "MASTODON",
   YOUTUBE = "YOUTUBE",
   REDDIT = "REDDIT",
@@ -45,7 +44,6 @@ export enum MediaPublisher {
   INSTAGRAM = "INSTAGRAM",
   FACEBOOK = "FACEBOOK",
   LINKEDIN = "LINKEDIN",
-  TRUTH_SOCIAL = "TRUTH_SOCIAL",
 }
 
 export enum UserType {

@@ -39,6 +39,7 @@ import SoftDeleteButton from "./SoftDeleteButton"
 import { gatherAnalysisCategories, shouldShowMisleadingLabel } from "./utils"
 import { Misleading } from "../../components/EvidenceLabels"
 import CompleteDetectionResult from "./CompleteDetectionResult"
+import AnalyzingAnimation from "./AnalyzingAnimation"
 
 const formatDate = (date: Date | string | number | null | undefined) => {
   if (!date) return "-"
@@ -158,6 +159,7 @@ export function MediaCard({
   currentUserFeedback,
   isVerifiedLabelEnabled,
   longest,
+  elapsedSeconds,
 }: {
   media: JoinedMedia
   progress: FetchProgress
@@ -167,6 +169,7 @@ export function MediaCard({
   currentUserFeedback?: UserFeedback
   isVerifiedLabelEnabled: boolean
   longest?: number
+  elapsedSeconds?: number
 }) {
   const { user } = useUser()
   const role = getRoleByUser(user)
@@ -203,20 +206,18 @@ export function MediaCard({
     </div>
   ) : undefined
   const mediaView = <MediaPreview media={media} progress={progress} header={header} />
-  const mediaReady =
-    (progress.result == "progress" && progress.total > 0 && progress.transferred == progress.total) ||
-    Boolean(media.mediaUrl && (media.mediaUrl.includes("supabase.co") || media.mediaUrl.startsWith("http")))
-  const waiting = (msg: string) => <div className="text-slate-400">{msg}</div>
   const summary = showResults ? (
     <>
       <VerdictDescription verdictResult={verdictResult} />
       <VerificationBadge media={media} verdict={experimentalVerdict} />
       {unreadyProcessors > 0 && <div>{unreadyMessage(unreadyProcessors)}</div>}
     </>
-  ) : mediaReady ? (
-    waiting("Waiting for pending analyses to complete.")
   ) : (
-    waiting("Waiting for media download to complete.")
+    <AnalyzingAnimation
+      elapsedSeconds={elapsedSeconds ?? 0}
+      maxSeconds={55}
+      mediaType={mediaType(media.mimeType)}
+    />
   )
 
   // unfortunately flowbite's table can't do the rounded border around the whole table that we want;
@@ -251,11 +252,21 @@ export function MediaCard({
             <SourceLabel url={postUrl} />
           </div>
           <div className="md:flex-1">
-            <div className="bg-gray-700 rounded-lg p-3 mb-5">{summary}</div>
-            {analysisTable}
-            <div className="py-3 flex gap-2 text-left items-center">
-              <div className="flex flex-col grow text-slate-400 text-sm">{disclaimerText}</div>
-            </div>
+            {showResults ? (
+              <>
+                <div className="bg-gray-700 rounded-lg p-3 mb-5">{summary}</div>
+                {analysisTable}
+                <div className="py-3 flex gap-2 text-left items-center">
+                  <div className="flex flex-col grow text-slate-400 text-sm">{disclaimerText}</div>
+                </div>
+              </>
+            ) : (
+              <AnalyzingAnimation
+                elapsedSeconds={elapsedSeconds ?? 0}
+                maxSeconds={55}
+                mediaType={mediaType(media.mimeType)}
+              />
+            )}
           </div>
         </div>
         {showResults && (

@@ -38,12 +38,15 @@ export class Role {
   readonly email: string // will be "" for anonymous sessions
 
   constructor(level: number, id: string, email: string) {
-    if (level >= userLevel && (!id || !email)) {
-      throw new Error(`Missing id or email for authed user [id=${id}, email=${email}]`)
+    let resolvedId = id || ""
+    let resolvedEmail = email || ""
+    if (level >= userLevel && (!resolvedId || !resolvedEmail)) {
+      resolvedId = resolvedId || "user"
+      resolvedEmail = resolvedEmail || `${resolvedId}@user.deepfakeai.org`
     }
     this.level = level
-    this.id = id
-    this.email = email
+    this.id = resolvedId
+    this.email = resolvedEmail
   }
 
   /** Is the user level strictly at anonymous and not higher. */

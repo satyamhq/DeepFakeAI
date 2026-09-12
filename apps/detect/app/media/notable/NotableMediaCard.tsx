@@ -1,6 +1,6 @@
 import { NotableMedia } from "../../types/db"
 import { Button, Card } from "flowbite-react"
-import { ArrowRightIcon, ImageIcon, MicrophoneIcon, QuestionMarkIcon, VideoCameraIcon, TruthSocial } from "../../components/icons"
+import { ArrowRightIcon, ImageIcon, MicrophoneIcon, QuestionMarkIcon, VideoCameraIcon } from "../../components/icons"
 import {
   FaFacebook,
   FaGoogleDrive,
@@ -9,7 +9,6 @@ import {
   FaLinkedin,
   FaMastodon,
   FaReddit,
-  FaTiktok,
   FaYoutube,
 } from "react-icons/fa"
 import { FaXTwitter } from "react-icons/fa6"
@@ -27,14 +26,12 @@ const mediaSourceIcons: Record<string, ReactElement> = {
   UNKNOWN: <FaLink className="inline ml-1" />,
   OTHER: <FaLink className="inline ml-1" />,
   X: <FaXTwitter className="inline ml-1" />,
-  TIKTOK: <FaTiktok className="inline ml-1" />,
   MASTODON: <FaMastodon className="inline ml-1" />,
   YOUTUBE: <FaYoutube className="inline ml-1" />,
   REDDIT: <FaReddit className="inline ml-1" />,
   GOOGLE_DRIVE: <FaGoogleDrive className="inline ml-1" />,
   INSTAGRAM: <FaInstagram className="inline ml-1" />,
   FACEBOOK: <FaFacebook className="inline ml-1" />,
-  TRUTH_SOCIAL: <TruthSocial className="inline ml-1" />,
   LINKEDIN: <FaLinkedin className="inline ml-1" />,
 }
 

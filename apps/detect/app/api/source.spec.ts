@@ -19,8 +19,8 @@ describe("isMastodon", () => {
     expect(isMastodon(url)).toBeFalsy()
   })
 
-  it("is not fooled by TikTok URLs", () => {
-    const url = new URL("https://www.tiktok.com/@lowersyouriq/video/7364519640078257438")
+  it("is not fooled by non-social URLs", () => {
+    const url = new URL("https://www.example.com/video/7364519640078257438")
     expect(isMastodon(url)).toBeFalsy()
   })
 })
@@ -156,23 +156,6 @@ describe("extractMediaSourceData", () => {
     expect(extractMediaSourceData(postUrl, postData)).toEqual(expected)
   })
 
-  it("correctly extracts data for TikTok media", () => {
-    const postUrl = "https://www.tiktok.com/@alady/video/123445556657453"
-    const postData = {
-      result: {
-        author: {
-          nickname: "a lady", // this is the display name, don't use it!
-          username: "@alady",
-        },
-      },
-    }
-    const expected = {
-      source: MediaPublisher.TIKTOK,
-      sourceUserId: undefined, // We do not get unique IDs for TikTok users
-      sourceUserName: "alady",
-    }
-    expect(extractMediaSourceData(postUrl, postData)).toEqual(expected)
-  })
 
   it("correctly extracts data for Twitter media with twitter.com URLs", () => {
     const postUrl = "https://twitter.com/dudebro/status/1793039071067124147"

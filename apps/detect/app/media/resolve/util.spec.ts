@@ -39,15 +39,17 @@ describe("isPostUrlInAllowList", () => {
     expect(isPostUrlInAllowList(url)).toBeTruthy()
   })
 
-  it("accepts all supported sources including tiktok, truth social, youtube, and linkedin", () => {
+  it("accepts only supported sources: X, YouTube, LinkedIn, Reddit, Google Drive, Instagram, Facebook", () => {
     expect(isPostUrlInAllowList("https://www.youtube.com/watch?v=123")).toBeTruthy()
     expect(isPostUrlInAllowList("https://youtu.be/123")).toBeTruthy()
     expect(isPostUrlInAllowList("https://www.linkedin.com/posts/example")).toBeTruthy()
     expect(isPostUrlInAllowList("https://lnkd.in/example")).toBeTruthy()
-    expect(isPostUrlInAllowList("https://www.tiktok.com/@user/video/123")).toBeTruthy()
-    expect(isPostUrlInAllowList("https://truthsocial.com/@user/posts/123")).toBeTruthy()
     expect(isPostUrlInAllowList("https://x.com/user/status/123")).toBeTruthy()
     expect(isPostUrlInAllowList("https://www.facebook.com/post/123")).toBeTruthy()
     expect(isPostUrlInAllowList("https://www.instagram.com/p/123")).toBeTruthy()
+    expect(isPostUrlInAllowList("https://drive.google.com/file/d/123")).toBeTruthy()
+    // TikTok and Truth Social are completely removed/disallowed
+    expect(isPostUrlInAllowList("https://www.tiktok.com/@user/video/123")).toBeFalsy()
+    expect(isPostUrlInAllowList("https://truthsocial.com/@user/posts/123")).toBeFalsy()
   })
 })

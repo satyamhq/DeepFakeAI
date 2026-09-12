@@ -118,7 +118,7 @@ export default function ContactPage() {
                 <div>
                   <h4 className="font-semibold text-white">Which platforms are supported?</h4>
                   <p className="text-gray-400 mt-1">
-                    Direct resolution supports posts from X (Twitter), TikTok, Instagram, Reddit, Facebook, and direct media file uploads.
+                    Direct resolution supports posts from X, YouTube, LinkedIn, Reddit, Google Drive, Instagram, Facebook, and direct media file uploads.
                   </p>
                 </div>
               </div>

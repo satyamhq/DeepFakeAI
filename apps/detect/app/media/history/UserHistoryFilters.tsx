@@ -8,20 +8,29 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { FaSearch } from "react-icons/fa"
 
 // Zero out hours, minutes, seconds and milliseconds to make date comparisons easier in the future.
-function dateTimeToDate(date: Date) {
-  date.setHours(0)
-  date.setMinutes(0)
-  date.setSeconds(0)
-  date.setMilliseconds(0)
-  return date
+function dateTimeToDate(date: any): Date {
+  const d = date instanceof Date ? new Date(date.getTime()) : new Date(date)
+  if (isNaN(d.getTime())) return new Date()
+  d.setHours(0, 0, 0, 0)
+  return d
 }
 
-function datesAreEqual(date: Date, initialDate: Date) {
+function datesAreEqual(date: any, initialDate: any): boolean {
+  if (!date || !initialDate) return false
+  const d1 = date instanceof Date ? date : new Date(date)
+  const d2 = initialDate instanceof Date ? initialDate : new Date(initialDate)
+  if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return false
   return (
-    date.getFullYear() === initialDate.getFullYear() &&
-    date.getMonth() === initialDate.getMonth() &&
-    date.getDate() === initialDate.getDate()
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate()
   )
+}
+
+function toValidDate(d: any): Date | undefined {
+  if (!d) return undefined
+  const parsed = d instanceof Date ? d : new Date(d)
+  return isNaN(parsed.getTime()) ? undefined : parsed
 }
 
 export default function UserHistoryFilters({
@@ -39,8 +48,8 @@ export default function UserHistoryFilters({
   currentFilter: string
   tally: Record<string, number>
   filteredCount: number
-  timeStart?: Date
-  timeEnd?: Date
+  timeStart?: Date | string | null
+  timeEnd?: Date | string | null
   sortOrder: "desc" | "asc"
   allOrg: boolean
   isImpersonating: boolean
@@ -50,13 +59,16 @@ export default function UserHistoryFilters({
   const [newQuery, setNewQuery] = useState(query)
 
   // Keep track of todays date so we know when user's clear their time selections
-  const [initialDate] = useState(dateTimeToDate(new Date()))
+  const [initialDate] = useState(() => dateTimeToDate(new Date()))
+
+  const validStart = toValidDate(timeStart)
+  const validEnd = toValidDate(timeEnd)
 
   // These dates represent the selected date on the calendar.
-  const [startDate, setStartDate] = useState(timeStart ?? initialDate)
-  const [endDate, setEndDate] = useState(timeEnd ?? initialDate)
-  const [isStartDateSelected, setIsStartDateSelected] = useState(!!timeStart)
-  const [isEndDateSelected, setIsEndDateSelected] = useState(!!timeEnd)
+  const [startDate, setStartDate] = useState(validStart ?? initialDate)
+  const [endDate, setEndDate] = useState(validEnd ?? initialDate)
+  const [isStartDateSelected, setIsStartDateSelected] = useState(!!validStart)
+  const [isEndDateSelected, setIsEndDateSelected] = useState(!!validEnd)
   const [sortOrderState, setSortOrderState] = useState<"desc" | "asc">(sortOrder)
 
   const [currentAllOrg, setCurrentAllOrg] = useState(allOrg)
@@ -73,14 +85,16 @@ export default function UserHistoryFilters({
       params.set("q", newQuery.trim())
     }
 
-    if (isStartDateSelected) {
-      params.set("t0", "" + startDate.getTime())
+    if (isStartDateSelected && startDate) {
+      const ms = startDate instanceof Date ? startDate.getTime() : new Date(startDate).getTime()
+      if (!isNaN(ms)) params.set("t0", "" + ms)
     } else {
       params.delete("t0")
     }
 
-    if (isEndDateSelected) {
-      params.set("tf", "" + endDate.getTime())
+    if (isEndDateSelected && endDate) {
+      const ms = endDate instanceof Date ? endDate.getTime() : new Date(endDate).getTime()
+      if (!isNaN(ms)) params.set("tf", "" + ms)
     } else {
       params.delete("tf")
     }
@@ -123,20 +137,20 @@ export default function UserHistoryFilters({
     }
   }, [go])
 
-  function isInitialDate(date: Date) {
+  function isInitialDate(date: any) {
     return datesAreEqual(date, initialDate)
   }
 
-  function canonicalizeDate(date: Date) {
+  function canonicalizeDate(date: any) {
     return isInitialDate(date) ? initialDate : dateTimeToDate(date)
   }
 
-  function setStart(date: Date) {
+  function setStart(date: any) {
     setStartDate(canonicalizeDate(date))
     setIsStartDateSelected(true)
   }
 
-  function setEnd(date: Date) {
+  function setEnd(date: any) {
     setEndDate(canonicalizeDate(date))
     setIsEndDateSelected(true)
   }
@@ -149,7 +163,12 @@ export default function UserHistoryFilters({
   }
 
   function dateFilterLabel() {
-    const dateToLabel = (date: Date) => (!date ? "" : `${date.getMonth() + 1}/${date.getDate()}`)
+    const dateToLabel = (date: any) => {
+      if (!date) return ""
+      const d = date instanceof Date ? date : new Date(date)
+      if (isNaN(d.getTime())) return ""
+      return `${d.getMonth() + 1}/${d.getDate()}`
+    }
     const startDateLabel = dateToLabel(startDate)
     const endDateLabel = dateToLabel(endDate)
 

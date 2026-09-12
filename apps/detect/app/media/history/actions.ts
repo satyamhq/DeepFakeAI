@@ -126,8 +126,14 @@ export async function getUserHistory({
   const tallyScores = getTallyScores(history)
   const filtered: UserQuery[] = history.filter((item) => filterHistoryItem({ item, query, filter, accuracy }))
 
-  const dateAscending = (a: UserQuery, b: UserQuery) => (a.queriedAt?.getTime() ?? 0) - (b.queriedAt?.getTime() ?? 0)
-  const dateDescending = (a: UserQuery, b: UserQuery) => (b.queriedAt?.getTime() ?? 0) - (a.queriedAt?.getTime() ?? 0)
+  const toMillis = (d: any) => {
+    if (!d) return 0
+    if (d instanceof Date) return isNaN(d.getTime()) ? 0 : d.getTime()
+    const parsed = new Date(d).getTime()
+    return isNaN(parsed) ? 0 : parsed
+  }
+  const dateAscending = (a: UserQuery, b: UserQuery) => toMillis(a.queriedAt) - toMillis(b.queriedAt)
+  const dateDescending = (a: UserQuery, b: UserQuery) => toMillis(b.queriedAt) - toMillis(a.queriedAt)
   filtered.sort(sortOrder === "desc" ? dateDescending : dateAscending)
 
   const duration = performance.now() - start

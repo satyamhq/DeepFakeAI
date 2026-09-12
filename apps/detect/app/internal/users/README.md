@@ -1,4 +1,4 @@
-﻿# Users and Organizations
+# Users and Organizations
 
 - [About Clerk](#about-clerk)
 - [App DB User Table](#app-db-users-table)
@@ -138,8 +138,8 @@ components.
 
 Anonymous users have restricted access submitting queries for analysis.
 
-- Anonymous users may only submit queries to supported sites: TikTok, X,
-  Reddit, Instagram, Facebook and Truth Social.
+- Anonymous users may only submit queries to supported sites: X,
+  YouTube, LinkedIn, Reddit, Google Drive, Instagram, and Facebook.
 - Anonymous users may not upload files for analysis.
 - Anonymous users retain a limited history (10 items) in their browser's local storage.
 

@@ -14,9 +14,9 @@ function isToggleableSource(source: MediaPublisher) {
     MediaPublisher.INSTAGRAM,
     MediaPublisher.X,
     MediaPublisher.YOUTUBE,
-    MediaPublisher.TIKTOK,
     MediaPublisher.LINKEDIN,
-    MediaPublisher.TRUTH_SOCIAL,
+    MediaPublisher.GOOGLE_DRIVE,
+    MediaPublisher.REDDIT,
   ]
   return toggleableSources.includes(source)
 }
@@ -32,11 +32,10 @@ function standardizeSources(media: Media) {
   } else if (
     media.source === MediaPublisher.INSTAGRAM ||
     media.source === MediaPublisher.X ||
-    media.source === MediaPublisher.TIKTOK ||
     media.source === MediaPublisher.LINKEDIN ||
-    media.source === MediaPublisher.TRUTH_SOCIAL
+    media.source === MediaPublisher.REDDIT
   ) {
-    // X, Instagram, LinkedIn, Truth Social use readable names for ids. In our DB we don't initially add a display name though we may add one later.
+    // X, Instagram, LinkedIn use readable names for ids
     displayName = ""
     platformId = media.sourceUserName ?? ""
   }

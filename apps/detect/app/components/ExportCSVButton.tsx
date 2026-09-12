@@ -51,10 +51,16 @@ export const UserHistoryExportButton = ({
   allOrg,
   isImpersonating,
 }: UserHistoryExportProps) => {
+  const toTime = (d: any) => {
+    if (!d) return ""
+    if (d instanceof Date) return isNaN(d.getTime()) ? "" : String(d.getTime())
+    const parsed = new Date(d).getTime()
+    return isNaN(parsed) ? "" : String(parsed)
+  }
   const f = encodeURIComponent(filter)
   const q = encodeURIComponent(query)
-  const t0 = encodeURIComponent(timeStart?.getTime() || "")
-  const tf = encodeURIComponent(timeEnd?.getTime() || "")
+  const t0 = encodeURIComponent(toTime(timeStart))
+  const tf = encodeURIComponent(toTime(timeEnd))
   const encodedUserId = encodeURIComponent(userId ?? "")
   const encodedOrgId = encodeURIComponent(orgId ?? "")
   const href = `/api/history-export?f=${f}&q=${q}&t0=${t0}&tf=${tf}&userId=${encodedUserId}&orgId=${encodedOrgId}&allOrg=${allOrg}&isImpersonating=${isImpersonating}`

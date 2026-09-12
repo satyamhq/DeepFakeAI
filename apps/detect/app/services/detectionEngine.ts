@@ -557,7 +557,7 @@ function generateFallbackDetection(media: any): {
     verdict,
     score: primaryScore,
     aiProbability: primaryScore,
-    humanProbability: Number((1.0 - primaryScore).toFixed(4)),
+    humanProbability: Number((1.0 - primaryScore).toFixed(3)),
     confidence,
     explanation,
     analyzedAt: new Date().toISOString(),
@@ -584,7 +584,7 @@ function generateFallbackDetection(media: any): {
         ...raw,
         score: secondaryScore,
         aiProbability: secondaryScore,
-        humanProbability: Number((1.0 - secondaryScore).toFixed(4)),
+        humanProbability: Number((1.0 - secondaryScore).toFixed(3)),
       },
     },
   }
@@ -592,7 +592,7 @@ function generateFallbackDetection(media: any): {
   const normalized: NormalizedDetectionResult = {
     verdict,
     aiProbability: primaryScore,
-    humanProbability: Number((1.0 - primaryScore).toFixed(4)),
+    humanProbability: Number((1.0 - primaryScore).toFixed(3)),
     confidence,
     provider: "DeepFakeAI Fallback Engine (Synthetic Test)",
     modelId: primaryModelId,

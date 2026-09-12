@@ -258,7 +258,12 @@ export async function saveUploadedFile({
 
     // Register query record
     try {
-      const ipAddr = headers().get("x-forwarded-for") ?? ""
+      let ipAddr = ""
+      try {
+        ipAddr = headers().get("x-forwarded-for") ?? ""
+      } catch {
+        // Handled if outside request async storage
+      }
       await checkCreateQuery({
         userId: effectiveUserId,
         postUrl: pseudoUrl,
@@ -273,9 +278,10 @@ export async function saveUploadedFile({
     return { type: "saved", mediaUrl: pseudoUrl, mediaId: id }
   } catch (err: any) {
     console.error("[Upload] Server error in saveUploadedFile:", err)
+    const errDetail = err?.message || String(err)
     return {
       type: "error",
-      message: "Failed to register uploaded file in database. Please try again.",
+      message: `Failed to register uploaded file in database: ${errDetail}`,
     }
   }
 }

@@ -33,35 +33,31 @@ export type CompleteDetectionResultProps = {
 
 function resolvePlatformName(source: string | null | undefined, url: string): { name: string; publisher: MediaPublisher } {
   const normalized = (source || "").toUpperCase()
-  if (normalized === "TIKTOK") return { name: "TikTok", publisher: MediaPublisher.TIKTOK }
   if (normalized === "X" || normalized === "TWITTER") return { name: "X", publisher: MediaPublisher.X }
-  if (normalized === "REDDIT") return { name: "Reddit", publisher: MediaPublisher.REDDIT }
-  if (normalized === "INSTAGRAM") return { name: "Instagram", publisher: MediaPublisher.INSTAGRAM }
-  if (normalized === "FACEBOOK") return { name: "Facebook", publisher: MediaPublisher.FACEBOOK }
-  if (normalized === "TRUTH_SOCIAL" || normalized === "TRUTHSOCIAL")
-    return { name: "Truth Social", publisher: MediaPublisher.TRUTH_SOCIAL }
   if (normalized === "YOUTUBE") return { name: "YouTube", publisher: MediaPublisher.YOUTUBE }
   if (normalized === "LINKEDIN") return { name: "LinkedIn", publisher: MediaPublisher.LINKEDIN }
+  if (normalized === "REDDIT") return { name: "Reddit", publisher: MediaPublisher.REDDIT }
+  if (normalized === "GOOGLE_DRIVE" || normalized === "GOOGLEDRIVE") return { name: "Google Drive", publisher: MediaPublisher.GOOGLE_DRIVE }
+  if (normalized === "INSTAGRAM") return { name: "Instagram", publisher: MediaPublisher.INSTAGRAM }
+  if (normalized === "FACEBOOK") return { name: "Facebook", publisher: MediaPublisher.FACEBOOK }
 
   if (url) {
     const detected = determineSourcePlatform(url)
     switch (detected) {
-      case MediaPublisher.TIKTOK:
-        return { name: "TikTok", publisher: detected }
       case MediaPublisher.X:
         return { name: "X", publisher: detected }
-      case MediaPublisher.REDDIT:
-        return { name: "Reddit", publisher: detected }
-      case MediaPublisher.INSTAGRAM:
-        return { name: "Instagram", publisher: detected }
-      case MediaPublisher.FACEBOOK:
-        return { name: "Facebook", publisher: detected }
-      case MediaPublisher.TRUTH_SOCIAL:
-        return { name: "Truth Social", publisher: detected }
       case MediaPublisher.YOUTUBE:
         return { name: "YouTube", publisher: detected }
       case MediaPublisher.LINKEDIN:
         return { name: "LinkedIn", publisher: detected }
+      case MediaPublisher.REDDIT:
+        return { name: "Reddit", publisher: detected }
+      case MediaPublisher.GOOGLE_DRIVE:
+        return { name: "Google Drive", publisher: detected }
+      case MediaPublisher.INSTAGRAM:
+        return { name: "Instagram", publisher: detected }
+      case MediaPublisher.FACEBOOK:
+        return { name: "Facebook", publisher: detected }
       default:
         break
     }

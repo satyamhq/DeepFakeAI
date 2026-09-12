@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
 /**
  * Accepts POST requests by authenticated users to add verified sources. The body is an array of profile URLs, e.g.
  * { "urls": ["https://www.facebook.com/nih.gov","https://www.youtube.com/user/USEPAgov","https://x.com/USDA"] }
- * The URLs can be from Facebook, Instagram, Twitter/X, TikTok, or YouTube.
+ * The URLs can be from Facebook, Instagram, Twitter/X, LinkedIn, or YouTube.
  * They do not have to all be from the same platform.
  */
 export async function POST(req: NextRequest) {
@@ -80,26 +80,6 @@ export async function POST(req: NextRequest) {
             const created = await db.verifiedSource.create({
               data: {
                 platform: MediaPublisher.INSTAGRAM,
-                platformId: maybePlatformId[1],
-              },
-            })
-            sources.push(created)
-          } catch (e) {
-            console.error(e)
-            skipped.push(url)
-          }
-        } else {
-          skipped.push(url)
-        }
-        break
-      }
-      case MediaPublisher.TIKTOK: {
-        const maybePlatformId = /tiktok.com\/@(\w+)/.exec(url)
-        if (maybePlatformId) {
-          try {
-            const created = await db.verifiedSource.create({
-              data: {
-                platform: MediaPublisher.TIKTOK,
                 platformId: maybePlatformId[1],
               },
             })

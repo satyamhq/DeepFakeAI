@@ -428,12 +428,14 @@ class SupabaseTableDelegate {
       const payload = objectToSnake(args.data)
       const { data, error } = await supabaseAdmin.from(this.tableName).insert(payload).select().single()
       if (error) {
+        console.error(`[Supabase Database Error] ${this.tableName}.insert:`, error.message, error.details || "", error.hint || "")
         return camel
       }
       const saved = objectToCamel(data)
       if (saved.id) getMemoryTable(this.tableName).set(String(saved.id), saved)
       return saved
-    } catch {
+    } catch (err: any) {
+      console.error(`[Supabase Database Exception] ${this.tableName}.create:`, err?.message || err)
       return camel
     }
   }
@@ -447,9 +449,13 @@ class SupabaseTableDelegate {
     try {
       const payload = objectToSnake(args.data)
       const { data, error } = await supabaseAdmin.from(this.tableName).insert(payload).select()
-      if (error) return { count: args.data.length }
+      if (error) {
+        console.error(`[Supabase Database Error] ${this.tableName}.insertMany:`, error.message, error.details || "", error.hint || "")
+        return { count: args.data.length }
+      }
       return { count: data?.length ?? args.data.length }
-    } catch {
+    } catch (err: any) {
+      console.error(`[Supabase Database Exception] ${this.tableName}.createMany:`, err?.message || err)
       return { count: args.data.length }
     }
   }
@@ -466,11 +472,15 @@ class SupabaseTableDelegate {
       let q = supabaseAdmin.from(this.tableName).update(payload)
       q = this.buildFilter(q, args.where).select().single()
       const { data, error } = await q
-      if (error) return merged
+      if (error) {
+        console.error(`[Supabase Database Error] ${this.tableName}.update:`, error.message, error.details || "", error.hint || "")
+        return merged
+      }
       const updated = objectToCamel(data)
       if (updated.id) memTable.set(String(updated.id), updated)
       return updated
-    } catch {
+    } catch (err: any) {
+      console.error(`[Supabase Database Exception] ${this.tableName}.update:`, err?.message || err)
       return merged
     }
   }

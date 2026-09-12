@@ -469,10 +469,16 @@ BEGIN
   -- Rerun policies
   DROP POLICY IF EXISTS "reruns_all_policy" ON public.reruns;
 
-  -- Datasets policies
-  DROP POLICY IF EXISTS "datasets_all_policy" ON public.datasets;
-  DROP POLICY IF EXISTS "dataset_groups_all_policy" ON public.dataset_groups;
-  DROP POLICY IF EXISTS "ground_truth_updates_all_policy" ON public.ground_truth_updates;
+  -- User & Organization policies
+  DROP POLICY IF EXISTS "users_all_policy" ON public.users;
+  DROP POLICY IF EXISTS "users_select_policy" ON public.users;
+  DROP POLICY IF EXISTS "users_insert_policy" ON public.users;
+  DROP POLICY IF EXISTS "users_update_policy" ON public.users;
+  DROP POLICY IF EXISTS "users_delete_policy" ON public.users;
+
+  DROP POLICY IF EXISTS "organizations_all_policy" ON public.organizations;
+  DROP POLICY IF EXISTS "organization_members_all_policy" ON public.organization_members;
+  DROP POLICY IF EXISTS "api_keys_all_policy" ON public.api_keys;
 END $$;
 
 -- Define clean permissive policies for application operations
@@ -503,3 +509,10 @@ CREATE POLICY "reruns_all_policy" ON public.reruns FOR ALL TO anon, authenticate
 CREATE POLICY "datasets_all_policy" ON public.datasets FOR ALL TO anon, authenticated, service_role USING (true) WITH CHECK (true);
 CREATE POLICY "dataset_groups_all_policy" ON public.dataset_groups FOR ALL TO anon, authenticated, service_role USING (true) WITH CHECK (true);
 CREATE POLICY "ground_truth_updates_all_policy" ON public.ground_truth_updates FOR ALL TO anon, authenticated, service_role USING (true) WITH CHECK (true);
+CREATE POLICY "users_select_policy" ON public.users FOR SELECT TO anon, authenticated, service_role USING (true);
+CREATE POLICY "users_insert_policy" ON public.users FOR INSERT TO anon, authenticated, service_role WITH CHECK (true);
+CREATE POLICY "users_update_policy" ON public.users FOR UPDATE TO anon, authenticated, service_role USING (true) WITH CHECK (true);
+CREATE POLICY "users_delete_policy" ON public.users FOR DELETE TO authenticated, service_role USING (true);
+CREATE POLICY "organizations_all_policy" ON public.organizations FOR ALL TO anon, authenticated, service_role USING (true) WITH CHECK (true);
+CREATE POLICY "organization_members_all_policy" ON public.organization_members FOR ALL TO anon, authenticated, service_role USING (true) WITH CHECK (true);
+CREATE POLICY "api_keys_all_policy" ON public.api_keys FOR ALL TO anon, authenticated, service_role USING (true) WITH CHECK (true);

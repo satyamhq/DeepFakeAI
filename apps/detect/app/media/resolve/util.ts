@@ -9,13 +9,12 @@ export function isPostUrlInAllowList(postUrl: string) {
     "pbs.twimg.com",
     "reddit.com",
     "redd.it",
-    "tiktok.com",
-    "truthsocial.com",
     "twimg.com",
     "twitter.com",
     "x.com",
     "youtube.com",
     "youtu.be",
+    "drive.google.com",
   ]
   try {
     // Creating a URL without "http://" will crash, like new URL("instagram.com")

@@ -5,7 +5,6 @@ import { NotableMedia, Notability, Prisma, MediaPublisher, MediaType } from "../
 import {
   FaRegTrashAlt,
   FaCode,
-  FaTiktok,
   FaMastodon,
   FaYoutube,
   FaReddit,
@@ -17,7 +16,7 @@ import {
 import { FaXTwitter, FaLinkedin } from "react-icons/fa6"
 import { ReactElement, useState } from "react"
 import { deleteNotableMedia, updateNotableMedia } from "../actions"
-import { VideoCameraIcon, ImageIcon, MicrophoneIcon, ArrowRightIcon, TruthSocial } from "../../../../components/icons"
+import { VideoCameraIcon, ImageIcon, MicrophoneIcon, ArrowRightIcon } from "../../../../components/icons"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import ImageUploadForm from "./ImageUploadForm"
@@ -42,10 +41,9 @@ const notabilityOptions: Record<Notability, string> = {
   PLAIN: "Plain",
 }
 
-const mediaSources: Record<MediaPublisher, string> = {
+const mediaSources: Partial<Record<MediaPublisher, string>> = {
   UNKNOWN: "Unknown",
   X: "X",
-  TIKTOK: "TikTok",
   MASTODON: "Mastodon",
   YOUTUBE: "YouTube",
   REDDIT: "Reddit",
@@ -54,14 +52,12 @@ const mediaSources: Record<MediaPublisher, string> = {
   OTHER: "Other",
   FACEBOOK: "Facebook",
   LINKEDIN: "LinkedIn",
-  TRUTH_SOCIAL: "Truth Social",
 }
 
 const mediaSourceIcons: Record<string, ReactElement> = {
   UNKNOWN: <FaLink className="inline ml-2" />,
   OTHER: <FaLink className="inline ml-2" />,
   X: <FaXTwitter className="inline ml-2" />,
-  TIKTOK: <FaTiktok className="inline ml-2" />,
   MASTODON: <FaMastodon className="inline ml-2" />,
   YOUTUBE: <FaYoutube className="inline ml-2" />,
   REDDIT: <FaReddit className="inline ml-2" />,
@@ -69,7 +65,6 @@ const mediaSourceIcons: Record<string, ReactElement> = {
   INSTAGRAM: <FaInstagram className="inline ml-2" />,
   FACEBOOK: <FaFacebook className="inline ml-2" />,
   LINKEDIN: <FaLinkedin className="inline ml-2" />,
-  TRUTH_SOCIAL: <TruthSocial className="inline ml-2 w-4 h-4" />,
 }
 
 export type FormState = { state: string; message?: string }

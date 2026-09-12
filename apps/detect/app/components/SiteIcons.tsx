@@ -8,14 +8,12 @@ import {
   FaGoogleDrive,
   FaInstagram,
   FaFacebook,
-  FaTiktok,
 } from "react-icons/fa6"
-import { LinkIcon, TruthSocial } from "./icons"
+import { LinkIcon } from "./icons"
 import { useUser } from "../mockClerk"
 import { getRoleByUser } from "../auth"
 
 const supportedSourceIcons = [
-  { label: "TikTok", icon: FaTiktok },
   { label: "X", icon: FaXTwitter },
   { label: "YouTube", icon: FaYoutube },
   { label: "LinkedIn", icon: FaLinkedin },
@@ -23,7 +21,6 @@ const supportedSourceIcons = [
   { label: "Google Drive", icon: FaGoogleDrive },
   { label: "Instagram", icon: FaInstagram },
   { label: "Facebook", icon: FaFacebook },
-  { label: "Truth Social", icon: TruthSocial },
 ]
 
 export function MediaPublisherIcon({ platform }: { platform: MediaPublisher }) {

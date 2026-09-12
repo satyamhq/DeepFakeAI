@@ -45,9 +45,10 @@ export const sourceLabels = {
   instagram: "Instagram",
   mastodon: "Mastodon",
   reddit: "Reddit",
-  tiktok: "TikTok",
   twitter: "Twitter/X",
   youtube: "YouTube",
+  linkedin: "LinkedIn",
+  google_drive: "Google Drive",
   upload: "Upload",
   other: "Other",
 }
@@ -58,9 +59,10 @@ export function determineSource(media: Media): MediaSource {
   if (mediaUrl.includes("fbcdn.net")) return "facebook"
   if (mediaUrl.includes("cdninstagram.com")) return "instagram"
   if (mediaUrl.includes("preview.redd.it")) return "reddit"
-  if (mediaUrl.includes("tiktokcdn.com")) return "tiktok"
   if (mediaUrl.includes("twimg.com")) return "twitter"
   if (mediaUrl.includes("googlevideo.com")) return "youtube"
+  if (mediaUrl.includes("licdn.com") || mediaUrl.includes("linkedin.com")) return "linkedin"
+  if (mediaUrl.includes("drive.google.com")) return "google_drive"
   if (mediaUrl.startsWith(FILE_UPLOAD_PSEUDO_URL_BASE) || mediaUrl.includes("/storage/v1/object/") || mediaUrl.includes("supabase.co")) return "upload"
   return "other"
 }
@@ -68,10 +70,6 @@ export function determineSource(media: Media): MediaSource {
 export function determineSourceAccount(postUrl: string): string | null {
   if (!postUrl) {
     return null
-  }
-  const tiktokMatch = postUrl.match(/https?:\/\/(www\.)?tiktok.com\/@([^/]+)/)
-  if (tiktokMatch) {
-    return tiktokMatch[2] ?? null
   }
   const twitterMatch = postUrl.match(/https?:\/\/(www\.)?(twitter|x).com\/([^/]+)\/status/)
   if (twitterMatch) {

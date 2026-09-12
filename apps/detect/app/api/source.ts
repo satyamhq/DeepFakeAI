@@ -62,40 +62,6 @@ export function extractMediaSourceData(postUrl: string, json: object): MediaSour
             sourceUserName: authorUserName,
           }
         }
-        case MediaPublisher.TIKTOK: {
-          const regexMatches = /tiktok\.com\/@(\w+)/.exec(postUrl)
-          let userName: string | undefined = undefined
-          // TikTok often but doesn't always have the username in the URL.
-          // Sometimes the URL can be short forms like https://vm.tiktok.com/ZGeXpL7v4/,
-          // and those need to be handled differently.
-          if (regexMatches && regexMatches.length == 2) {
-            userName = regexMatches[1]
-          } else {
-            // Our newest TikTok code has an `uploader` field with the username
-            userName = (json as any).uploader as string
-            // JSON extracted from our older tiktok code will have a `username` in the blob
-            if (!userName) {
-              userName = (json as any).result?.author?.username as string
-              // Sometimes there's neither and just a `nickname`, which seems to match what's in the URL
-              if (!userName) {
-                userName = (json as any).result?.author?.nickname as string
-              }
-            }
-          }
-          // We didn't get anything useful, so don't fill in the source data for this media
-          if (!userName) {
-            return undefined
-          }
-          // Remove any leading @ (some saved blobs have this)
-          if (userName.startsWith("@")) {
-            userName = userName.substring(1)
-          }
-          // TikTok doesn't provide a unique ID for the user
-          return {
-            source: MediaPublisher.TIKTOK,
-            sourceUserName: userName,
-          }
-        }
         case MediaPublisher.X: {
           const userId = (json as any).data?.author_id
           let userName = undefined
@@ -135,9 +101,9 @@ export function extractMediaSourceData(postUrl: string, json: object): MediaSour
             source: MediaPublisher.LINKEDIN,
           }
         }
-        case MediaPublisher.TRUTH_SOCIAL: {
+        case MediaPublisher.GOOGLE_DRIVE: {
           return {
-            source: MediaPublisher.TRUTH_SOCIAL,
+            source: MediaPublisher.GOOGLE_DRIVE,
           }
         }
       }
@@ -155,28 +121,22 @@ export function determineSourcePlatform(url: string): MediaPublisher {
       return MediaPublisher.FACEBOOK
     } else if (isInstagram(parsed)) {
       return MediaPublisher.INSTAGRAM
-    } else if (isMastodon(parsed)) {
-      // TODO: may not detect account/profile URLs
-      return MediaPublisher.MASTODON
+    } else if (isGoogleDrive(parsed)) {
+      return MediaPublisher.GOOGLE_DRIVE
     } else if (isReddit(parsed)) {
       return MediaPublisher.REDDIT
-    } else if (isTikTok(parsed)) {
-      return MediaPublisher.TIKTOK
     } else if (isTwitter(parsed)) {
       return MediaPublisher.X
     } else if (isYouTube(parsed)) {
       return MediaPublisher.YOUTUBE
     } else if (isLinkedIn(parsed)) {
       return MediaPublisher.LINKEDIN
-    } else if (isTruthSocial(parsed)) {
-      return MediaPublisher.TRUTH_SOCIAL
+    } else if (isMastodon(parsed)) {
+      // TODO: may not detect account/profile URLs
+      return MediaPublisher.MASTODON
     }
   }
   return MediaPublisher.UNKNOWN
-}
-
-function isTruthSocial(url: URL): boolean {
-  return url.hostname.includes("truthsocial.com")
 }
 
 function isLinkedIn(url: URL): boolean {
@@ -185,10 +145,6 @@ function isLinkedIn(url: URL): boolean {
 
 function isYouTube(url: URL): boolean {
   return url.hostname.includes("youtube.com") || url.hostname.includes("youtu.be")
-}
-
-function isTikTok(url: URL): boolean {
-  return url.hostname.includes("tiktok.com")
 }
 
 function isTwitter(url: URL): boolean {
@@ -214,7 +170,6 @@ export function isGoogleDrive(url: URL): boolean {
 // Matches URLs like https://c.im/@MishaVanMollusq@sfba.social/112454542589322232
 const indirectMastodonUrlRegex = /^(https?:\/\/)?([^/]+)\/@([^@/]+)@([^/]+)\/\d+$/
 // Matches URLs like https://mastodon.social/@Tutanota/112077253275661088
-// Will not match TikTok URLs like https://www.tiktok.com/@rufusisagoodboy/video/7364137201052978462
 const directMastodonUrlRegex = /^(https?:\/\/)?([^/]+)\/@([^@/]+)\/(\d+)$/
 
 export function isMastodon(url: URL): boolean {

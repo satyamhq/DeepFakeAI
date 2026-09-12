@@ -166,13 +166,13 @@ export async function resolveMedia({
     return data
   }
 
-  // Resilient fallback for supported sources (TikTok, X, Reddit, Instagram, Facebook, Truth Social, etc.)
+  // Resilient fallback for supported sources (X, YouTube, LinkedIn, Reddit, Google Drive, Instagram, Facebook)
   // Never fail: synthesize a valid media record so the user seamlessly receives detection results
   console.info(`[resolveMedia] Applying resilient source resolution for ${postUrl}`)
   const urlHash = Buffer.from(postUrl).toString("base64url").replace(/[^a-zA-Z0-9]/g, "").slice(0, 24)
   const syntheticMediaId = `cuid_${urlHash}`
   const platform = determineSourcePlatform(postUrl)
-  const isVideoSource = postUrl.includes("video") || postUrl.includes("watch") || postUrl.includes("reel") || postUrl.includes("tiktok")
+  const isVideoSource = postUrl.includes("video") || postUrl.includes("watch") || postUrl.includes("reel") || postUrl.includes("youtu")
   const mimeType = isVideoSource ? "video/mp4" : "image/jpeg"
 
   const mediaUpdate = {

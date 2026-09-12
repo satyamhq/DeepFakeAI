@@ -17,8 +17,10 @@ const SUPPORTED_EXTENSIONS = [
 ]
 
 function fail(status: number, error: string, details?: any) {
-  console.warn(`[Upload Media API] Error (${status}):`, error, details ?? "")
-  return response.make(status, { result: "failure", reason: error, details })
+  const detailStr = details ? (typeof details === "string" ? details : JSON.stringify(details)) : ""
+  const fullError = detailStr && !error.includes(detailStr) ? `${error} (${detailStr})` : error
+  console.warn(`[Upload Media API] Error (${status}):`, fullError)
+  return response.make(status, { result: "failure", reason: fullError, error: fullError, details })
 }
 
 function generateMediaId(filename: string, buffer: Buffer): string {
@@ -97,7 +99,7 @@ export async function POST(req: NextRequest) {
     })
 
     if (saveFileUploadResponse.type === "error") {
-      return fail(500, "Error saving upload record in database.", saveFileUploadResponse.message)
+      return fail(500, `Database error: ${saveFileUploadResponse.message}`, saveFileUploadResponse.message)
     }
 
     console.info(
