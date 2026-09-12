@@ -1,11 +1,12 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import DeepFakeAILogo from "../DeepFakeAILogo"
 import { getSupabaseBrowserClient } from "../../supabase"
 import { RiLockPasswordLine, RiMailLine, RiEyeLine, RiEyeOffLine, RiLoader4Line } from "react-icons/ri"
+import { FcGoogle } from "react-icons/fc"
 
 interface AuthFormProps {
   initialMode?: "signin" | "signup"
@@ -21,8 +22,42 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    const errorParam = searchParams.get("error")
+    if (errorParam) {
+      setError(decodeURIComponent(errorParam))
+    }
+  }, [searchParams])
+
+  const handleGoogleSignIn = async () => {
+    setError(null)
+    setGoogleLoading(true)
+    try {
+      const supabase = getSupabaseBrowserClient()
+      const redirectUrl = `${window.location.origin}/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}`
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: redirectUrl,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
+      })
+      if (oauthError) {
+        setError(oauthError.message)
+        setGoogleLoading(false)
+      }
+    } catch (err: any) {
+      setError(err?.message || "Failed to initiate Google authentication.")
+      setGoogleLoading(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -158,6 +193,28 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
             {successMessage}
           </div>
         )}
+
+        {/* Google OAuth Button */}
+        <button
+          type="button"
+          onClick={handleGoogleSignIn}
+          disabled={loading || googleLoading}
+          className="w-full py-3 px-4 rounded-xl bg-white hover:bg-gray-100 text-gray-800 font-bold text-sm shadow-md transition duration-150 flex items-center justify-center gap-3 border border-gray-300 disabled:opacity-50"
+        >
+          {googleLoading ? (
+            <RiLoader4Line className="animate-spin w-5 h-5 text-gray-700" />
+          ) : (
+            <FcGoogle className="w-5 h-5 shrink-0 text-xl" />
+          )}
+          <span>{mode === "signin" ? "Sign In with Google" : "Sign Up with Google"}</span>
+        </button>
+
+        {/* Divider */}
+        <div className="relative flex py-3 items-center my-1">
+          <div className="flex-grow border-t border-gray-700"></div>
+          <span className="flex-shrink mx-3 text-xs uppercase tracking-wider text-gray-400 font-semibold">Or continue with email</span>
+          <div className="flex-grow border-t border-gray-700"></div>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
