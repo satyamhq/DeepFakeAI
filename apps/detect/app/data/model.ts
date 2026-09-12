@@ -193,6 +193,7 @@ export type CachedResult = {
   sourceUrl?: string
   duration?: number
   fallback?: boolean
+  synthetic?: boolean
   raw?: any
 }
 
@@ -337,10 +338,11 @@ export type GetResultsResponse =
   | { state: typeof RequestState.COMPLETE; results: CachedResults; rank?: Rank; verdict?: string; analysisTime: number; errors?: string[] }
   | { state: typeof RequestState.ERROR; errors: string[] }
 
-export const fetchResults = (mediaId: string, isAnon?: boolean): Promise<GetResultsResponse> => {
+export const fetchResults = (mediaId: string, isAnon?: boolean, force?: boolean): Promise<GetResultsResponse> => {
   const headers = isAnon ? { "anonymous-query": Math.floor(Math.random() * 100000).toString() } : undefined
+  const forceQuery = force ? "&force=true" : ""
   return fetchJson<GetResultsResponse>(
-    `/api/get-results?id=${encodeURIComponent(mediaId)}&source=truemedia`,
+    `/api/get-results?id=${encodeURIComponent(mediaId)}&source=truemedia${forceQuery}`,
     { method: "GET", headers },
     (errmsg) => {
       // if our own backend returned a non-JSON error then some infrastructural component must be (hopefully temporarily)

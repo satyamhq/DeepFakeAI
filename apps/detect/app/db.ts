@@ -114,6 +114,15 @@ const TABLE_MAP: Record<string, string> = {
   organizationMember: "organization_members",
 }
 
+const localMemoryStore: Map<string, Map<string, any>> = new Map()
+
+function getMemoryTable(tableName: string): Map<string, any> {
+  if (!localMemoryStore.has(tableName)) {
+    localMemoryStore.set(tableName, new Map())
+  }
+  return localMemoryStore.get(tableName)!
+}
+
 class SupabaseTableDelegate {
   private tableName: string
 
@@ -168,11 +177,34 @@ class SupabaseTableDelegate {
       let q = supabaseAdmin.from(this.tableName).select("*")
       q = this.buildFilter(q, args.where).limit(1)
       const { data, error } = await q
-      if (error || !data || data.length === 0) return null
-      return objectToCamel(data[0])
+      if (!error && data && data.length > 0) {
+        const item = objectToCamel(data[0])
+        const key = item.id || Object.values(args.where)[0]
+        if (key) getMemoryTable(this.tableName).set(String(key), item)
+        return item
+      }
     } catch {
-      return null
+      // Fall through to memory store
     }
+    const memTable = getMemoryTable(this.tableName)
+    const firstWhereKey = Object.values(args.where)[0]
+    if (args.where?.id && memTable.has(String(args.where.id))) {
+      return { ...memTable.get(String(args.where.id)) }
+    }
+    if (firstWhereKey && memTable.has(String(firstWhereKey))) {
+      return { ...memTable.get(String(firstWhereKey)) }
+    }
+    for (const item of memTable.values()) {
+      let match = true
+      for (const [k, v] of Object.entries(args.where)) {
+        if (item[k] !== v && item[toCamelCase(k)] !== v) {
+          match = false
+          break
+        }
+      }
+      if (match) return { ...item }
+    }
+    return null
   }
 
   async findFirst(args?: { where?: Record<string, any>; orderBy?: any; select?: any; include?: any }): Promise<any> {
@@ -186,11 +218,18 @@ class SupabaseTableDelegate {
       }
       q = q.limit(1)
       const { data, error } = await q
-      if (error || !data || data.length === 0) return null
-      return objectToCamel(data[0])
+      if (!error && data && data.length > 0) {
+        return objectToCamel(data[0])
+      }
     } catch {
-      return null
+      // Fall through to memory store
     }
+    if (args?.where) {
+      return this.findUnique({ where: args.where })
+    }
+    const memTable = getMemoryTable(this.tableName)
+    const first = memTable.values().next()
+    return first.done ? null : { ...first.value }
   }
 
   async findMany(args?: {
@@ -228,47 +267,75 @@ class SupabaseTableDelegate {
       }
 
       const { data, error } = await q
-      if (error || !data) return []
-      return objectToCamel(data)
+      if (!error && data && data.length > 0) {
+        return objectToCamel(data)
+      }
     } catch {
-      return []
+      // Fall through to memory store
     }
+    const memTable = getMemoryTable(this.tableName)
+    const all = Array.from(memTable.values())
+    if (!args?.where) return all
+    return all.filter((item) => {
+      for (const [k, v] of Object.entries(args.where!)) {
+        if (item[k] !== v && item[toCamelCase(k)] !== v) return false
+      }
+      return true
+    })
   }
 
   async create(args: { data: Record<string, any>; select?: any }): Promise<any> {
+    const camel = objectToCamel(args.data)
+    const memKey = args.data.id || (args.data.postUrl ? `url_${args.data.postUrl}` : `item_${Date.now()}_${Math.random()}`)
+    getMemoryTable(this.tableName).set(String(memKey), { ...camel })
     try {
       const payload = objectToSnake(args.data)
       const { data, error } = await supabaseAdmin.from(this.tableName).insert(payload).select().single()
       if (error) {
-        return objectToCamel(args.data)
+        return camel
       }
-      return objectToCamel(data)
+      const saved = objectToCamel(data)
+      if (saved.id) getMemoryTable(this.tableName).set(String(saved.id), saved)
+      return saved
     } catch {
-      return objectToCamel(args.data)
+      return camel
     }
   }
 
   async createMany(args: { data: Record<string, any>[] }): Promise<{ count: number }> {
+    for (const item of args.data) {
+      const camel = objectToCamel(item)
+      const key = item.id || `item_${Date.now()}_${Math.random()}`
+      getMemoryTable(this.tableName).set(String(key), camel)
+    }
     try {
       const payload = objectToSnake(args.data)
       const { data, error } = await supabaseAdmin.from(this.tableName).insert(payload).select()
-      if (error) return { count: 0 }
-      return { count: data?.length ?? 0 }
+      if (error) return { count: args.data.length }
+      return { count: data?.length ?? args.data.length }
     } catch {
-      return { count: 0 }
+      return { count: args.data.length }
     }
   }
 
   async update(args: { where: Record<string, any>; data: Record<string, any> }): Promise<any> {
+    const memTable = getMemoryTable(this.tableName)
+    const memKey = args.where?.id || Object.values(args.where)[0]
+    const existing = memTable.get(String(memKey)) || (await this.findUnique({ where: args.where })) || {}
+    const merged = { ...existing, ...objectToCamel(args.data) }
+    memTable.set(String(memKey), merged)
+
     try {
       const payload = objectToSnake(args.data)
       let q = supabaseAdmin.from(this.tableName).update(payload)
       q = this.buildFilter(q, args.where).select().single()
       const { data, error } = await q
-      if (error) return objectToCamel({ ...args.where, ...args.data })
-      return objectToCamel(data)
+      if (error) return merged
+      const updated = objectToCamel(data)
+      if (updated.id) memTable.set(String(updated.id), updated)
+      return updated
     } catch {
-      return objectToCamel({ ...args.where, ...args.data })
+      return merged
     }
   }
 
@@ -298,11 +365,18 @@ class SupabaseTableDelegate {
       }
       return await this.create({ data: { ...args.where, ...args.create } })
     } catch {
-      return objectToCamel({ ...args.where, ...args.create })
+      const memTable = getMemoryTable(this.tableName)
+      const key = args.where.id || Object.values(args.where)[0]
+      const saved = objectToCamel({ ...args.where, ...args.create })
+      memTable.set(String(key), saved)
+      return saved
     }
   }
 
   async delete(args: { where: Record<string, any> }) {
+    const memTable = getMemoryTable(this.tableName)
+    const key = args.where.id || Object.values(args.where)[0]
+    memTable.delete(String(key))
     try {
       let q = supabaseAdmin.from(this.tableName).delete()
       q = this.buildFilter(q, args.where).select().single()

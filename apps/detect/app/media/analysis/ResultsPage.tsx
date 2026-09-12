@@ -112,9 +112,13 @@ export default function ResultsPage({
   let cached: CachedResults = (media.results as CachedResults) || {}
   let longest = media.analysisTime || 0
   let loading = false
+  const [mountTime] = useState(() => Date.now())
   const query = useQuery({
     queryKey: ["fetch-results", media.id],
-    queryFn: () => fetchResults(media.id, role.id === ""),
+    queryFn: () => {
+      const isOverTimeout = Date.now() - mountTime >= 50_000
+      return fetchResults(media.id, role.id === "", isOverTimeout)
+    },
     refetchInterval: (query) => (isDone(query.state.data?.state) ? false : POLLING_INTERVAL),
     enabled: ignoreCache || (cached ? Object.keys(cached).length === 0 : true),
   })
@@ -199,6 +203,7 @@ export default function ResultsPage({
           pending={pending}
           currentUserFeedback={currentUserFeedback}
           isVerifiedLabelEnabled={isVerifiedLabelEnabled}
+          longest={longest}
         />
         {debug && role.canEditMetadata && <MetadataEditorOpener media={media} />}
         {debug && role.internal && feedback.length > 0 && (

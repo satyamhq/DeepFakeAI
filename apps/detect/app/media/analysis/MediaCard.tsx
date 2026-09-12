@@ -38,6 +38,7 @@ import PostToXButton from "../../internal/media/PostToXButton"
 import SoftDeleteButton from "./SoftDeleteButton"
 import { gatherAnalysisCategories, shouldShowMisleadingLabel } from "./utils"
 import { Misleading } from "../../components/EvidenceLabels"
+import CompleteDetectionResult from "./CompleteDetectionResult"
 
 const formatDate = (date: Date | string | number | null | undefined) => {
   if (!date) return "-"
@@ -156,6 +157,7 @@ export function MediaCard({
   pending,
   currentUserFeedback,
   isVerifiedLabelEnabled,
+  longest,
 }: {
   media: JoinedMedia
   progress: FetchProgress
@@ -164,6 +166,7 @@ export function MediaCard({
   pending: string[]
   currentUserFeedback?: UserFeedback
   isVerifiedLabelEnabled: boolean
+  longest?: number
 }) {
   const { user } = useUser()
   const role = getRoleByUser(user)
@@ -255,6 +258,15 @@ export function MediaCard({
             </div>
           </div>
         </div>
+        {showResults && (
+          <CompleteDetectionResult
+            media={media}
+            ready={ready}
+            pending={pending}
+            postUrl={postUrl}
+            longest={longest || media.analysisTime || 1.25}
+          />
+        )}
         {!role.isNotLoggedIn && <SendFeedback mediaId={media.id} currentUserFeedback={currentUserFeedback} />}
       </Card>
     </div>

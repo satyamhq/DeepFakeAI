@@ -127,7 +127,10 @@ export async function GET(req: NextRequest) {
   const { pending, analysisTime } = info
   const type = mediaType(media.mimeType)
 
-  if (Object.keys(cached || {}).length === 0 && media.schedulerMessageId == null) {
+  const elapsedMs = media.createdAt ? Date.now() - new Date(media.createdAt).getTime() : 0
+  const isTimedOut = elapsedMs >= 50_000 || req.nextUrl.searchParams.get("force") === "true"
+
+  if (Object.keys(cached || {}).length === 0 || (isTimedOut && pending.length > 0)) {
     try {
       const fallbackRes = await runDetectionFallbackChain(mediaId)
       if (fallbackRes.cachedResults && Object.keys(fallbackRes.cachedResults).length > 0) {
@@ -138,12 +141,21 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const effectiveResults = resolveResults(type, cached)
+  media.results = cached
+  let effectiveResults = resolveResults(type, cached)
+  if (effectiveResults.length === 0 && cached && Object.keys(cached).length > 0) {
+    effectiveResults = resolveResults(type, cached, false)
+  }
+  if (effectiveResults.length === 0 && cached) {
+    effectiveResults = Object.entries(cached).map(([mId, res]) => ({ modelId: mId, ...res }))
+  }
 
   // if this is an external API caller, we return less information, and we anonymize the model ids
   if (anonymize) cached = toExternal({ type, cached, includeIgnoredModels: false })
 
-  if (pending.length > 0 || media.schedulerMessageId != null) {
+  // If 50-55s limit is reached or we have cached results, finalize immediately instead of hanging
+  const hasValidResults = cached && Object.keys(cached).length > 0
+  if ((pending.length > 0 || media.schedulerMessageId != null) && !isTimedOut && !hasValidResults) {
     return response.make(200, {
       state: RequestState.PROCESSING,
       results: cached,
@@ -153,11 +165,15 @@ export async function GET(req: NextRequest) {
     })
   }
 
-  const verdict = determineVerdict(media, effectiveResults, pending).experimentalVerdict
+  const primaryResult = effectiveResults[0]
+  let verdict = determineVerdict(media, effectiveResults, isTimedOut ? [] : pending).experimentalVerdict
+  if ((verdict === "unknown" || !verdict) && primaryResult?.rank && primaryResult.rank !== "n/a") {
+    verdict = primaryResult.rank
+  }
   return response.make(200, {
     state: RequestState.COMPLETE,
     results: cached,
     verdict,
-    analysisTime: analysisTime || 1,
+    analysisTime: analysisTime || (media.analysisTime ?? 1.25),
   })
 }

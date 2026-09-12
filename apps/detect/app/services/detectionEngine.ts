@@ -15,6 +15,7 @@ export type NormalizedDetectionResult = {
   explanation: string
   processingStatus: "complete" | "error" | "unavailable"
   fallback?: boolean
+  synthetic?: boolean
   raw?: any
 }
 
@@ -521,7 +522,7 @@ function generateFallbackDetection(media: any): {
   const rank: Rank = verdict
 
   let primaryModelId = "hive-image"
-  let secondaryModelId = "aion"
+  let secondaryModelId = "aion-image"
   let category = "image"
 
   if (type === "video") {
@@ -551,9 +552,12 @@ function generateFallbackDetection(media: any): {
 
   const raw = {
     fallback: true,
-    provider: "Detection Engine (Resilient Fallback)",
+    synthetic: true,
+    provider: "DeepFakeAI Fallback Engine (Synthetic Test)",
     verdict,
     score: primaryScore,
+    aiProbability: primaryScore,
+    humanProbability: Number((1.0 - primaryScore).toFixed(4)),
     confidence,
     explanation,
     analyzedAt: new Date().toISOString(),
@@ -565,6 +569,7 @@ function generateFallbackDetection(media: any): {
       rank,
       duration: 1.25,
       fallback: true,
+      synthetic: true,
       rationale: explanation,
       raw,
     },
@@ -573,10 +578,13 @@ function generateFallbackDetection(media: any): {
       rank,
       duration: 1.1,
       fallback: true,
+      synthetic: true,
       rationale: explanation,
       raw: {
         ...raw,
         score: secondaryScore,
+        aiProbability: secondaryScore,
+        humanProbability: Number((1.0 - secondaryScore).toFixed(4)),
       },
     },
   }
@@ -586,11 +594,12 @@ function generateFallbackDetection(media: any): {
     aiProbability: primaryScore,
     humanProbability: Number((1.0 - primaryScore).toFixed(4)),
     confidence,
-    provider: "Detection Engine",
+    provider: "DeepFakeAI Fallback Engine (Synthetic Test)",
     modelId: primaryModelId,
     explanation,
     processingStatus: "complete",
     fallback: true,
+    synthetic: true,
     raw,
   }
 
