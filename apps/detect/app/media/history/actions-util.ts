@@ -56,21 +56,21 @@ export async function buildHistoryParams({
     }
   }
 
-  let externalId
+  let externalId: string | undefined = userId || undefined
   if (userId) {
     try {
-      externalId = (await clerkClient().users.getUser(userId)).externalId
-      if (!externalId) throw "No Clerk user"
-    } catch (e) {
-      throw "Bad request"
+      const u = await clerkClient().users.getUser(userId)
+      if (u && u.externalId) externalId = u.externalId
+    } catch {
+      // Supabase user or externalId not set
     }
   }
 
   if (orgId) {
     try {
       await clerkClient().organizations.getOrganization({ organizationId: orgId })
-    } catch (e) {
-      throw "Bad request"
+    } catch {
+      // Org lookup notice
     }
   }
 

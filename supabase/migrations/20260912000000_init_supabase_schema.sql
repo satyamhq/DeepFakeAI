@@ -29,8 +29,11 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE TYPE media_publisher AS ENUM ('UNKNOWN', 'OTHER', 'X', 'TIKTOK', 'MASTODON', 'YOUTUBE', 'REDDIT', 'GOOGLE_DRIVE', 'INSTAGRAM', 'FACEBOOK');
+  CREATE TYPE media_publisher AS ENUM ('UNKNOWN', 'OTHER', 'X', 'TIKTOK', 'MASTODON', 'YOUTUBE', 'REDDIT', 'GOOGLE_DRIVE', 'INSTAGRAM', 'FACEBOOK', 'TRUTH_SOCIAL', 'LINKEDIN');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+ALTER TYPE media_publisher ADD VALUE IF NOT EXISTS 'TRUTH_SOCIAL';
+ALTER TYPE media_publisher ADD VALUE IF NOT EXISTS 'LINKEDIN';
 
 DO $$ BEGIN
   CREATE TYPE reply_type AS ENUM ('PROCESSING', 'FINAL');
@@ -105,9 +108,12 @@ CREATE TABLE IF NOT EXISTS public.media (
   posted_to_x BOOLEAN NOT NULL DEFAULT FALSE,
   trimmed BOOLEAN NOT NULL DEFAULT FALSE,
   scheduler_message_id TEXT,
-  api_key_id TEXT REFERENCES public.api_keys(id) ON DELETE SET NULL
+  api_key_id TEXT REFERENCES public.api_keys(id) ON DELETE SET NULL,
+  user_id TEXT REFERENCES public.users(id) ON DELETE SET NULL
 );
+ALTER TABLE IF EXISTS public.media ADD COLUMN IF NOT EXISTS user_id TEXT;
 CREATE INDEX IF NOT EXISTS idx_media_resolved_at ON public.media(resolved_at);
+CREATE INDEX IF NOT EXISTS idx_media_user_id ON public.media(user_id);
 
 -- Queries (Supports both registered and anonymous queries)
 CREATE TABLE IF NOT EXISTS public.queries (
@@ -120,6 +126,9 @@ CREATE TABLE IF NOT EXISTS public.queries (
   ip_addr TEXT NOT NULL DEFAULT '',
   is_deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
+CREATE INDEX IF NOT EXISTS idx_queries_time ON public.queries(time DESC);
+CREATE INDEX IF NOT EXISTS idx_queries_user_time ON public.queries(user_id, time DESC);
+CREATE INDEX IF NOT EXISTS idx_queries_post_url ON public.queries(post_url);
 CREATE INDEX IF NOT EXISTS idx_queries_user_id ON public.queries(user_id);
 CREATE INDEX IF NOT EXISTS idx_queries_time ON public.queries(time DESC);
 

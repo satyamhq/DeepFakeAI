@@ -39,15 +39,15 @@ describe("isPostUrlInAllowList", () => {
     expect(isPostUrlInAllowList(url)).toBeTruthy()
   })
 
-  it("accepts youtube and linkedin domains", () => {
+  it("accepts all supported sources including tiktok, truth social, youtube, and linkedin", () => {
     expect(isPostUrlInAllowList("https://www.youtube.com/watch?v=123")).toBeTruthy()
     expect(isPostUrlInAllowList("https://youtu.be/123")).toBeTruthy()
     expect(isPostUrlInAllowList("https://www.linkedin.com/posts/example")).toBeTruthy()
     expect(isPostUrlInAllowList("https://lnkd.in/example")).toBeTruthy()
-  })
-
-  it("rejects removed sources tiktok and truth social", () => {
-    expect(isPostUrlInAllowList("https://www.tiktok.com/@user/video/123")).toBeFalsy()
-    expect(isPostUrlInAllowList("https://truthsocial.com/@user/posts/123")).toBeFalsy()
+    expect(isPostUrlInAllowList("https://www.tiktok.com/@user/video/123")).toBeTruthy()
+    expect(isPostUrlInAllowList("https://truthsocial.com/@user/posts/123")).toBeTruthy()
+    expect(isPostUrlInAllowList("https://x.com/user/status/123")).toBeTruthy()
+    expect(isPostUrlInAllowList("https://www.facebook.com/post/123")).toBeTruthy()
+    expect(isPostUrlInAllowList("https://www.instagram.com/p/123")).toBeTruthy()
   })
 })

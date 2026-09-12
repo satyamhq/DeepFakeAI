@@ -135,6 +135,11 @@ export function extractMediaSourceData(postUrl: string, json: object): MediaSour
             source: MediaPublisher.LINKEDIN,
           }
         }
+        case MediaPublisher.TRUTH_SOCIAL: {
+          return {
+            source: MediaPublisher.TRUTH_SOCIAL,
+          }
+        }
       }
     } catch (e) {
       console.error("error extracting media source data:", e)
@@ -163,9 +168,15 @@ export function determineSourcePlatform(url: string): MediaPublisher {
       return MediaPublisher.YOUTUBE
     } else if (isLinkedIn(parsed)) {
       return MediaPublisher.LINKEDIN
+    } else if (isTruthSocial(parsed)) {
+      return MediaPublisher.TRUTH_SOCIAL
     }
   }
   return MediaPublisher.UNKNOWN
+}
+
+function isTruthSocial(url: URL): boolean {
+  return url.hostname.includes("truthsocial.com")
 }
 
 function isLinkedIn(url: URL): boolean {

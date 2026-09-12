@@ -3,6 +3,7 @@ import Link from "next/link"
 import NavigationToggle from "../NavigationToggle"
 import Share from "../Share"
 import DeepFakeAILogo from "../../DeepFakeAILogo"
+import { SignedIn, SignedOut, UserButton } from "../../../mockClerk"
 
 export default function Header() {
   return (
@@ -12,7 +13,20 @@ export default function Header() {
         <DeepFakeAILogo size="sm" />
       </Link>
       <div className="grow"></div>
-      <Share />
+      <div className="flex items-center gap-3">
+        <Share />
+        <SignedIn>
+          <UserButton />
+        </SignedIn>
+        <SignedOut>
+          <Link
+            href="/login"
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-lime-500 hover:bg-lime-400 text-gray-950 transition shadow"
+          >
+            Sign In
+          </Link>
+        </SignedOut>
+      </div>
     </header>
   )
 }

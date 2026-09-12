@@ -15,6 +15,7 @@ import { useUser } from "../mockClerk"
 import { getRoleByUser } from "../auth"
 
 const supportedSourceIcons = [
+  { label: "TikTok", icon: FaTiktok },
   { label: "X", icon: FaXTwitter },
   { label: "YouTube", icon: FaYoutube },
   { label: "LinkedIn", icon: FaLinkedin },
@@ -22,17 +23,11 @@ const supportedSourceIcons = [
   { label: "Google Drive", icon: FaGoogleDrive },
   { label: "Instagram", icon: FaInstagram },
   { label: "Facebook", icon: FaFacebook },
-]
-
-const legacyIcons = [
-  { label: "TikTok", icon: FaTiktok },
   { label: "Truth Social", icon: TruthSocial },
 ]
 
-const allIcons = [...supportedSourceIcons, ...legacyIcons]
-
 export function MediaPublisherIcon({ platform }: { platform: MediaPublisher }) {
-  const icon = allIcons.find((icon) => icon.label.toLowerCase() === platform.toLowerCase())
+  const icon = supportedSourceIcons.find((icon) => icon.label.toLowerCase() === platform.toLowerCase())
   return icon ? <icon.icon /> : <LinkIcon />
 }
 

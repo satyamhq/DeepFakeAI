@@ -9,6 +9,8 @@ export function isPostUrlInAllowList(postUrl: string) {
     "pbs.twimg.com",
     "reddit.com",
     "redd.it",
+    "tiktok.com",
+    "truthsocial.com",
     "twimg.com",
     "twitter.com",
     "x.com",

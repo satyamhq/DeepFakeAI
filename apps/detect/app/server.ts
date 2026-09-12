@@ -4,13 +4,31 @@ import { response } from "./api/util"
 import { checkApiAuthorization } from "./api/apiKey"
 import { db } from "./db"
 import { auth as clerkAuth } from "./mockClerkServer"
+import { getSupabaseServerClient } from "./supabase"
 
 // maintain backwards compat with where this was previously referenced
 export { db } from "./db"
 
-/** Returns the `Role` of the currently authed session on the server. */
-export const getServerRole = async () => {
-  return getRoleByIdEmail(clerkAuth().sessionClaims?.externalId, clerkAuth().sessionClaims?.email)
+/** Returns the `Role` of the currently authed session on the server via Supabase Auth. */
+export const getServerRole = async (): Promise<Role> => {
+  try {
+    const { cookies } = await import("next/headers")
+    const cookieStore = cookies()
+    const supabase = getSupabaseServerClient(cookieStore)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user && user.id) {
+      return getRoleByIdEmail(user.id, user.email)
+    }
+  } catch {
+    // cookies() unavailable outside of request context (e.g. static gen or background scripts)
+  }
+
+  const clerk = clerkAuth()
+  if (clerk.sessionClaims?.externalId || clerk.userId) {
+    return getRoleByIdEmail(clerk.sessionClaims?.externalId || clerk.userId, clerk.sessionClaims?.email)
+  }
+
+  return new Role(0, "", "")
 }
 
 /** Returns the `Role` of the given user ID. */
@@ -37,7 +55,7 @@ export async function ensureInternalUser(req: NextRequest): Promise<Response | n
 }
 
 export function isAnonEnabled(): boolean {
-  return true
+  return process.env.ALLOW_ANONYMOUS_USAGE === "true"
 }
 
 /**

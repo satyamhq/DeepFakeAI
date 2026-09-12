@@ -97,11 +97,17 @@ export function getRoleByUser(user: any): Role {
   return getRoleByIdEmail(id, email)
 }
 
+const envAdmins = (process.env.ADMIN_EMAILS || "")
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean)
+
 export function getRoleByIdEmail(id: string | null | undefined, email: string | null | undefined): Role {
   if (!id || !email) return new Role(anonymousLevel, "", "")
-  if (admins.includes(email)) return new Role(adminLevel, id, email)
+  const lowerEmail = email.toLowerCase()
+  if (admins.includes(lowerEmail) || envAdmins.includes(lowerEmail)) return new Role(adminLevel, id, email)
   if (domainMatches(email, internalDomains)) return new Role(internalLevel, id, email)
-  if (friends.includes(email)) return new Role(friendLevel, id, email)
+  if (friends.includes(lowerEmail)) return new Role(friendLevel, id, email)
   return new Role(userLevel, id, email)
 }
 

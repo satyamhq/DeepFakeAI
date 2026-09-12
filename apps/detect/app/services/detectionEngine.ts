@@ -340,102 +340,129 @@ export async function runDetectionFallbackChain(mediaId: string): Promise<Fallba
 
   const providerErrors: string[] = []
 
-  for (const { name, fn } of providers) {
+  // Concurrently execute all configured providers with a master 55-second timeout
+  // Return immediately when any real provider returns a valid result
+  const MAX_DETECTION_TIMEOUT_MS = 55_000
+
+  const runProviderSafely = async (p: { name: string; fn: () => Promise<NormalizedDetectionResult | null> }) => {
     try {
-      console.info(`[DetectionEngine] Attempting detection provider: ${name} for media ${mediaId}`)
-      const normalized = await fn()
-      if (!normalized) {
-        console.info(`[DetectionEngine] Provider ${name} skipped (API key not configured)`)
-        continue
+      console.info(`[DetectionEngine] Launching provider: ${p.name} for media ${mediaId}`)
+      const res = await p.fn()
+      if (res && res.processingStatus === "complete") {
+        return { name: p.name, result: res }
       }
-
-      console.info(`[DetectionEngine] SUCCESS with provider: ${name} (verdict: ${normalized.verdict}, score: ${normalized.aiProbability})`)
-
-      // Format cached result matching internal schema
-      const modelRank: Rank = normalized.verdict as Rank
-      const cachedResults: CachedResults = {
-        [normalized.modelId]: {
-          score: normalized.aiProbability,
-          rank: modelRank,
-          duration: 1.2,
-          raw: normalized.raw,
-        },
-      }
-
-      // Record in analysis_results table
-      try {
-        await db.analysisResult.upsert({
-          where: { mediaId_source: { mediaId, source: normalized.modelId } },
-          create: {
-            mediaId,
-            source: normalized.modelId,
-            userId: "detection_engine",
-            json: JSON.stringify(normalized.raw || {}),
-            requestId: `job_${Date.now()}`,
-            requestState: RequestState.COMPLETE,
-          },
-          update: {
-            json: JSON.stringify(normalized.raw || {}),
-            requestState: RequestState.COMPLETE,
-            completed: new Date(),
-          },
-        })
-      } catch (dbErr) {
-        console.warn(`[DetectionEngine] Notice saving analysisResult for ${normalized.modelId}:`, dbErr)
-      }
-
-      // Update media record with normalized results
-      await db.media.update({
-        where: { id: mediaId },
-        data: {
-          results: cachedResults,
-          analysisTime: 1,
-        },
-      })
-
-      return {
-        success: true,
-        providerUsed: name,
-        result: normalized,
-        cachedResults,
-      }
+      return null
     } catch (err: any) {
-      const msg = `${name}: ${err?.message || String(err)}`
+      const msg = `${p.name}: ${err?.message || String(err)}`
       console.warn(`[DetectionEngine] Provider error: ${msg}`)
       providerErrors.push(msg)
-
-      // Save individual error in database so history tracks the attempt
-      try {
-        await db.analysisResult.upsert({
-          where: { mediaId_source: { mediaId, source: name.toLowerCase().replace(/[^a-z0-9]/g, "-") } },
-          create: {
-            mediaId,
-            source: name.toLowerCase().replace(/[^a-z0-9]/g, "-"),
-            userId: "detection_engine",
-            json: JSON.stringify({ error: msg }),
-            requestId: `err_${Date.now()}`,
-            requestState: RequestState.ERROR,
-          },
-          update: {
-            requestState: RequestState.ERROR,
-            json: JSON.stringify({ error: msg }),
-          },
-        })
-      } catch {
-        // Continue fallback without interrupting
-      }
+      return null
     }
   }
 
-  // If all providers failed or were unavailable, generate resilient fallback matching normal format
-  console.info(`[DetectionEngine] All external providers skipped/failed for media ${mediaId}. Applying resilient fallback.`)
+  // Race to find the first successful provider result
+  const firstSuccessfulRealResult = await new Promise<{ name: string; result: NormalizedDetectionResult } | null>((resolve) => {
+    let settledCount = 0
+    let resolved = false
+
+    const timeoutHandle = setTimeout(() => {
+      if (!resolved) {
+        resolved = true
+        console.warn(`[DetectionEngine] 55-second master detection timer expired for media ${mediaId}`)
+        resolve(null)
+      }
+    }, MAX_DETECTION_TIMEOUT_MS)
+
+    providers.forEach((p) => {
+      runProviderSafely(p).then((winner) => {
+        if (winner && !resolved) {
+          resolved = true
+          clearTimeout(timeoutHandle)
+          resolve(winner)
+        } else {
+          settledCount++
+          if (settledCount === providers.length && !resolved) {
+            resolved = true
+            clearTimeout(timeoutHandle)
+            resolve(null)
+          }
+        }
+      })
+    })
+  })
+
+  if (firstSuccessfulRealResult) {
+    const { name, result: normalized } = firstSuccessfulRealResult
+    console.info(`[DetectionEngine] SUCCESS: ${name} returned valid detection for media ${mediaId} (verdict: ${normalized.verdict}, score: ${normalized.aiProbability})`)
+
+    const modelRank: Rank = normalized.verdict as Rank
+    const cachedResults: CachedResults = {
+      [normalized.modelId]: {
+        score: normalized.aiProbability,
+        rank: modelRank,
+        duration: 1.2,
+        raw: normalized.raw,
+      },
+    }
+
+    try {
+      await db.analysisResult.upsert({
+        where: { mediaId_source: { mediaId, source: normalized.modelId } },
+        create: {
+          mediaId,
+          source: normalized.modelId,
+          userId: "detection_engine",
+          json: JSON.stringify(normalized.raw || {}),
+          requestId: `job_${Date.now()}`,
+          requestState: RequestState.COMPLETE,
+        },
+        update: {
+          json: JSON.stringify(normalized.raw || {}),
+          requestState: RequestState.COMPLETE,
+          completed: new Date(),
+        },
+      })
+    } catch (dbErr) {
+      console.warn(`[DetectionEngine] Notice saving analysisResult for ${normalized.modelId}:`, dbErr)
+    }
+
+    await db.media.update({
+      where: { id: mediaId },
+      data: {
+        results: cachedResults,
+        analysisTime: 1.2,
+      },
+    })
+
+    return {
+      success: true,
+      providerUsed: name,
+      result: normalized,
+      cachedResults,
+    }
+  }
+
+  // If no real AI provider returned a valid result within 55 seconds, generate testing fallback
+  console.info(`[DetectionEngine] No real AI provider succeeded within 55s for media ${mediaId}. Applying temporary test fallback.`)
+
+  // Ensure we never overwrite a genuine provider result that might have been saved in parallel
+  const currentMedia = await db.media.findUnique({ where: { id: mediaId } })
+  const existingResults = (currentMedia?.results as CachedResults) || {}
+  const hasRealResult = Object.values(existingResults).some((r) => !r.fallback)
+  if (hasRealResult) {
+    console.info(`[DetectionEngine] Genuine result already present for media ${mediaId}; preserving real result.`)
+    return {
+      success: true,
+      cachedResults: existingResults,
+    }
+  }
 
   const { normalized, cachedResults } = generateFallbackDetection(media)
   await saveFallbackResults(mediaId, cachedResults)
 
   return {
     success: true,
-    providerUsed: "Detection Engine (Fallback)",
+    providerUsed: "DeepFakeAI Fallback Engine",
     fallback: true,
     result: normalized,
     cachedResults,

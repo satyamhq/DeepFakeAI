@@ -178,6 +178,7 @@ export async function saveUploadedFile({
           audioMimeType,
           external: !role.friend,
           apiKeyId: null,
+          userId: role.user ? effectiveUserId : null,
         },
       })
     } catch (e: any) {

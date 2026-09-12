@@ -45,6 +45,7 @@ export enum MediaPublisher {
   INSTAGRAM = "INSTAGRAM",
   FACEBOOK = "FACEBOOK",
   LINKEDIN = "LINKEDIN",
+  TRUTH_SOCIAL = "TRUTH_SOCIAL",
 }
 
 export enum UserType {
