@@ -103,12 +103,13 @@ const envAdmins = (process.env.ADMIN_EMAILS || "")
   .filter(Boolean)
 
 export function getRoleByIdEmail(id: string | null | undefined, email: string | null | undefined): Role {
-  if (!id || !email) return new Role(anonymousLevel, "", "")
-  const lowerEmail = email.toLowerCase()
-  if (admins.includes(lowerEmail) || envAdmins.includes(lowerEmail)) return new Role(adminLevel, id, email)
-  if (domainMatches(email, internalDomains)) return new Role(internalLevel, id, email)
-  if (friends.includes(lowerEmail)) return new Role(friendLevel, id, email)
-  return new Role(userLevel, id, email)
+  if (!id) return new Role(anonymousLevel, "", "")
+  const effectiveEmail = email && email.trim().length > 0 ? email.trim() : `${id}@user.deepfakeai.org`
+  const lowerEmail = effectiveEmail.toLowerCase()
+  if (admins.includes(lowerEmail) || envAdmins.includes(lowerEmail)) return new Role(adminLevel, id, effectiveEmail)
+  if (domainMatches(effectiveEmail, internalDomains)) return new Role(internalLevel, id, effectiveEmail)
+  if (friends.includes(lowerEmail)) return new Role(friendLevel, id, effectiveEmail)
+  return new Role(userLevel, id, effectiveEmail)
 }
 
 // NOTE: Future cuid may change, they are only guaranteed to start with `c` and have at least 7 characters

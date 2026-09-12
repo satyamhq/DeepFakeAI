@@ -9,7 +9,7 @@ import { UserHistoryExportButton } from "../../components/ExportCSVButton"
 import PrecisionRecallF1 from "./PrecisionRecallF1"
 import { useUser } from "../../mockClerk"
 import { getRoleByUser } from "../../auth"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Spinner } from "flowbite-react"
 import { useSearchParams } from "next/navigation"
 
@@ -30,7 +30,7 @@ export default function UserHistory({
   allOrg,
   isImpersonating,
 }: {
-  header: JSX.Element
+  header: React.ReactNode
   // This allows us to hide the history entirely on the homepage.
   hideZeroResults?: boolean
   showSeeAll?: boolean
@@ -47,7 +47,7 @@ export default function UserHistory({
   allOrg: boolean
   isImpersonating: boolean
 }) {
-  const { user } = useUser()
+  const { user, isLoaded } = useUser()
   const role = getRoleByUser(user)
   const searchParams = useSearchParams()
 
@@ -56,10 +56,10 @@ export default function UserHistory({
   const [history, setHistory] = useState<UserQuery[]>([])
   const [tallyScores, setTallyScores] = useState<Record<string, number>>({})
 
-  useEffect(() => {
-    const get = async () => {
-      setError("")
-      setIsLoading(true)
+  const fetchHistory = useCallback(async () => {
+    setError("")
+    setIsLoading(true)
+    try {
       const userHistory = await getUserHistory({
         take: 20_000,
         filter,
@@ -74,27 +74,38 @@ export default function UserHistory({
         isImpersonating,
       })
 
-      setIsLoading(false)
-
       if (!userHistory) {
-        const msg = `getUserHistory no user history [userHistory=${userHistory}]`
-        console.error(msg)
         setError("Error loading history. Refresh to try again.")
         setHistory([])
         setTallyScores({})
         return
       }
 
-      const { history, tallyScores } = userHistory
-      setHistory(history)
-      setTallyScores(tallyScores)
+      const { history: hItems = [], tallyScores: tScores = {} } = userHistory
+      setHistory(hItems)
+      setTallyScores(tScores)
+    } catch (err: any) {
+      console.warn("[UserHistory] Exception fetching history:", err?.message || err)
+      setError("Unable to load history. Please click Retry.")
+      setHistory([])
+      setTallyScores({})
+    } finally {
+      setIsLoading(false)
     }
+  }, [filter, query, timeStart, timeEnd, sortOrder, accuracy, userId, orgId, allOrg, isImpersonating])
 
-    get()
-  }, [searchParams, filter, query, timeStart, timeEnd, sortOrder, accuracy, userId, orgId, allOrg, isImpersonating])
+  useEffect(() => {
+    fetchHistory()
+  }, [fetchHistory, searchParams])
 
-  // Don't display history if a user isn't logged in
-  if (role.isNotLoggedIn) return "You must be logged in to view user history."
+  // If unauthenticated both on server and client, show login prompt
+  if (isLoaded && !user && !userId && role.isNotLoggedIn) {
+    return (
+      <div className="p-8 text-center text-gray-400">
+        You must be logged in to view your detection history.
+      </div>
+    )
+  }
 
   if (!isLoading && hideZeroResults && history.length === 0) return null
 
@@ -153,9 +164,21 @@ export default function UserHistory({
           )}
 
           {isLoading ? (
-            <div className="mt-12 text-center">{isLoading && <Spinner />}</div>
+            <div className="mt-12 text-center py-8">
+              <Spinner size="xl" />
+              <div className="mt-2 text-sm text-gray-400">Loading your history...</div>
+            </div>
           ) : error ? (
-            <div className="mt-8 text-center text-red-500">{error}</div>
+            <div className="mt-8 text-center p-6 bg-red-950/30 rounded-lg border border-red-900/50">
+              <div className="text-red-400 font-medium mb-3">{error}</div>
+              <button
+                type="button"
+                onClick={fetchHistory}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm transition"
+              >
+                Retry
+              </button>
+            </div>
           ) : (
             <UserHistoryList items={history} allOrg={allOrg} />
           )}

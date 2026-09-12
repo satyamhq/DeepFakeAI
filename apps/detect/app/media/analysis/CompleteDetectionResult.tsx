@@ -304,7 +304,7 @@ export default function CompleteDetectionResult({
         <div className="flex items-center gap-2 text-xs text-gray-400 px-1">
           <FaCalendarAlt className="w-3.5 h-3.5 text-gray-500" />
           <span>Analysis Timestamp:</span>
-          <span className="font-medium text-gray-300">{formattedTimestamp}</span>
+          <span suppressHydrationWarning className="font-medium text-gray-300">{formattedTimestamp}</span>
         </div>
 
         {/* Clear Explanation */}

@@ -23,12 +23,12 @@ export default function InternalTools() {
   if (!isFriend) return null
   return (
     <ul className="space-y-2 font-medium space-y-2 font-medium ">
-      <Link href={"#"} onClick={() => setDebug(!debug)}>
+      <button type="button" className="w-full text-left" onClick={() => setDebug(!debug)}>
         <NavItem icon={<FlowbiteBugIcon />}>
           <ToggleSwitch className="inline align-text-top" checked={debug} onChange={() => {}} />
         </NavItem>
-      </Link>
-      <Link href={"#"} onClick={() => setIsInternalNavExpanded(!isInternalNavExpanded)}>
+      </button>
+      <button type="button" className="w-full text-left" onClick={() => setIsInternalNavExpanded(!isInternalNavExpanded)}>
         <NavItem icon={<FlowbiteBuildingIcon />}>
           Internal
           {isInternalNavExpanded ? (
@@ -37,7 +37,7 @@ export default function InternalTools() {
             <FaChevronRight className="inline ml-4" />
           )}
         </NavItem>
-      </Link>
+      </button>
       {isInternalNavExpanded && (
         <ul className="space-y-2 font-medium pb-4 mb-4 ml-4 space-y-2 font-medium">
           <Link prefetch={false} href="/internal/users">

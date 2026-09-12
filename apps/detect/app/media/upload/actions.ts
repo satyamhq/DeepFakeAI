@@ -131,7 +131,14 @@ export async function saveUploadedFile({
   orgId,
 }: SaveRequest): Promise<SaveResponse> {
   try {
-    const role = await (userId ? getRoleByUserId(userId) : getServerRole())
+    let role = await (userId ? getRoleByUserId(userId) : getServerRole())
+    if (!role.user) {
+      // Check session role if userId parameter lookup was unlinked
+      const sessionRole = await getServerRole()
+      if (sessionRole.user) {
+        role = sessionRole
+      }
+    }
     const anonAllowed = isAnonEnabled()
 
     // Support both authenticated and anonymous users
@@ -141,6 +148,19 @@ export async function saveUploadedFile({
 
     const effectiveUserId = role.user ? role.id : (userId || `anon_${Date.now()}`)
     const userType = role.user ? UserType.REGISTERED : UserType.ANONYMOUS
+
+    // Ensure the user exists in public.users to satisfy any relational foreign keys
+    if (role.user && effectiveUserId) {
+      try {
+        await db.user.upsert({
+          where: { id: effectiveUserId },
+          create: { id: effectiveUserId, email: role.email || `${effectiveUserId}@user.deepfakeai.org` },
+          update: { email: role.email || `${effectiveUserId}@user.deepfakeai.org` },
+        })
+      } catch (userErr: any) {
+        console.warn(`[Upload] User record sync notice [userId=${effectiveUserId}]:`, userErr?.message || userErr)
+      }
+    }
 
     if (orgId && role.user && !(await isUserInOrg(orgId))) {
       const message = `Unauthorized access. User is not a member of org. [userId=${role.id}, orgId=${orgId}]`
@@ -183,6 +203,24 @@ export async function saveUploadedFile({
       })
     } catch (e: any) {
       console.warn(`[Upload] Notice creating media record [mediaId=${id}]:`, e?.message || e)
+      // Retry without foreign key if necessary
+      try {
+        await db.media.create({
+          data: {
+            id,
+            mediaUrl: finalMediaUrl,
+            mimeType,
+            size: size > 0 ? size : 1,
+            audioId,
+            audioMimeType,
+            external: !role.friend,
+            apiKeyId: null,
+            userId: null,
+          },
+        })
+      } catch (retryErr: any) {
+        console.warn(`[Upload] Notice on media record retry [mediaId=${id}]:`, retryErr?.message || retryErr)
+      }
     }
 
     // Record user type for throttling tracking

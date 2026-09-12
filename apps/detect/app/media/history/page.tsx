@@ -5,7 +5,7 @@ import UserHistory from "./UserHistory"
 import { searchParamToDate } from "../../utils/datetime"
 import { isUserAuthorizedToViewOrg } from "../../utils/clerk"
 import { determineUserHistoryParams } from "./impersonation"
-import { HistoryHeader } from "./HistoryHeader"
+import { getHistoryHeaderText } from "./HistoryHeader"
 
 export const dynamic = "force-dynamic"
 
@@ -59,15 +59,13 @@ export default async function Page({
     console.log(`GetUserHistory page.tsx [userId=${authed.userId}, orgId=${authed.orgId}, allOrg=${allOrg}, as=${as}]`)
   }
 
-  const header = (
-    <HistoryHeader
-      userId={userId}
-      orgId={orgId}
-      allOrg={allOrg}
-      isImpersonating={isImpersonating}
-      accuracy={accuracy}
-    />
-  )
+  const headerText = await getHistoryHeaderText({
+    userId,
+    orgId,
+    allOrg,
+    isImpersonating,
+    accuracy,
+  })
 
   // Individual model results are stored in the database as JSON. The "verdict" resulting from combinng the results
   // happens in the frontend. The definition of the relationship between results and verdict changes at the whims of ML
@@ -76,7 +74,7 @@ export default async function Page({
   // filtered on the frontend.
   return (
     <UserHistory
-      header={header}
+      header={headerText}
       filter={filter}
       showFilters={true}
       query={query}

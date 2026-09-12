@@ -1,11 +1,12 @@
 import { NotableMedia } from "../../types/db"
 import { Button, Card } from "flowbite-react"
-import { ArrowRightIcon, ImageIcon, MicrophoneIcon, QuestionMarkIcon, VideoCameraIcon } from "../../components/icons"
+import { ArrowRightIcon, ImageIcon, MicrophoneIcon, QuestionMarkIcon, VideoCameraIcon, TruthSocial } from "../../components/icons"
 import {
   FaFacebook,
   FaGoogleDrive,
   FaInstagram,
   FaLink,
+  FaLinkedin,
   FaMastodon,
   FaReddit,
   FaTiktok,
@@ -33,6 +34,8 @@ const mediaSourceIcons: Record<string, ReactElement> = {
   GOOGLE_DRIVE: <FaGoogleDrive className="inline ml-1" />,
   INSTAGRAM: <FaInstagram className="inline ml-1" />,
   FACEBOOK: <FaFacebook className="inline ml-1" />,
+  TRUTH_SOCIAL: <TruthSocial className="inline ml-1" />,
+  LINKEDIN: <FaLinkedin className="inline ml-1" />,
 }
 
 export default function NotableMediaCard({ media }: { media: NotableMedia }) {

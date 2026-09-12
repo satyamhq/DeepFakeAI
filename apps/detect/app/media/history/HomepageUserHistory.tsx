@@ -19,6 +19,11 @@ export function HomepageUserHistory() {
 
   useEffect(() => {
     if (user.isLoaded && org.isLoaded) {
+      if (!userId) {
+        setHistory([])
+        setIsHistoryLoaded(true)
+        return
+      }
       getUserHistory({
         userId,
         orgId,
@@ -28,10 +33,16 @@ export function HomepageUserHistory() {
         query: "",
         sortOrder: "desc",
         isImpersonating: false,
-      }).then((res) => {
-        setHistory(res.history)
-        setIsHistoryLoaded(true)
       })
+        .then((res) => {
+          setHistory(res?.history || [])
+          setIsHistoryLoaded(true)
+        })
+        .catch((err) => {
+          console.warn("[HomepageUserHistory] fetch notice:", err)
+          setHistory([])
+          setIsHistoryLoaded(true)
+        })
     }
   }, [user.isLoaded, userId, org.isLoaded, orgId])
 

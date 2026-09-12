@@ -172,6 +172,125 @@ class SupabaseTableDelegate {
     return q
   }
 
+  private async attachIncludes(items: any[], include?: any): Promise<any[]> {
+    if (!include || !items || items.length === 0) return items
+
+    try {
+      // 1. post_media -> media (and optional media.meta)
+      if (this.tableName === "post_media" && include.media) {
+        const mediaIds = Array.from(new Set(items.map((it) => it.mediaId).filter(Boolean)))
+        if (mediaIds.length > 0) {
+          const { data: mediaRows } = await supabaseAdmin.from("media").select("*").in("id", mediaIds)
+          const mediaMap = new Map<string, any>()
+          if (mediaRows) {
+            for (const row of mediaRows) {
+              const camel = objectToCamel(row)
+              mediaMap.set(String(camel.id), camel)
+            }
+          }
+
+          if (include.media.include?.meta) {
+            const { data: metaRows } = await supabaseAdmin.from("media_metadata").select("*").in("media_id", mediaIds)
+            if (metaRows) {
+              for (const mRow of metaRows) {
+                const camelMeta = objectToCamel(mRow)
+                const targetMedia = mediaMap.get(String(camelMeta.mediaId))
+                if (targetMedia) targetMedia.meta = camelMeta
+              }
+            }
+          }
+
+          for (const item of items) {
+            item.media = mediaMap.get(String(item.mediaId)) || {
+              id: item.mediaId,
+              mediaUrl: item.postUrl,
+              mimeType: "application/octet-stream",
+              size: 0,
+              results: {},
+              meta: null,
+            }
+          }
+        }
+      }
+
+      // 2. media -> meta and/or posts
+      if (this.tableName === "media") {
+        const mediaIds = Array.from(new Set(items.map((it) => it.id).filter(Boolean)))
+        if (mediaIds.length > 0) {
+          if (include.meta) {
+            const { data: metaRows } = await supabaseAdmin.from("media_metadata").select("*").in("media_id", mediaIds)
+            const metaMap = new Map<string, any>()
+            if (metaRows) {
+              for (const mRow of metaRows) {
+                const camelMeta = objectToCamel(mRow)
+                metaMap.set(String(camelMeta.mediaId), camelMeta)
+              }
+            }
+            for (const item of items) {
+              item.meta = metaMap.get(String(item.id)) || null
+            }
+          }
+
+          if (include.posts) {
+            const { data: postRows } = await supabaseAdmin.from("post_media").select("*").in("media_id", mediaIds)
+            const postMap = new Map<string, any[]>()
+            if (postRows) {
+              for (const pRow of postRows) {
+                const camelPost = objectToCamel(pRow)
+                const list = postMap.get(String(camelPost.mediaId)) || []
+                list.push(camelPost)
+                postMap.set(String(camelPost.mediaId), list)
+              }
+            }
+            for (const item of items) {
+              item.posts = postMap.get(String(item.id)) || []
+            }
+          }
+        }
+      }
+
+      // 3. queries -> user
+      if (this.tableName === "queries" && include.user) {
+        const userIds = Array.from(new Set(items.map((it) => it.userId).filter(Boolean)))
+        if (userIds.length > 0) {
+          const { data: userRows } = await supabaseAdmin.from("users").select("*").in("id", userIds)
+          const userMap = new Map<string, any>()
+          if (userRows) {
+            for (const uRow of userRows) {
+              const camelUser = objectToCamel(uRow)
+              userMap.set(String(camelUser.id), camelUser)
+            }
+          }
+          for (const item of items) {
+            item.user = userMap.get(String(item.userId)) || { id: item.userId, email: item.userId }
+          }
+        }
+      }
+
+      // 4. user_feedback -> user
+      if (this.tableName === "user_feedback" && include.user) {
+        const userIds = Array.from(new Set(items.map((it) => it.userId).filter(Boolean)))
+        if (userIds.length > 0) {
+          const { data: userRows } = await supabaseAdmin.from("users").select("*").in("id", userIds)
+          const userMap = new Map<string, any>()
+          if (userRows) {
+            for (const uRow of userRows) {
+              const camelUser = objectToCamel(uRow)
+              userMap.set(String(camelUser.id), camelUser)
+            }
+          }
+          for (const item of items) {
+            item.user = userMap.get(String(item.userId)) || { id: item.userId, email: item.userId }
+          }
+        }
+      }
+    } catch (err: any) {
+      console.warn(`[SupabaseTableDelegate] include attachment notice on ${this.tableName}:`, err?.message || err)
+    }
+
+    return items
+  }
+
   async findUnique(args: { where: Record<string, any>; select?: any; include?: any }): Promise<any> {
     try {
       let q = supabaseAdmin.from(this.tableName).select("*")
@@ -181,28 +300,37 @@ class SupabaseTableDelegate {
         const item = objectToCamel(data[0])
         const key = item.id || Object.values(args.where)[0]
         if (key) getMemoryTable(this.tableName).set(String(key), item)
-        return item
+        const [withIncludes] = await this.attachIncludes([item], args.include)
+        return withIncludes
       }
     } catch {
       // Fall through to memory store
     }
     const memTable = getMemoryTable(this.tableName)
     const firstWhereKey = Object.values(args.where)[0]
+    let result: any = null
     if (args.where?.id && memTable.has(String(args.where.id))) {
-      return { ...memTable.get(String(args.where.id)) }
-    }
-    if (firstWhereKey && memTable.has(String(firstWhereKey))) {
-      return { ...memTable.get(String(firstWhereKey)) }
-    }
-    for (const item of memTable.values()) {
-      let match = true
-      for (const [k, v] of Object.entries(args.where)) {
-        if (item[k] !== v && item[toCamelCase(k)] !== v) {
-          match = false
+      result = { ...memTable.get(String(args.where.id)) }
+    } else if (firstWhereKey && memTable.has(String(firstWhereKey))) {
+      result = { ...memTable.get(String(firstWhereKey)) }
+    } else {
+      for (const item of memTable.values()) {
+        let match = true
+        for (const [k, v] of Object.entries(args.where)) {
+          if (item[k] !== v && item[toCamelCase(k)] !== v) {
+            match = false
+            break
+          }
+        }
+        if (match) {
+          result = { ...item }
           break
         }
       }
-      if (match) return { ...item }
+    }
+    if (result) {
+      const [withIncludes] = await this.attachIncludes([result], args.include)
+      return withIncludes
     }
     return null
   }
@@ -219,17 +347,23 @@ class SupabaseTableDelegate {
       q = q.limit(1)
       const { data, error } = await q
       if (!error && data && data.length > 0) {
-        return objectToCamel(data[0])
+        const item = objectToCamel(data[0])
+        const [withIncludes] = await this.attachIncludes([item], args?.include)
+        return withIncludes
       }
     } catch {
       // Fall through to memory store
     }
     if (args?.where) {
-      return this.findUnique({ where: args.where })
+      return this.findUnique({ where: args.where, include: args?.include })
     }
     const memTable = getMemoryTable(this.tableName)
     const first = memTable.values().next()
-    return first.done ? null : { ...first.value }
+    if (!first.done) {
+      const [withIncludes] = await this.attachIncludes([{ ...first.value }], args?.include)
+      return withIncludes
+    }
+    return null
   }
 
   async findMany(args?: {
@@ -268,20 +402,22 @@ class SupabaseTableDelegate {
 
       const { data, error } = await q
       if (!error && data && data.length > 0) {
-        return objectToCamel(data)
+        const camelList = objectToCamel(data)
+        return await this.attachIncludes(camelList, args?.include)
       }
     } catch {
       // Fall through to memory store
     }
     const memTable = getMemoryTable(this.tableName)
     const all = Array.from(memTable.values())
-    if (!args?.where) return all
-    return all.filter((item) => {
+    if (!args?.where) return await this.attachIncludes(all, args?.include)
+    const filtered = all.filter((item) => {
       for (const [k, v] of Object.entries(args.where!)) {
         if (item[k] !== v && item[toCamelCase(k)] !== v) return false
       }
       return true
     })
+    return await this.attachIncludes(filtered, args?.include)
   }
 
   async create(args: { data: Record<string, any>; select?: any }): Promise<any> {

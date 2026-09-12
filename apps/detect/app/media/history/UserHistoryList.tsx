@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button, Spinner } from "flowbite-react"
 import UserHistoryItem, { UserHistoryHeader } from "./UserHistoryItem"
 import { UserQuery, deleteUserHistoryItemAction } from "./actions"
@@ -26,16 +26,17 @@ const Results = ({
   return (
     <>
       <UserHistoryHeader />
-      {items.map((item, index) => {
-        if (index > limit) return null
+      {(items || []).map((item, index) => {
+        if (!item || index >= limit) return null
+        const key = `${item.mediaId || "m"}_${item.postUrl || index}`
         return (
           <UserHistoryItem
-            key={`${item.mediaId}_${item.postUrl}`}
-            userEmail={item.userEmail}
-            postUrl={item.postUrl}
-            mediaId={item.mediaId}
-            mimeType={item.mimeType}
-            verdict={item.verdict}
+            key={key}
+            userEmail={item.userEmail || ""}
+            postUrl={item.postUrl || ""}
+            mediaId={item.mediaId || ""}
+            mimeType={item.mimeType || "application/octet-stream"}
+            verdict={item.verdict || "unknown"}
             time={item.queriedAt}
             sourcePlatform={item.sourcePlatform}
             score={item.score}
@@ -51,14 +52,12 @@ const Results = ({
 export default function UserHistoryList({ items, allOrg }: { items: UserQuery[]; allOrg: boolean }) {
   const pageSize = 15
   const [limit, setLimit] = useState(pageSize)
-  const [historyItems, setHistoryItems] = useState<UserQuery[]>(items)
+  const [historyItems, setHistoryItems] = useState<UserQuery[]>(items || [])
 
-  // Keep in sync with parent items updates
-  const [prevItems, setPrevItems] = useState(items)
-  if (items !== prevItems) {
-    setPrevItems(items)
-    setHistoryItems(items)
-  }
+  // Safely keep in sync with parent items updates via useEffect
+  useEffect(() => {
+    setHistoryItems(items || [])
+  }, [items])
 
   const handleDelete = async (mediaId: string, postUrl: string) => {
     // Optimistic removal

@@ -93,6 +93,13 @@ export default function ResolveMedia({ postUrl, orgId }: { postUrl: string; orgI
   }
 
   const rsp = mediaState.data
+  if (!rsp) {
+    return (
+      <main className="grow flex items-center justify-center p-8">
+        <LoadingDots color="#FFF" />
+      </main>
+    )
+  }
   if (rsp.result == "failure") {
     return (
       <FailureUI

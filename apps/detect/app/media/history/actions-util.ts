@@ -161,7 +161,8 @@ export async function buildLookupTables(orgId: string | undefined | null, allOrg
   const externalIdToEmail = await buildExternalIdToEmail(orgId)
   const postUrlToClerkEmail: Record<string, string> = {}
   const postUrls = queries.map((qq) => {
-    postUrlToClerkEmail[qq.postUrl] = !allOrg || !orgId ? "" : externalIdToEmail[qq.user.id] ?? "Former member"
+    const uid = qq.user?.id || (qq as any).userId || ""
+    postUrlToClerkEmail[qq.postUrl] = !allOrg || !orgId ? "" : externalIdToEmail[uid] ?? "Former member"
     return qq.postUrl
   })
   const postUrlToQueriedAt = new Map(queries.map((query) => [query.postUrl, query.time]))
@@ -187,30 +188,40 @@ export function postMediaToUserQuery(
   postUrlToClerkEmail: Record<string, string>,
   postUrlToQueriedAt: Map<string, Date>,
 ): UserQuery {
-  const resolvedResults = resolveResults(mediaType(postMedia.media.mimeType), postMedia.media.results as CachedResults)
+  const media = postMedia.media || {
+    id: postMedia.mediaId,
+    mediaUrl: postMedia.postUrl,
+    mimeType: "application/octet-stream",
+    size: 0,
+    results: {},
+    analysisTime: 0,
+    meta: null,
+  }
+  const mimeType = media.mimeType || "application/octet-stream"
+  const resolvedResults = resolveResults(mediaType(mimeType), (media.results || {}) as CachedResults)
   const isFallback = Boolean(
-    (postMedia.media as any)?.results?.fallback ||
-    (postMedia.media as any)?.results?.is_test_fallback ||
+    (media as any)?.results?.fallback ||
+    (media as any)?.results?.is_test_fallback ||
     resolvedResults.some((r: any) => r.fallback || r.is_test_fallback)
   )
-  const sourcePlatform = determineSource(postMedia.media)
+  const sourcePlatform = determineSource(media as any)
   const firstScore = resolvedResults[0]?.score != null ? Math.round(resolvedResults[0].score * 100) : undefined
 
   return {
     userEmail: postUrlToClerkEmail[postMedia.postUrl] ?? "",
     postUrl: postMedia.postUrl,
     mediaId: postMedia.mediaId,
-    mimeType: postMedia.media.mimeType,
-    visualFake: postMedia.media.meta?.fake || "UNKNOWN",
-    audioFake: postMedia.media.meta?.audioFake || "UNKNOWN",
+    mimeType,
+    visualFake: media.meta?.fake || "UNKNOWN",
+    audioFake: media.meta?.audioFake || "UNKNOWN",
     verdict: getVerdict(postMedia),
-    verdicts: mediaVerdict(postMedia.media),
+    verdicts: mediaVerdict(media as any),
     queriedAt: postUrlToQueriedAt.get(postMedia.postUrl),
-    analysisTime: postMedia.media.analysisTime,
+    analysisTime: media.analysisTime || 0,
     mediaSource: sourcePlatform,
     resolvedResults,
-    comments: postMedia.media.meta?.comments || "",
-    keywords: postMedia.media.meta?.keywords || "",
+    comments: media.meta?.comments || "",
+    keywords: media.meta?.keywords || "",
     isFallback,
     score: firstScore,
     sourcePlatform,
@@ -218,9 +229,7 @@ export function postMediaToUserQuery(
 }
 
 export function getVerdict(postMedia: PostMediaWithMeta) {
-  // The `Verdict` type can be  "unknown" | "trusted" | "low" | "uncertain" | "high"
-  // We need to account for another state, "unresolved."
-  // Media is "unresolved" if the size of the media is zero because we've never resolved it and downloaded any media.
+  if (!postMedia?.media) return "unknown"
   let verdict: Verdict | "unresolved" = mediaVerdict(postMedia.media).experimentalVerdict
   if (verdict == "unknown" && postMedia.media.size === 0) verdict = "unresolved"
   return verdict

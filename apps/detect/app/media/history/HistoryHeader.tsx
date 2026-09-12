@@ -1,7 +1,7 @@
 import { clerkClient } from "../../mockClerk"
 import { ANONYMOUS_USER_ID, ANONYMOUS_USER_NAME } from "../../../instrumentation"
 
-export async function HistoryHeader({
+export async function getHistoryHeaderText({
   userId,
   orgId,
   allOrg,
@@ -13,14 +13,14 @@ export async function HistoryHeader({
   allOrg: boolean
   isImpersonating: boolean
   accuracy: string | undefined
-}) {
+}): Promise<string> {
   const accuracyLabel = !accuracy ? "" : "(" + accuracy + ")"
   if (orgId && allOrg) {
     try {
       const org = await clerkClient().organizations.getOrganization({ organizationId: orgId })
-      return `Organization History for ${org.name} ${accuracyLabel}`
-    } catch (e) {
-      console.error(`HistoryHeader org not found [orgId=${orgId}]`)
+      return `Organization History for ${org?.name || "Organization"} ${accuracyLabel}`
+    } catch {
+      console.warn(`HistoryHeader org not found [orgId=${orgId}]`)
     }
   } else if (userId && isImpersonating) {
     if (userId === ANONYMOUS_USER_ID) {
@@ -31,11 +31,22 @@ export async function HistoryHeader({
     }
     try {
       const user = await clerkClient().users.getUser(userId)
-      const userDisplay = user.id === ANONYMOUS_USER_ID ? ANONYMOUS_USER_NAME : user.primaryEmailAddress?.emailAddress
+      const userDisplay = user.id === ANONYMOUS_USER_ID ? ANONYMOUS_USER_NAME : (user.primaryEmailAddress?.emailAddress || user.emailAddresses?.[0]?.emailAddress || userId)
       return `User History for ${userDisplay} ${accuracyLabel}`
-    } catch (e) {
-      console.error(`HistoryHeader user not found [userId=${userId}]`)
+    } catch {
+      console.warn(`HistoryHeader user not found [userId=${userId}]`)
     }
   }
   return "History"
+}
+
+export async function HistoryHeader(props: {
+  userId: string | null
+  orgId: string | null
+  allOrg: boolean
+  isImpersonating: boolean
+  accuracy: string | undefined
+}) {
+  const text = await getHistoryHeaderText(props)
+  return <span>{text}</span>
 }

@@ -6,12 +6,12 @@ export default function DateLabel({ date, options }: { date?: Date | string | nu
   if (!date) return null
   const d = date instanceof Date ? date : new Date(date)
   if (isNaN(d.getTime())) return null
-  return <span className="text-nowrap">{d.toLocaleString(undefined, options)}</span>
+  return <span suppressHydrationWarning className="text-nowrap">{d.toLocaleString(undefined, options)}</span>
 }
 
 export function DayMonthLabel({ date }: { date?: Date | string | number | null }) {
   if (!date) return null
   const d = date instanceof Date ? date : new Date(date)
   if (isNaN(d.getTime())) return null
-  return <span className="text-nowrap">{d.toLocaleDateString(undefined)}</span>
+  return <span suppressHydrationWarning className="text-nowrap">{d.toLocaleDateString(undefined)}</span>
 }
