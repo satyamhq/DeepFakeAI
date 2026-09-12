@@ -187,6 +187,15 @@ export function postMediaToUserQuery(
   postUrlToClerkEmail: Record<string, string>,
   postUrlToQueriedAt: Map<string, Date>,
 ): UserQuery {
+  const resolvedResults = resolveResults(mediaType(postMedia.media.mimeType), postMedia.media.results as CachedResults)
+  const isFallback = Boolean(
+    (postMedia.media as any)?.results?.fallback ||
+    (postMedia.media as any)?.results?.is_test_fallback ||
+    resolvedResults.some((r: any) => r.fallback || r.is_test_fallback)
+  )
+  const sourcePlatform = determineSource(postMedia.media)
+  const firstScore = resolvedResults[0]?.score != null ? Math.round(resolvedResults[0].score * 100) : undefined
+
   return {
     userEmail: postUrlToClerkEmail[postMedia.postUrl] ?? "",
     postUrl: postMedia.postUrl,
@@ -198,10 +207,13 @@ export function postMediaToUserQuery(
     verdicts: mediaVerdict(postMedia.media),
     queriedAt: postUrlToQueriedAt.get(postMedia.postUrl),
     analysisTime: postMedia.media.analysisTime,
-    mediaSource: determineSource(postMedia.media),
-    resolvedResults: resolveResults(mediaType(postMedia.media.mimeType), postMedia.media.results as CachedResults),
+    mediaSource: sourcePlatform,
+    resolvedResults,
     comments: postMedia.media.meta?.comments || "",
     keywords: postMedia.media.meta?.keywords || "",
+    isFallback,
+    score: firstScore,
+    sourcePlatform,
   }
 }
 

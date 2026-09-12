@@ -25,18 +25,18 @@ export default async function Page({
   }
 }) {
   const role = await getServerRole()
-  if (role.isNotLoggedIn) redirect("/")
+  if (role.isNotLoggedIn) redirect("/login?redirect_to=/media/history")
 
   const authed = auth()
   const { as } = searchParams
   const allOrg = searchParams.allOrg ?? false
+  const effectiveUserId = role.id || authed.userId
 
-  if (!authed.userId) {
-    console.warn(`GetUserHistory access denied: no user Id [userId=${authed.userId}, orgId=${authed.orgId} as=${as}]`)
-    redirect("/")
+  if (!effectiveUserId) {
+    redirect("/login?redirect_to=/media/history")
   }
 
-  const params = determineUserHistoryParams(authed.userId, authed.orgId ?? null, as)
+  const params = determineUserHistoryParams(effectiveUserId, authed.orgId ?? null, as)
   if (params.isImpersonating && !role.internal) {
     console.warn(`GetUserHistory access denied: not internal [userId=${authed.userId}, orgId=${authed.orgId} as=${as}]`)
     redirect("/")

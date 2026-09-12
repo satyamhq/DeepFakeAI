@@ -10,7 +10,7 @@ services:
     branch: main
     buildCommand: npm run build:render
     startCommand: npm run start:render
-    healthCheckPath: /
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION
         value: 20.18.0

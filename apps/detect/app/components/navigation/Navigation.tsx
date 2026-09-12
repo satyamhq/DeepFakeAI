@@ -18,23 +18,32 @@ export const NavItem = ({ icon, children }: { icon?: React.ReactNode; children?:
 )
 
 function LeftSidebar({ children }: { children: React.ReactNode }) {
-  const { isNavigationExpanded } = useContext(NavigationContext)
+  const { isNavigationExpanded, toggleIsNavigationExpanded } = useContext(NavigationContext)
   const logoutStaysInBottomLeft = true
 
-  // If the navigation is in the "default" state (the user has not toggled it), then it should be hidden on mobile and
-  // expanded on desktop; once they have manually toggled it then we force it to be shown or hidden.
-  const hidden = isNavigationExpanded === undefined ? "hidden md:block" : isNavigationExpanded ? "block" : "hidden"
-  const marginLeft = isNavigationExpanded || isNavigationExpanded === undefined ? "md:ml-64" : ""
+  // Permanently open on desktop (md:block) by default. On mobile, toggled with isNavigationExpanded.
+  const hidden = isNavigationExpanded === false ? "hidden" : isNavigationExpanded ? "block" : "hidden md:block"
+  const marginLeft = isNavigationExpanded === false ? "" : "md:ml-64"
+
   return (
-    <div className="mt-20 flex-1">
-      <div className={`${hidden} w-64 fixed mt-20 top-0 left-0 bottom-0 bg-gray-50 dark:bg-gray-800 p-2 z-50`}>
+    <div className="mt-20 flex-1 min-w-0 w-full">
+      {/* Mobile Backdrop */}
+      {isNavigationExpanded && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm transition-opacity"
+          onClick={() => toggleIsNavigationExpanded()}
+        />
+      )}
+      <div
+        className={`${hidden} w-64 fixed mt-20 top-0 left-0 bottom-0 bg-gray-50 dark:bg-gray-800 border-r border-gray-700/60 p-2 z-50 transition-all duration-200`}
+      >
         <div className="flex flex-col h-full">
           <div className="shrink-0">
             <TopLinks />
           </div>
           {logoutStaysInBottomLeft ? (
             <>
-              <div className="grow overflow-y-scroll">
+              <div className="grow overflow-y-auto">
                 <InternalTools />
               </div>
               <div className="shrink-0 mt-auto bottom-0">
@@ -42,14 +51,14 @@ function LeftSidebar({ children }: { children: React.ReactNode }) {
               </div>
             </>
           ) : (
-            <div className="grow overflow-y-scroll">
+            <div className="grow overflow-y-auto">
               <InternalTools />
               <BottomLinksClerk />
             </div>
           )}
         </div>
       </div>
-      <div className={marginLeft}>{children}</div>
+      <div className={`${marginLeft} min-w-0 max-w-full transition-all duration-200`}>{children}</div>
     </div>
   )
 }

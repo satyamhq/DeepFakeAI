@@ -10,38 +10,56 @@ interface NavigationContextData {
 }
 
 export const NavigationContext = createContext<NavigationContextData>({
-  isNavigationExpanded: false,
+  isNavigationExpanded: true,
   toggleIsNavigationExpanded: () => {},
 })
 
-export function NavigationProvider({ children, isLoggedIn }: { children: React.ReactNode; isLoggedIn: boolean }) {
+export function NavigationProvider({ children }: { children: React.ReactNode; isLoggedIn?: boolean }) {
   const breakpoint = useBreakpoint()
-
-  // If the user is signed in, we default navigation expanded to `undefined`,
-  // which means "rely on CSS to show or hide navigation depending on the browser width",
-  // but then if the user toggles navigation on or off, we override that.
-  // If the user is NOT signed in, we default navigation to hidden.
-  const defaultValue = !isLoggedIn ? false : undefined
-  const [isNavigationExpanded, setIsNavigationExpanded] = useState<boolean | undefined>(defaultValue)
-  // If isLoggedIn changes, update navigation state.
-  useEffect(() => {
-    setIsNavigationExpanded(!isLoggedIn ? false : undefined)
-  }, [isLoggedIn])
-
   const pathname = usePathname()
-  useEffect(() => {
-    // If we navigate to a new route *and* we're on a mobile device (breakpoint is `sm`), clear out the navigation
-    // expanded state so that the navigation is the default state (hidden) again when we arrive at the new route.
-    if (breakpoint === "sm") setIsNavigationExpanded(undefined)
-  }, [pathname, breakpoint])
+  const isMobile = breakpoint === "sm"
 
-  const toggleIsNavigationExpanded = () =>
-    setIsNavigationExpanded((prevIsExpanded) => {
-      // Here we have to "do the right thing" when the user clicks the navigation button for the first time. At that
-      // point isNavigationExpanded will be undefined and we have to transition to "yes expanded" on mobile, and "not
-      // expanded" on desktop
-      return !(prevIsExpanded === undefined ? breakpoint !== "sm" : prevIsExpanded)
+  // Permanently open by default on desktop.
+  const [isNavigationExpanded, setIsNavigationExpanded] = useState<boolean | undefined>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("deepfakeai_sidebar_expanded")
+      if (saved !== null) {
+        return saved === "true"
+      }
+      return window.innerWidth >= 768
+    }
+    return true
+  })
+
+  // Sync state on resize/hydration
+  useEffect(() => {
+    if (!isMobile) {
+      const saved = localStorage.getItem("deepfakeai_sidebar_expanded")
+      if (saved === null) {
+        setIsNavigationExpanded(true)
+      }
+    } else {
+      // Mobile drawer closed by default
+      setIsNavigationExpanded(false)
+    }
+  }, [isMobile])
+
+  // Only close mobile overlay on route change. NEVER close desktop sidebar on route change!
+  useEffect(() => {
+    if (isMobile) {
+      setIsNavigationExpanded(false)
+    }
+  }, [pathname, isMobile])
+
+  const toggleIsNavigationExpanded = () => {
+    setIsNavigationExpanded((prev) => {
+      const nextState = prev === undefined ? false : !prev
+      if (!isMobile && typeof window !== "undefined") {
+        localStorage.setItem("deepfakeai_sidebar_expanded", String(nextState))
+      }
+      return nextState
     })
+  }
 
   return (
     <NavigationContext.Provider value={{ isNavigationExpanded, toggleIsNavigationExpanded }}>

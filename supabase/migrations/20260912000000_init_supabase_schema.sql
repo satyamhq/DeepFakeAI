@@ -411,12 +411,14 @@ BEGIN
   DROP POLICY IF EXISTS "media_select_policy" ON public.media;
   DROP POLICY IF EXISTS "media_insert_policy" ON public.media;
   DROP POLICY IF EXISTS "media_update_policy" ON public.media;
+  DROP POLICY IF EXISTS "media_delete_policy" ON public.media;
   DROP POLICY IF EXISTS "Public read media" ON public.media;
 
   -- Queries policies
   DROP POLICY IF EXISTS "queries_select_policy" ON public.queries;
   DROP POLICY IF EXISTS "queries_insert_policy" ON public.queries;
   DROP POLICY IF EXISTS "queries_update_policy" ON public.queries;
+  DROP POLICY IF EXISTS "queries_delete_policy" ON public.queries;
   DROP POLICY IF EXISTS "Users can select their own queries" ON public.queries;
   DROP POLICY IF EXISTS "Anon can insert queries" ON public.queries;
 
@@ -477,10 +479,12 @@ END $$;
 CREATE POLICY "media_select_policy" ON public.media FOR SELECT TO anon, authenticated, service_role USING (true);
 CREATE POLICY "media_insert_policy" ON public.media FOR INSERT TO anon, authenticated, service_role WITH CHECK (true);
 CREATE POLICY "media_update_policy" ON public.media FOR UPDATE TO anon, authenticated, service_role USING (true) WITH CHECK (true);
+CREATE POLICY "media_delete_policy" ON public.media FOR DELETE TO authenticated, service_role USING (true);
 
 CREATE POLICY "queries_select_policy" ON public.queries FOR SELECT TO anon, authenticated, service_role USING (true);
 CREATE POLICY "queries_insert_policy" ON public.queries FOR INSERT TO anon, authenticated, service_role WITH CHECK (true);
 CREATE POLICY "queries_update_policy" ON public.queries FOR UPDATE TO anon, authenticated, service_role USING (true) WITH CHECK (true);
+CREATE POLICY "queries_delete_policy" ON public.queries FOR DELETE TO authenticated, service_role USING (true);
 
 CREATE POLICY "post_media_all_policy" ON public.post_media FOR ALL TO anon, authenticated, service_role USING (true) WITH CHECK (true);
 CREATE POLICY "post_metadata_all_policy" ON public.post_metadata FOR ALL TO anon, authenticated, service_role USING (true) WITH CHECK (true);

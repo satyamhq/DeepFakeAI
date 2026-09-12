@@ -1,5 +1,5 @@
 import Link from "next/link"
-
+import { RiHistoryLine } from "react-icons/ri"
 import NavigationToggle from "../NavigationToggle"
 import Share from "../Share"
 import DeepFakeAILogo from "../../DeepFakeAILogo"
@@ -14,6 +14,13 @@ export default function Header() {
       </Link>
       <div className="grow"></div>
       <div className="flex items-center gap-3">
+        <Link
+          href="/media/history"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700/60 border border-gray-700/80 transition"
+        >
+          <RiHistoryLine className="w-4 h-4 text-lime-400" />
+          <span>History</span>
+        </Link>
         <Share />
         <SignedIn>
           <UserButton />

@@ -4,7 +4,6 @@ import { FaRegStar } from "react-icons/fa"
 import { FiInfo } from "react-icons/fi"
 import { RiHistoryLine } from "react-icons/ri"
 import { AddFileIcon } from "../../icons"
-import { SignedIn } from "../../../mockClerk"
 
 export default function TopLinks() {
   return (
@@ -12,11 +11,9 @@ export default function TopLinks() {
       <Link prefetch={false} href={"/"}>
         <NavItem icon={<AddFileIcon />}>Query</NavItem>
       </Link>
-      <SignedIn>
-        <Link prefetch={false} href={"/media/history"}>
-          <NavItem icon={<RiHistoryLine className="inline w-6 h-6" />}>My History</NavItem>
-        </Link>
-      </SignedIn>
+      <Link prefetch={false} href={"/media/history"}>
+        <NavItem icon={<RiHistoryLine className="inline w-6 h-6" />}>History</NavItem>
+      </Link>
       <Link prefetch={false} href={"/media/notable"}>
         <NavItem icon={<FaRegStar className="inline w-6 h-6" />}>Notable Deepfakes</NavItem>
       </Link>
